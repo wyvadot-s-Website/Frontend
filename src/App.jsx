@@ -1,26 +1,30 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import Home from './pages/Home'
-import About from './pages/About'
-import NotFound from './pages/NotFound'
+import Navigation from './components/Navigation.jsx'
+import Footer from './components/Footer.jsx'
+import About from './pages/About.jsx'
+import Home from './pages/Home.jsx'
+import Services from './pages/Services.jsx'
+import Projects from './pages/Projects.jsx'
+import Products from './pages/Products.jsx'
+import NotFound from './pages/NotFound.jsx'
 
+// Main App
 function App() {
   return (
     <Router>
-      <nav className="bg-gray-800 text-white p-4">
-        <div className="max-w-6xl mx-auto flex gap-6">
-          <Link to="/" className="hover:text-gray-300">Home</Link>
-          <Link to="/about" className="hover:text-gray-300">About</Link>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto p-4">
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/products" element={<Products />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </main>
+        <Footer />
+      </div>
     </Router>
   )
 }
