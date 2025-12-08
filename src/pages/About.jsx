@@ -2,7 +2,7 @@ import React from 'react'
 import ContactForm from '../components/ContactForm'
 function About() {
   return (
-    <div>
+    <div className='bg-white'>
       <div className="relative h-125 bg-bottom bg-cover bg-no-repeat bg-center" style={{backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('../../public/478f938cf8decb686dcb9a903012c1e51195711f.jpg')"}}>
         <div className="absolute inset-0 -top-10 flex items-center justify-center ">
           <h1 className="text-7xl font-bold text-white">ABOUT US</h1>
@@ -52,48 +52,50 @@ function About() {
   </div>
   
   {/* Team Section */}
-  <div className="mb-16">
-    <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">
+  <div className="py-16 px-6 max-w-7xl mx-auto">
+    <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-16" style={{ lineHeight: '1.2' }}>
       Our Project & Technical<br />Team
     </h2>
     
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
       {[
         {
-          name: "Engr Fredric C.",
-          title: "Managing Director",
-          desc: "The Project Planning, Monitoring, Garden, Execution and Closeout processes are key responsibilities. These tasks must therefore be closely monitored by Qualified People, whose ideas and Opportunities are considered the profitable assets.",
+          name: "Engr Fridelia C",
+          title: "Project Manager",
+          desc: "The Project Planning, Monitoring, Control, Execution and Close-out processes are key to achieving the Opportunity realization Process, where Ideas and Opportunities are converted into profitable assets.",
           image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"
         },
         {
-          name: "Engr Daniel J.",
-          title: "Building & Allied Construction",
-          desc: "Working at Wyvadot PR has enabled me to live up to the standard required of me. I've gained more experience, which are developed skills to act as the value added in the quality of our work.",
+          name: "Engr Daniel E",
+          title: "Building Maintenance Project Coordinator",
+          desc: "Working at Wyvadot PR has enabled me to look at the inner value of delivering beyond the clients expectation... where our determination to go the extra mile is seen in the quality of our work.",
           image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400"
         },
         {
-          name: "Engr Udoh L.",
+          name: "Engr Louis L.",
           title: "Technical Director",
-          desc: "In the course of time, I have been able to understand the enormous relationship and optimum Competence of the Resource, Personnel and material in the course of my experience, and the output on the use of skills and approach, and proven strategies of project execution for any technical profession.",
+          desc: "The quality of service is directly proportional to the technical capability and Aesthetic Considerations of any Resource. It is my objective to ensure all jobs done are done to international technical specifications and standards, and ensure provision of suitable resources for all technical endeavours.",
           image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400"
         },
         {
-          name: "Engr Veronica",
-          title: "Civil Engineer",
-          desc: "We are now with a blue aim, to deliver Quality and serve the best interest of the future.",
+          name: "Engr Henriette",
+          title: "Project Coordinator",
+          desc: "We are here with a clear aim, to deliver Quality and serve the best interest of the Client.",
           image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"
         }
       ].map((member, idx) => (
-        <div key={idx} className="bg-white rounded-lg overflow-hidden shadow-md">
-          <img 
-            src={member.image} 
-            alt={member.name}
-            className="w-full h-64 object-cover"
-          />
-          <div className="p-6">
-            <h3 className="font-bold text-gray-900 mb-1">{member.name}</h3>
-            <p className="text-orange-500 text-sm font-medium mb-3">{member.title}</p>
-            <p className="text-gray-600 text-sm leading-relaxed">{member.desc}</p>
+        <div key={idx} className="bg-[#FAFAFA] rounded-2xl overflow-hidden px-6 pt-6">
+          <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+            <img 
+              src={member.image} 
+              alt={member.name}
+              className="w-full h-full object-cover object-center rounded-xl"
+            />
+          </div>
+          <div className=" py-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-0.5">{member.name}</h3>
+            <p className="text-sm text-gray-600 mb-4">{member.title}</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{member.desc}</p>
           </div>
         </div>
       ))}
