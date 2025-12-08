@@ -55,7 +55,7 @@ function Footer() {
         {/* Orange Bottom Bar */}
        
       </div>
-       <div className="bg-orange-500 px-4 h-20 text-center text-white text-sm">
+       <div className="bg-[#FF8D28] px-4 h-20 text-center text-white text-sm">
         </div>
     </footer>
   )

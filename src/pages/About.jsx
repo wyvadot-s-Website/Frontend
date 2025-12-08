@@ -1,5 +1,6 @@
 import React from 'react'
 import ContactForm from '../components/ContactForm'
+import sideImage from "../../public/348bd38987e246fe6f4e282afdac16933b48efd7.jpg"
 function About() {
   return (
     <div className='bg-white'>
@@ -44,9 +45,9 @@ function About() {
     
     <div className="flex justify-center lg:justify-end">
       <img 
-        src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600" 
+        src={sideImage} 
         alt="Construction site" 
-        className="rounded-lg shadow-lg w-full max-w-md h-auto object-cover"
+        className="rounded-lg shadow-lg w-full max-w-md h-160 object-cover"
       />
     </div>
   </div>

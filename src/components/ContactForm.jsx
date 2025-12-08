@@ -30,7 +30,7 @@ function ContactForm() {
   return (
     <div className="bg-white">
       {/* Client Logos Section */}
-      <div className="bg-orange-500 py-8 px-4">
+      <div className="bg-[#FF8D28] py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-white text-4xl font-semibold mb-6">Clients / Expertise / Partners</h3>
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -72,8 +72,8 @@ function ContactForm() {
 
       {/* FAQ Section */}
       <div className="max-w-2xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-2">Got questions?</h2>
-        <p className="text-center text-gray-900 text-xl mb-12">We've got you.</p>
+        <h2 className="text-3xl font-semibold text-center text-[#404040]">Got questions?</h2>
+        <p className="text-center text-[#404040] text-3xl font-semibold mb-12">We've got you.</p>
         
         <div className="space-y-3 mb-12">
           {faqs.map((question, idx) => (
@@ -85,7 +85,7 @@ function ContactForm() {
                 onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
                 className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
               >
-                <span className="text-sm text-gray-700 pr-4">{question}</span>
+                <span className="text-sm text-gray-700 pr-4 font-semibold">{question}</span>
                 <svg 
                   className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${openIndex === idx ? 'rotate-180' : ''}`}
                   fill="none" 
@@ -97,7 +97,7 @@ function ContactForm() {
               </button>
               {openIndex === idx && (
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 font-semibold">
                     Answer content would go here for: {question}
                   </p>
                 </div>
@@ -107,10 +107,10 @@ function ContactForm() {
         </div>
 
         {/* Contact CTA */}
-        <div className="bg-orange-500 rounded-2xl p-8 text-center">
+        <div className="bg-[#FF8D28] rounded-2xl p-8 text-center flex flex-col items-center gap-2">
           <h3 className="text-white text-2xl font-bold mb-2">Still have a question?</h3>
-          <p className="text-white text-sm mb-6">
-            Can't find the answer you're looking for? Please chat to our friendly team.
+          <p className="text-white text-md mb-6">
+            Get in touch, and we’ll be happy to help you.
           </p>
           <button className="bg-white text-orange-500 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
             Send a message
