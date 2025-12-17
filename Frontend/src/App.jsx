@@ -26,7 +26,6 @@ function AdminLayout({ children }) {
   return (
     <div>
       {children}
-      <Footer />
     </div>
   )
 }
