@@ -27,6 +27,7 @@ function Footer() {
             <div className="flex gap-4">
               <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
                 <Facebook className="w-5 h-5" />
+                
               </a>
               <a href="#" className="text-gray-800 hover:text-gray-900 transition-colors">
                 <Twitter className="w-5 h-5" />
