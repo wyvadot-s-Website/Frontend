@@ -3,7 +3,7 @@ import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
 
-app.use("/api/admins", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
 dotenv.config();
 
