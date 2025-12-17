@@ -4,6 +4,7 @@ import ServiceComponent from '../components/service'
 import ChooseImage from "../../public/Union.png"
 import SecondHero from '../components/SecondHero'
 import Shop from '../components/SHop'
+import Hero from "../../public/Hero.png"
 
 
   const Choose =[
@@ -44,8 +45,13 @@ import Shop from '../components/SHop'
 function Home() {
   return (
     <div className=' bg-white'>
-       <div className="bg-white py-16 px-4">
+       <div className="bg-white pt-16 px-4">
       <div className="max-w-6xl mx-auto">
+        <div className='relative mb-10'>
+          <p className='absolute text-5xl font-semibold max-w-[57%]'>Reliable Project Delivery built on Excellence and Strong Customer Relationships</p>
+          <img src={Hero} alt="" className='w-full'/>
+          <p className='max-w-[20%] absolute right-0 bottom-0 font-semibold text-sm'>Driving results through expert project management, engineering solutions, human resourcing, and maintenance</p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
