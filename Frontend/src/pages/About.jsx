@@ -6,7 +6,7 @@ import SecondHero from '../components/SecondHero'
 import History from '../components/History'
 function About() {
   return (
-    <div className='bg-white'>
+    <div className='bg-white font-SF'>
        <div 
               className=" 
                  mx-auto max-w-6xl                     

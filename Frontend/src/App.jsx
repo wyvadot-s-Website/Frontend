@@ -42,6 +42,7 @@ function App() {
         <Route path="/products" element={<UserLayout><Products /></UserLayout>} />
         <Route path="/contact" element={<UserLayout><Contact /></UserLayout>} />
         <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
+
         <Route path="*" element={<UserLayout><NotFound /></UserLayout>} />
         <Route path="/theboss" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
       </Routes>

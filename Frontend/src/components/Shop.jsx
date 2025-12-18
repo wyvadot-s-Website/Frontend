@@ -1,8 +1,12 @@
+
 import React from 'react'
 import { Heart } from 'lucide-react'
 import Image from "../../public/Hammer.png"
+import {useNavigate} from  "react-router-dom"
 
-function Shop() {
+function Shop( { onProductClick }) {
+
+  const navigate = useNavigate()
   const products = [
     {
       id: 1,
@@ -51,9 +55,7 @@ function Shop() {
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {products.map((product) => (
-            <div key={product.id} className=" rounded-lg overflow-hidden">
-              
-
+            <div key={product.id} onClick={() => onProductClick(product)} className=" rounded-lg overflow-hidden">
               {/* Product Details */}
               <div className="p-4">
                 {/* Product Image Container */}
@@ -102,7 +104,7 @@ function Shop() {
 
         {/* See All Button */}
         <div className="flex justify-center">
-          <button className="bg-[#DC3545] hover:bg-[#c82333] text-white font-medium px-10 py-3 rounded-lg transition-colors">
+          <button className="bg-[#DC3545] hover:bg-[#c82333] text-white font-medium px-10 py-3 rounded-lg transition-colors" >
             See All
           </button>
         </div>
