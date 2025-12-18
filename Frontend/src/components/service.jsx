@@ -43,7 +43,7 @@ function ServiceComponent() {
     setModalOpen(true)
   }
     return (
-         <div className="min-h-screen bg-gray-50 p-8">
+         <div className="min-h-screen mt-15 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">What we Build, We Build With Purpose</h1>
@@ -59,8 +59,8 @@ function ServiceComponent() {
               onClick={() => handleServiceClick(service.name)}
               className="bg-gray-200 hover:bg-gray-300 transition-colors h-60 flex flex-col gap-3 justify-center items-center text-center shadow-sm rounded-lg p-6"
             >
-              <img className="text-6xl w-20 mb-2" src={service.icon} alt={service.name}/>
-              <p className="text-lg font-medium max-w-[70%]">{service.name}</p>
+              <img className="text-xl w-20 mb-2" src={service.icon} alt={service.name}/>
+              <p className="text-xl font-medium max-w-[65%]">{service.name}</p>
             </button>
           ))}
         </div>

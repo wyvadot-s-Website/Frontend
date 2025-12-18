@@ -11,8 +11,8 @@ function Projects() {
   ]
   
   return (
-    <div>
-      <div 
+    <div className='font-SF mt-10'>
+            <div 
               className=" 
                 h-125 max-w-6xl mx-auto                     
                 rounded-4xl 
