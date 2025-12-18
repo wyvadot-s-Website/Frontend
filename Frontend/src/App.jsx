@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navigation from './components/Navigation.jsx'
 import Footer from './components/Footer.jsx'
 import About from './pages/About.jsx'
@@ -10,27 +10,42 @@ import Products from './pages/Products.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Contact from './pages/Contact.jsx'
 import Shop from './pages/Shop.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
+
+function UserLayout({ children }) {
+  return (
+    <div>
+      <Navigation />
+      {children}
+      <Footer />
+    </div>
+  )
+}
+
+function AdminLayout({ children }) {
+  return (
+    <div>
+      {children}
+    </div>
+  )
+}
 
 
-
-// Main App
 function App() {
   return (
     <Router>
-      <div className="">
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/shop" element={<Shop />} />
-        </Routes>
-        <Footer />
-      </div>
+      <Routes>
+        <Route path="/" element={<UserLayout><Home /></UserLayout>} />
+        <Route path="/about" element={<UserLayout><About /></UserLayout>} />
+        <Route path="/services" element={<UserLayout><Services /></UserLayout>} />
+        <Route path="/projects" element={<UserLayout><Projects /></UserLayout>} />
+        <Route path="/products" element={<UserLayout><Products /></UserLayout>} />
+        <Route path="/contact" element={<UserLayout><Contact /></UserLayout>} />
+        <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
+
+        <Route path="*" element={<UserLayout><NotFound /></UserLayout>} />
+        <Route path="/theboss" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+      </Routes>
     </Router>
   )
 }
