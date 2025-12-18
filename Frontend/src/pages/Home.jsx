@@ -6,6 +6,7 @@ import SecondHero from '../components/SecondHero'
 import Shop from '../components/Shop'
 import Hero from "../../public/Hero.png"
 import { Button } from "../components/ui/button"
+import { useNavigate } from 'react-router-dom'
 
 const Choose = [
   {
@@ -21,6 +22,8 @@ const Choose = [
     content: "We commit ourselves to complete all projects within the timeline set with our clients. We use the best of technology and tools to ensure that all jobs are done quickly but also giving attention to details and ensuring everything is done correctly."
   }
 ]
+
+
 
 const stats = [
   {
@@ -42,6 +45,11 @@ const stats = [
 ]
 
 function Home() {
+  const navigate = useNavigate()
+
+const handleClick =() => { 
+  navigate("/shop")
+}
   const [showShop, setShowShop] = useState(false)
 
   const scrollToShop = () => {
@@ -65,7 +73,7 @@ function Home() {
             <p className='max-w-[20%] text-xs absolute -right-2 bottom-5 font-semibold text-sm'>Driving results through expert project management, engineering solutions, human resourcing, and maintenance</p>
             <div className='absolute bottom-10 left-10 flex gap-7'>
               <Button 
-                onClick={scrollToShop}
+                onClick={handleClick}
                 variant="outline" 
                 className='flex w-35 h-13 rounded-4xl font-outfit bg-gradient-to-tr from-[#FF8D28] to-[#9E4A00] text-white text-lg'
               >
@@ -111,13 +119,8 @@ function Home() {
         </div>
         <img src={ChooseImage} alt="Construction worker with equipment" className="w-full h-full object-cover"/>
       </div>
-
-      {showShop && (
-        <div id="shop-section">
-          <Shop />
-        </div>
-      )}
-      
+   
+       <Shop />
       <ContactForm />
     </div>
   )
