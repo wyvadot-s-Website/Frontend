@@ -5,6 +5,7 @@ import ChooseImage from "../../public/Union.png"
 import SecondHero from '../components/SecondHero'
 import Shop from '../components/SHop'
 import Hero from "../../public/Hero.png"
+import { Button } from "../components/ui/button"
 
 
   const Choose =[
@@ -44,20 +45,22 @@ import Hero from "../../public/Hero.png"
 
 function Home() {
   return (
-    <div className=' bg-white'>
+    <div className=' bg-white font-SF'>
        <div className="bg-white pt-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className='relative mb-10'>
-          <p className='absolute text-5xl font-semibold max-w-[57%]'>Reliable Project Delivery built on Excellence and Strong Customer Relationships</p>
+          <p className='absolute text-sm pl-2 lg:text-[40px] font-semibold max-w-[60%]'>Reliable Project Delivery built on Excellence and Strong Customer Relationships</p>
           <img src={Hero} alt="" className='w-full'/>
-          <p className='max-w-[20%] absolute right-0 bottom-0 font-semibold text-sm'>Driving results through expert project management, engineering solutions, human resourcing, and maintenance</p>
+          <p className='max-w-[20%] text-xs absolute -right-2 bottom-5 font-semibold text-sm'>Driving results through expert project management, engineering solutions, human resourcing, and maintenance</p>
+         <div className='absolute bottom-10 left-10 flex gap-7'> <Button variant="outline" className={'flex w-35 h-13 rounded-4xl font-outfit bg-gradient-to-tr from-[#FF8D28] to-[#9E4A00] text-white text-lg'}>Shop with us</Button>
+          <Button variant="outline" className={'flex w-35 h-13 rounded-4xl bg-[#FFDDBE] font-outfit text-lg'}>Book us now</Button></div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 font-geist">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
               {/* Stat Value */}
               <div className="text-5xl font-bold text-gray-900 mb-3">
-                {stat.value}
+                {stat.value} 
               </div>
               
               {/* Stat Label */}
