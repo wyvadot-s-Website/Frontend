@@ -59,8 +59,8 @@ function ServiceComponent() {
               onClick={() => handleServiceClick(service.name)}
               className="bg-gray-200 hover:bg-gray-300 transition-colors h-60 flex flex-col gap-3 justify-center items-center text-center shadow-sm rounded-lg p-6"
             >
-              <img className="text-6xl w-20 mb-2" src={service.icon} alt={service.name}/>
-              <p className="text-lg font-medium max-w-[70%]">{service.name}</p>
+              <img className="text-xl w-20 mb-2" src={service.icon} alt={service.name}/>
+              <p className="text-xl font-medium max-w-[65%]">{service.name}</p>
             </button>
           ))}
         </div>
