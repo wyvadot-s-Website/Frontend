@@ -7,6 +7,10 @@ import {useNavigate} from  "react-router-dom"
 function Shop( { onProductClick }) {
 
   const navigate = useNavigate()
+
+ const handleClick = () => { 
+    navigate("/shop")
+  }
   const products = [
     {
       id: 1,
@@ -104,7 +108,7 @@ function Shop( { onProductClick }) {
 
         {/* See All Button */}
         <div className="flex justify-center">
-          <button className="bg-[#DC3545] hover:bg-[#c82333] text-white font-medium px-10 py-3 rounded-lg transition-colors" >
+          <button className="bg-[#DC3545] hover:bg-[#c82333] text-white font-medium px-10 py-3 rounded-lg transition-colors" onClick={handleClick}>
             See All
           </button>
         </div>
