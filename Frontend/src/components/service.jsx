@@ -43,7 +43,7 @@ function ServiceComponent() {
     setModalOpen(true)
   }
     return (
-         <div className="min-h-screen bg-gray-50 p-8">
+         <div className="min-h-screen mt-15 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">What we Build, We Build With Purpose</h1>
