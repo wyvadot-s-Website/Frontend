@@ -10,6 +10,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import logo from "../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png"
 
 function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
   const [view, setView] = useState(initialView)
@@ -116,7 +117,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleSuccessContinue}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Continue
             </Button>
@@ -132,11 +133,10 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
       <Dialog open={isOpen} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-md">
           <div className="text-center py-8">
-            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <div className=" mx-auto mb-6 flex items-center justify-center">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span className="text-xl font-bold">Wyvadot</span>
-                <span className="text-xl font-bold text-orange-500">PR</span>
+                <div className=" bg-orange-500 rounded-full"></div>
+                    <img src={logo} alt="" className='w-40 '/>
               </div>
             </div>
             <DialogTitle className="text-2xl font-bold mb-2">Welcome to WyvadotPR</DialogTitle>
@@ -146,7 +146,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleWelcomeContinue}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Get started now
             </Button>
@@ -285,7 +285,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleSignUp}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Sign Up
             </Button>
@@ -361,7 +361,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleVerify}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Verify
             </Button>
@@ -434,7 +434,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleLogin}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Login
             </Button>
@@ -511,7 +511,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleForgotPassword}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Continue
             </Button>
@@ -566,7 +566,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={handleResetPassword}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Verify
             </Button>
@@ -589,11 +589,10 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
       <Dialog open={isOpen} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-md">
           <div className="text-center py-8">
-            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <div className=" mx-auto mb-6 flex items-center justify-center">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span className="text-xl font-bold">Wyvadot</span>
-                <span className="text-xl font-bold text-orange-500">PR</span>
+                <div className=" bg-orange-500 rounded-full"></div>
+                    <img src={logo} alt="" className='w-40 '/>
               </div>
             </div>
             <DialogTitle className="text-2xl font-bold mb-2">Password Updated</DialogTitle>
@@ -603,7 +602,7 @@ function AuthModal({ isOpen, onClose, initialView = 'signup' }) {
 
             <Button
               onClick={() => setView('login')}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
             >
               Continue to Login
             </Button>

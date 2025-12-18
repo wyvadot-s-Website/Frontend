@@ -51,7 +51,7 @@ function ProjectHistory() {
           {projects.map((project) => (
             <div 
               key={project.id}
-              className={`flex flex-col md:flex-row gap-8 items-center ${
+              className={`flex flex-col items-start md:flex-row gap-8 items-center ${
                 project.imagePosition === "right" ? "md:flex-row-reverse" : ""
               }`}
             >
