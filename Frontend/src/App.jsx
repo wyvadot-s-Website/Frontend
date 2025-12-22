@@ -10,13 +10,17 @@ import Products from "./pages/Products.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Contact from "./pages/Contact.jsx";
 import Shop from "./pages/Shop.jsx";
-import AdminSignup from "./pages/admin/AdminSignup";
-import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoutes from "./routes/AdminRoutes";
 import AdminAuth from './pages/AdminAuth.jsx';
 import AdminAuthLayout from "./Layout/AdminAuthLayout.jsx";
 import AdminLayout from "./Layout/AdminLayout.jsx";
+import AdminContent from './pages/admin/AdminContent.jsx';
+import AdminServices from './pages/admin/AdminServices.jsx';
+import AdminProjects from './pages/admin/AdminProjects.jsx';
+import AdminForms from './pages/admin/AdminForms.jsx';
+
+
 
 
 function UserLayout({ children }) {
@@ -106,10 +110,12 @@ function App() {
         </Route>
         
 
-        <Route
-          path="/theboss/dashboard"
-          element={<AdminLayout />}>
+        <Route element={<AdminLayout />}>
             <Route path="/theboss/dashboard" element={<AdminDashboard />} />
+            <Route path="/theboss/content" element={<AdminContent />} />
+            <Route path="/theboss/services" element={<AdminServices />} />
+            <Route path="/theboss/projects" element={<AdminProjects />} />
+            <Route path="/theboss/forms" element={<AdminForms />} />
             
           </Route>
       </Routes>
