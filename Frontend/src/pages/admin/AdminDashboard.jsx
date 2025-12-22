@@ -1,7 +1,6 @@
 import React from 'react'
 import { Users, ShoppingCart, ClipboardList, Mail, FileText } from 'lucide-react'
-// import { Sidebar } from '../../Layout/sidebar'
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+// import { Sidebar } from 
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { RecentUsersTable } from '@/components/dashboard/RecentUsersTable'
 import { RecentShopTable } from '@/components/dashboard/RecentShopTable'

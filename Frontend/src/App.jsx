@@ -105,19 +105,24 @@ function App() {
           }
         />
         {/* ADMIN ROUTES */}
-        <Route path="/theboss" element={<AdminAuthLayout />} >
-          <Route path="/theboss/login" element={<AdminAuth />} />
+        <Route path="/theboss" element={<AdminAuthLayout />}>
+          <Route path="login" element={<AdminAuth />} />
         </Route>
-        
 
-        <Route element={<AdminLayout />}>
-            <Route path="/theboss/dashboard" element={<AdminDashboard />} />
-            <Route path="/theboss/content" element={<AdminContent />} />
-            <Route path="/theboss/services" element={<AdminServices />} />
-            <Route path="/theboss/projects" element={<AdminProjects />} />
-            <Route path="/theboss/forms" element={<AdminForms />} />
-            
-          </Route>
+        <Route
+          path="/theboss"
+          element={
+            <AdminRoutes>
+              <AdminLayout />
+            </AdminRoutes>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="content" element={<AdminContent />} />
+          <Route path="services" element={<AdminServices />} />
+          <Route path="projects" element={<AdminProjects />} />
+          <Route path="forms" element={<AdminForms />} />
+        </Route>
       </Routes>
     </Router>
   );

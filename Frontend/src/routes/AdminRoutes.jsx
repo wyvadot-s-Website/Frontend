@@ -3,7 +3,7 @@ import { getAdminToken } from "../utils/adminAuth";
 
 const AdminRoutes = ({ children }) => {
   const token = getAdminToken();
-  return token ? children : <Navigate to="/theboss" />;
+  return token ? children : <Navigate to="/theboss/login" />;
 };
 
 export default AdminRoutes;
