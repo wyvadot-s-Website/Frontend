@@ -1,21 +1,3 @@
-<<<<<<< HEAD
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Navigation from './components/Navigation.jsx'
-import Footer from './components/Footer.jsx'
-import About from './pages/About.jsx'
-import Home from './pages/Home.jsx'
-import Services from './pages/Services.jsx'
-import Projects from './pages/Projects.jsx'
-import Products from './pages/Products.jsx'
-import NotFound from './pages/NotFound.jsx'
-import Contact from './pages/Contact.jsx'
-import Shop from './pages/Shop.jsx'
-import AdminLayout from './layout/AdminLayout.jsx'
-import AdminDashboard from './pages/AdminDashboard.jsx'
-import AdminAuthLayout from "@/Layout/AdminAuthLayout.jsx";
-import AdminAuth from "./pages/AdminAuth.jsx"
-=======
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation.jsx";
@@ -32,7 +14,10 @@ import AdminSignup from "./pages/admin/AdminSignup";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRoutes from "./routes/AdminRoutes";
->>>>>>> b9395471ff2912f9c4608a5e1e0e79ce91592834
+import AdminAuth from './pages/AdminAuth.jsx';
+import AdminAuthLayout from "./Layout/AdminAuthLayout.jsx";
+import AdminLayout from "./Layout/AdminLayout.jsx";
+
 
 function UserLayout({ children }) {
   return (
@@ -44,15 +29,7 @@ function UserLayout({ children }) {
   );
 }
 
-<<<<<<< HEAD
 
-
-
-=======
-function AdminLayout({ children }) {
-  return <div>{children}</div>;
-}
->>>>>>> b9395471ff2912f9c4608a5e1e0e79ce91592834
 
 function App() {
   return (
@@ -115,15 +92,6 @@ function App() {
           }
         />
 
-<<<<<<< HEAD
-        <Route path="*" element={<UserLayout><NotFound /></UserLayout>} />
-          <Route path="/theboss" element={<AdminAuthLayout />}>
-              <Route index element={<AdminAuth />} />
-          </Route>
-          <Route path="/admin" element={<AdminLayout />} >
-              <Route path = 'thedashboard' element={<AdminDashboard />} />
-          </Route>
-=======
         <Route
           path="*"
           element={
@@ -133,18 +101,17 @@ function App() {
           }
         />
         {/* ADMIN ROUTES */}
-        <Route path="/theboss" element={<AdminSignup />} />
-        <Route path="/theboss/login" element={<AdminLogin />} />
+        <Route path="/theboss" element={<AdminAuthLayout />} >
+          <Route path="/theboss/login" element={<AdminAuth />} />
+        </Route>
+        
 
         <Route
           path="/theboss/dashboard"
-          element={
-            <AdminRoutes>
-              <AdminDashboard />
-            </AdminRoutes>
-          }
-        />
->>>>>>> b9395471ff2912f9c4608a5e1e0e79ce91592834
+          element={<AdminLayout />}>
+            <Route path="/theboss/dashboard" element={<AdminDashboard />} />
+            
+          </Route>
       </Routes>
     </Router>
   );

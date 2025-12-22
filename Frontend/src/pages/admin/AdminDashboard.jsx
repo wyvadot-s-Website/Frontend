@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-<<<<<<< HEAD:Frontend/src/pages/AdminDashboard.jsx
 function Dashboard() {
     const stats = [
         {
@@ -175,14 +174,6 @@ function Dashboard() {
             </Card>
         </div>
     )
-=======
-const AdminDashboard = () => {
-  return (
-    <div>
-      
-    </div>
-  )
->>>>>>> b9395471ff2912f9c4608a5e1e0e79ce91592834:Frontend/src/pages/admin/AdminDashboard.jsx
 }
 
 export default Dashboard

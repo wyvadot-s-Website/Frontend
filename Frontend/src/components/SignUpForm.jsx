@@ -39,7 +39,7 @@ function SignUpForm({ onNavigateToLogin }) {
                         value={formData.name}
                         onChange={handleChange}
                         className="mt-1"
-                        Placeholder="Name"
+                        placeholder="Name"
                     />
                 </div>
 
