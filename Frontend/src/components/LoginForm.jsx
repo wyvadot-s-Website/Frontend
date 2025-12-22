@@ -3,8 +3,10 @@ import { Eye, EyeOff } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { useNavigate } from 'react-router-dom'
 
 function LoginForm({ onNavigateToSignup }) {
+    const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState({
         email: '',
@@ -20,6 +22,7 @@ function LoginForm({ onNavigateToSignup }) {
 
     const handleSubmit = () => {
         console.log('Login with:', formData)
+        navigate("/theboss/dashboard")
     }
 
     return (
