@@ -1,9 +1,9 @@
 import React from 'react'
 
-function AdminDashboard() {
+const AdminDashboard = () => {
   return (
     <div>
-      Admin Dashboard
+      
     </div>
   )
 }
