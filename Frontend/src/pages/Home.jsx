@@ -50,6 +50,10 @@ function Home() {
 const handleClick =() => { 
   navigate("/shop")
 }
+
+const handleService = () => {
+      navigate("/services")
+}
   const [showShop, setShowShop] = useState(false)
 
   const scrollToShop = () => {
@@ -79,7 +83,8 @@ const handleClick =() => {
               >
                 Shop with us
               </Button>
-              <Button variant="outline" className='flex w-35 h-13 rounded-4xl bg-[#FFDDBE] font-outfit text-lg'>Book us now</Button>
+              <Button variant="outline" onClick = {handleService}
+                      className='flex w-35 h-13 rounded-4xl bg-[#FFDDBE] font-outfit text-lg'>Book us now</Button>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 font-geist">

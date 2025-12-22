@@ -10,7 +10,10 @@ import Products from './pages/Products.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Contact from './pages/Contact.jsx'
 import Shop from './pages/Shop.jsx'
+import AdminLayout from './layout/AdminLayout.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import AdminAuthLayout from "@/Layout/AdminAuthLayout.jsx";
+import AdminAuth from "./pages/AdminAuth.jsx"
 
 function UserLayout({ children }) {
   return (
@@ -22,13 +25,9 @@ function UserLayout({ children }) {
   )
 }
 
-function AdminLayout({ children }) {
-  return (
-    <div>
-      {children}
-    </div>
-  )
-}
+
+
+
 
 
 function App() {
@@ -44,7 +43,12 @@ function App() {
         <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
 
         <Route path="*" element={<UserLayout><NotFound /></UserLayout>} />
-        <Route path="/theboss" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+          <Route path="/theboss" element={<AdminAuthLayout />}>
+              <Route index element={<AdminAuth />} />
+          </Route>
+          <Route path="/admin" element={<AdminLayout />} >
+              <Route path = 'thedashboard' element={<AdminDashboard />} />
+          </Route>
       </Routes>
     </Router>
   )
