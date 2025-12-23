@@ -1,11 +1,11 @@
 export const setAdminToken = (token) => {
-  localStorage.setItem("adminToken", token);
+  localStorage.setItem("admin_token", token);
 };
 
 export const getAdminToken = () => {
-  return localStorage.getItem("adminToken");
+  return localStorage.getItem("admin_token");
 };
 
 export const logoutAdmin = () => {
-  localStorage.removeItem("adminToken");
+  localStorage.removeItem("admin_token");
 };
