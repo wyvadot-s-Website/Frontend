@@ -106,15 +106,16 @@ function App() {
         />
         {/* ADMIN ROUTES */}
         <Route path="/theboss" element={<AdminAuthLayout />}>
-          <Route path="login" element={<AdminAuth />} />
+          <Route index element={<AdminAuth />} />
         </Route>
 
         <Route
           path="/theboss"
           element={
-            <AdminRoutes>
-              <AdminLayout />
-            </AdminRoutes>
+            // <AdminRoutes>
+              
+            // </AdminRoutes>
+            <AdminLayout />
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
