@@ -21,6 +21,18 @@ const adminSchema = new mongoose.Schema(
       type: String,
       enum: ["admin", "super_admin"],
       default: "admin"
+    },
+
+    // 🔐 Email verification fields
+    isVerified: {
+      type: Boolean,
+      default: false
+    },
+    verificationToken: {
+      type: String
+    },
+    verificationTokenExpires: {
+      type: Date
     }
   },
   {
