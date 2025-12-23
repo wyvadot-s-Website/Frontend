@@ -1,4 +1,5 @@
 import React from "react";
+import { Toaster } from "sonner";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation.jsx";
 import Footer from "./components/Footer.jsx";
@@ -10,8 +11,8 @@ import Products from "./pages/Products.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Contact from "./pages/Contact.jsx";
 import Shop from "./pages/Shop.jsx";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminRoutes from "./routes/AdminRoutes";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import AdminRoutes from "./routes/AdminRoutes.jsx";
 import AdminAuth from './pages/AdminAuth.jsx';
 import AdminAuthLayout from "./Layout/AdminAuthLayout.jsx";
 import AdminLayout from "./Layout/AdminLayout.jsx";
@@ -37,6 +38,8 @@ function UserLayout({ children }) {
 
 function App() {
   return (
+     <>
+     <Toaster position="top-right" richColors />
     <Router>
       <Routes>
         <Route
@@ -126,6 +129,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+    </>
   );
 }
 
