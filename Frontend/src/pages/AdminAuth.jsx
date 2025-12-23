@@ -4,7 +4,7 @@ import LoginForm from '../components/LoginForm'
 import VerifyForm from '../components/VerifyForm'
 
 function AdminAuth() {
-    const [currentView, setCurrentView] = useState('login') // 'signup', 'login', 'verify'
+    const [currentView, setCurrentView] = useState('signup') // 'signup', 'login', 'verify'
 
     return (
         <div className={'w-full max-w-md mx-auto'}>
