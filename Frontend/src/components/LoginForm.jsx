@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useNavigate } from 'react-router-dom';
+import  BASE_URL  from '../utils/api'; // adjust path if needed
 
 function LoginForm({ onNavigateToSignup }) {
     const navigate = useNavigate()
@@ -12,6 +13,7 @@ function LoginForm({ onNavigateToSignup }) {
         email: '',
         password: ''
     })
+    const [loading, setLoading] = useState(false)
 
     const handleChange = (e) => {
         setFormData({
@@ -20,9 +22,35 @@ function LoginForm({ onNavigateToSignup }) {
         })
     }
 
-    const handleSubmit = () => {
-        console.log('Login with:', formData)
-        navigate("/theboss/dashboard")
+    const handleSubmit = async () => {
+        if (!formData.email || !formData.password) return
+
+        try {
+            setLoading(true)
+
+            const res = await fetch(`${BASE_URL}/api/admin/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Login failed')
+            }
+
+            // store token
+            localStorage.setItem('admin_token', data.token)
+
+            navigate('/theboss/dashboard')
+        } catch (error) {
+            console.error('Admin login error:', error.message)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -31,7 +59,6 @@ function LoginForm({ onNavigateToSignup }) {
 
             <div className="flex flex-col ">
                 <div>
-                    {/*<Label htmlFor="email" className="text-sm text-gray-600">Email</Label>*/}
                     <Input
                         id="email"
                         name="email"
@@ -44,7 +71,6 @@ function LoginForm({ onNavigateToSignup }) {
                 </div>
 
                 <div>
-                    {/*<Label htmlFor="password" className="text-sm text-gray-600">Password</Label>*/}
                     <div className="relative mt-4">
                         <Input
                             id="password"
@@ -65,8 +91,12 @@ function LoginForm({ onNavigateToSignup }) {
                     </div>
                 </div>
 
-                <Button onClick={handleSubmit} className="w-30 h-10 flex place-self-end bg-black hover:bg-gray-800 text-white mt-6">
-                    Continue
+                <Button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="w-30 h-10 flex place-self-end bg-black hover:bg-gray-800 text-white mt-6"
+                >
+                    {loading ? 'Signing in…' : 'Continue'}
                 </Button>
             </div>
 
