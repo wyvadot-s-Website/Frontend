@@ -1,5 +1,5 @@
 // Footer Component
-import React from 'react'
+import React,{ useEffect, useState }from 'react'
 import { Link } from 'react-router-dom'
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 import logo from '../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png'
@@ -8,8 +8,23 @@ import x from "../assets/icons/twitter.png"
 import Ig from "../assets/icons/instagram.png"
 import lkdn from "../assets/icons/LinkedIn.png"
 import whts from "../assets/icons/whatsapp.png"
+import { fetchFooter } from "@/services/footerService";
 
 function Footer() {
+  const [footer, setFooter] = useState(null);
+
+  useEffect(() => {
+    loadFooter();
+  }, []);
+
+  const loadFooter = async () => {
+    const data = await fetchFooter();
+    setFooter(data);
+  };
+
+  if (!footer) return null;
+
+
   return (
     <footer className="bg-gray-50 pt-12 pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,20 +47,20 @@ function Footer() {
             
             {/* Social Media Icons */}
             <div className="flex gap-7">
-              <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+              <a href={footer.socialLinks.facebook} className="text-blue-600 hover:text-blue-700 transition-colors">
                 <img src={fb} alt="" className='w-9' />
                 
               </a>
-              <a href="#" className="text-gray-800 hover:text-gray-900 transition-colors">
+              <a href={footer.socialLinks.twitter} className="text-gray-800 hover:text-gray-900 transition-colors">
                 <img src={x} alt="" className='w-9' />
               </a>
-              <a href="#" className="text-pink-600 hover:text-pink-700 transition-colors">
+              <a href={footer.socialLinks.instagram} className="text-pink-600 hover:text-pink-700 transition-colors">
                 <img src={Ig} alt="" className='w-9' />
               </a>
-              <a href="#" className="text-blue-700 hover:text-blue-800 transition-colors">
+              <a href={footer.socialLinks.linkedin} className="text-blue-700 hover:text-blue-800 transition-colors">
                 <img src={lkdn} alt="" className='w-9' />
               </a>
-              <a href="#" className="text-green-600 hover:text-green-700 transition-colors">
+              <a href={footer.socialLinks.whatsapp} className="text-green-600 hover:text-green-700 transition-colors">
                 <img src={whts} alt="" className='w-9' />
               </a>
             </div>
@@ -98,9 +113,9 @@ function Footer() {
       
       {/* Orange Bottom Bar */}
       <div className="bg-[#FF8D28] h-20 flex items-center justify-center">
-        {/* <p className="text-white text-sm">
+         <p className="text-white text-sm">
           © {new Date().getFullYear()} Wyvadot Projects & Resources Ltd. All rights reserved.
-        </p> */}
+        </p> 
       </div>
     </footer>
   )
