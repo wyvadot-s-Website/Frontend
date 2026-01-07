@@ -1,14 +1,24 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import Admin from "../models/Admin.js";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
+import dotenv from "dotenv";
+import Admin from "../models/Admin.js";
 import protectAdmin from "../middleware/authMiddleware.js";
+import { sendAdminVerificationEmail } from "../config/email.js";
+
+dotenv.config();
 
 const router = express.Router();
 
+/**
+ * Generate 6-digit OTP
+ */
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 // ==============================
-// CREATE ADMIN (Signup)
+// ADMIN SIGNUP
 // ==============================
 router.post("/signup", async (req, res) => {
   try {
@@ -23,24 +33,26 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "Admin already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🔐 Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    // 🔐 Generate OTP
+    const otp = generateOTP();
+    const hashedOTP = await bcrypt.hash(otp, 10);
 
     await Admin.create({
       name,
       email,
       password: hashedPassword,
       isVerified: false,
-      verificationToken,
-      verificationTokenExpires: Date.now() + 1000 * 60 * 60 // 1 hour
+      verificationToken: hashedOTP,
+      verificationTokenExpires: Date.now() + 10 * 60 * 1000 // 10 minutes
     });
 
+    // 📩 Send OTP to CONTROL EMAIL (EMAIL_USER)
+    await sendAdminVerificationEmail(otp, process.env.ADMIN_CONTROL_EMAIL);
+
     res.status(201).json({
-      message: "Verification email sent",
-      verificationToken // ⚠️ temporary (remove once email is wired)
+      message: "Verification code sent for admin approval"
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -48,42 +60,49 @@ router.post("/signup", async (req, res) => {
 });
 
 // ==============================
-// VERIFY ADMIN TOKEN
+// VERIFY ADMIN OTP
 // ==============================
-router.get("/verify/:token", async (req, res) => {
+router.post("/verify-otp", async (req, res) => {
   try {
-    const { token } = req.params;
+    const { email, code } = req.body;
 
-    const admin = await Admin.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: Date.now() }
-    });
-
-    if (!admin) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+    if (!email || !code) {
+      return res.status(400).json({ message: "Email and code are required" });
     }
 
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    if (admin.isVerified) {
+      return res.status(400).json({ message: "Admin already verified" });
+    }
+
+    if (
+      !admin.verificationTokenExpires ||
+      admin.verificationTokenExpires < Date.now()
+    ) {
+      return res.status(400).json({ message: "Verification code expired" });
+    }
+
+    const isValidCode = await bcrypt.compare(
+      code,
+      admin.verificationToken
+    );
+
+    if (!isValidCode) {
+      return res.status(400).json({ message: "Invalid verification code" });
+    }
+
+    // ✅ Verify admin
     admin.isVerified = true;
     admin.verificationToken = undefined;
     admin.verificationTokenExpires = undefined;
-
     await admin.save();
 
-    const jwtToken = jwt.sign(
-      { id: admin._id, role: admin.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
     res.json({
-      message: "Account verified successfully",
-      token: jwtToken,
-      admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role
-      }
+      message: "Admin verified successfully. Please log in."
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -106,10 +125,9 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 🔒 Block unverified admins
     if (!admin.isVerified) {
       return res.status(403).json({
-        message: "Please verify your email before logging in"
+        message: "Admin not verified yet"
       });
     }
 

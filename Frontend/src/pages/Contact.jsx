@@ -1,8 +1,13 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Home, Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react'
 import union from "../../public/Contact.png"
+import { fetchFooter } from '@/services/footerService.js';
 
 function Contact() {
+  const [footer, setFooter] = useState(null);
+
+  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,6 +25,16 @@ function Contact() {
     e.preventDefault()
     console.log('Form submitted:', formData)
   }
+
+  useEffect(() => {
+    loadFooter();
+  }, []);
+
+  const loadFooter = async () => {
+    const data = await fetchFooter();
+    setFooter(data);
+  };
+  if (!footer) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 font-SF">
@@ -74,21 +89,20 @@ function Contact() {
                </svg>
                 <div>
                   <p className="font-semibold">Wyvadot PR Ltd</p>
-                  <p className="text-sm">Benin City, Port-Harcourt</p>
-                  <p className="text-sm">Lagos, Abuja, Delta</p>
+                  <p className="text-sm">{footer.address}</p>
                 </div>
               </div>
 
               {/* Phone */}
               <div className="flex gap-4 items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0"  width="200" height="200" viewBox="0 0 24 24" fill="#ffffff"><g fill="#ffffff"><path d="M22 12A10.002 10.002 0 0 0 12 2v2a8.003 8.003 0 0 1 7.391 4.938A8 8 0 0 1 20 12h2ZM2 10V5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H6a8 8 0 0 0 8 8v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5C7.373 22 2 16.627 2 10Z"/><path d="M17.543 9.704A5.99 5.99 0 0 1 18 12h-1.8A4.199 4.199 0 0 0 12 7.8V6a6 6 0 0 1 5.543 3.704Z"/></g></svg>
-                <p>+234-810-273-0544</p>
+                <p>{footer.phone}</p>
               </div>
 
               {/* Email */}
               <div className="flex gap-4 items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0" width="200" height="200" viewBox="0 0 432 384"><path fill="#ffffff" d="M384 21q18 0 30.5 12.5T427 64v256q0 18-12.5 30.5T384 363H43q-18 0-30.5-12.5T0 320V64q0-18 12.5-30.5T43 21h341zm0 86V64L213 171L43 64v43l170 106z"/></svg>
-                <p>wyvaedotpr@gmail.com</p>
+                <p>{footer.email}</p>
               </div>
 
               {/* Hours */}
