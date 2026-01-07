@@ -1,11 +1,9 @@
-import BASE_URL from "../utils/api.js";
+import BASE_URL from "../utils/api";
 
-export const fetchProjects = async () => {
+/**
+ * GET PROJECTS (PUBLIC)
+ */
+export const fetchProjectsPublic = async () => {
   const res = await fetch(`${BASE_URL}/api/projects`);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch projects");
-  }
-
   return res.json();
 };

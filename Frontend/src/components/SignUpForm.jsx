@@ -3,44 +3,45 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import { Label } from "@/components/ui/label.jsx";
-import  BASE_URL  from "../utils/api.js"; // adjust if path differs
+import BASE_URL from "../utils/api.js";
 
-function SignUpForm({ onNavigateToLogin }) {
+
+function SignUpForm({ onSignupSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.email || !formData.password) return;
-    if (formData.password !== formData.confirmPassword) return;
+    const { name, email, password, confirmPassword } = formData;
+
+    if (!name || !email || !password || !confirmPassword) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
     try {
       setLoading(true);
 
       const res = await fetch(`${BASE_URL}/api/admin/signup`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
@@ -48,111 +49,84 @@ function SignUpForm({ onNavigateToLogin }) {
       if (!res.ok) {
         throw new Error(data.message || "Signup failed");
       }
+      
+      localStorage.setItem("pending_admin_email", formData.email)
 
-      // If backend returns token on signup, store it
-      if (data.token) {
-        localStorage.setItem("admin_token", data.token);
-      }
+      toast.success(
+        "Verification code sent. Please contact admin to get the code ⭐⭐"
+      );
 
-      onNavigateToLogin();
+      // 👉 Move to VERIFY screen
+      onSignupSuccess();
     } catch (error) {
-      toast.error("Admin signup error:", error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-full bg-white/80 backdrop-blur-sm rounded-lg p-8">
-      <h2 className="text-2xl font-bold text-center mb-6 place-self-start">
-        Sign Up
-      </h2>
+    <div className="w-full bg-white/80 backdrop-blur-sm rounded-lg p-8">
+      <h2 className="text-2xl font-bold mb-6">Admin Sign Up</h2>
 
       <div className="space-y-4">
-        <div>
+        <Input
+          name="name"
+          placeholder="Name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+
+        <Input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+
+        <div className="relative">
           <Input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={formData.password}
             onChange={handleChange}
-            className="mt-1"
-            placeholder="Name"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
-        <div>
+        <div className="relative">
           <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
+            name="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
             onChange={handleChange}
-            className="mt-1"
-            placeholder="Email"
           />
-        </div>
-
-        <div>
-          <div className="relative mt-1">
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={handleChange}
-              className="pr-10"
-              placeholder="Password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <div className="relative mt-1">
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="pr-10"
-              placeholder="Confirm Password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-30 h-10 bg-black hover:bg-gray-800 text-white mt-6 flex place-self-end"
+          className="w-full bg-black text-white"
         >
-          {loading ? "Creating…" : "Continue"}
+          {loading ? "Creating admin…" : "Continue"}
         </Button>
       </div>
-
-      <p className="absolute bottom-end inset-x-0 text-center text-sm text-gray-600 mt-6">
-        Have an account?{" "}
-        <button
-          onClick={onNavigateToLogin}
-          className="text-orange-500 hover:text-orange-600 font-semibold"
-        >
-          Login
-        </button>
-      </p>
     </div>
   );
 }

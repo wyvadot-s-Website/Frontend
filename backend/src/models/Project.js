@@ -15,8 +15,14 @@ const projectSchema = new mongoose.Schema(
     },
 
     image: {
-      type: String, // Cloudinary URL
-      required: true,
+      url: {
+        type: String,
+        required: true,
+      },
+      publicId: {
+        type: String,
+        required: true,
+      },
     },
   },
   {

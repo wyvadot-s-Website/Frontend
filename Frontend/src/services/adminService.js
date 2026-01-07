@@ -9,6 +9,14 @@ export const adminSignup = async (data) => {
   return res.json();
 };
 
+export const adminVerify = async (code) => {
+  const res = await fetch(`${BASE_URL}/api/admin/verify-otp/${code}`, {
+    method: "GET",
+  });
+  return res.json();
+};
+
+
 export const adminLogin = async (data) => {
   const res = await fetch(`${BASE_URL}/api/admin/login`, {
     method: "POST",
