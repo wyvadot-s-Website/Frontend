@@ -10,6 +10,7 @@ import {
   deletePromiseImage,
 } from "../controllers/aboutAdminController.js";
 
+
 const router = express.Router();
 
 router.get("/about", protectAdmin, getAboutAdmin);
