@@ -189,3 +189,83 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: "Login failed" });
   }
 };
+
+// REQUEST PASSWORD RESET
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // generate 6-digit reset code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.resetPasswordCode = resetCode;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+
+    await user.save();
+
+    // reuse email system
+    await sendVerificationEmail(email, resetCode);
+
+    res.json({ message: "Password reset code sent" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Password reset failed" });
+  }
+};
+
+// VERIFY RESET CODE
+export const verifyResetCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (
+      !user ||
+      user.resetPasswordCode !== code ||
+      user.resetPasswordExpires < Date.now()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired reset code" });
+    }
+
+    res.json({ message: "Reset code verified" });
+  } catch (error) {
+    console.error("Verify reset code error:", error);
+    res.status(500).json({ message: "Verification failed" });
+  }
+};
+
+// RESET PASSWORD
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (
+      !user ||
+      user.resetPasswordCode !== code ||
+      user.resetPasswordExpires < Date.now()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired reset code" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    user.password = hashedPassword;
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Reset password failed" });
+  }
+};

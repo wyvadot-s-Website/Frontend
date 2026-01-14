@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -35,7 +34,7 @@ const userSchema = new mongoose.Schema(
 
     countryCode: {
       type: String,
-      required: true, // e.g. +234
+      required: true,
     },
 
     phoneNumber: {
@@ -50,9 +49,7 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    googleId: {
-      type: String,
-    },
+    googleId: String,
 
     authProvider: {
       type: String,
@@ -65,13 +62,13 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    emailVerificationCode: {
-      type: String,
-    },
+    // EMAIL VERIFICATION
+    emailVerificationCode: String,
+    emailVerificationExpires: Date,
 
-    emailVerificationExpires: {
-      type: Date,
-    },
+    // 🔴 PASSWORD RESET (NEW)
+    resetPasswordCode: String,
+    resetPasswordExpires: Date,
   },
   {
     timestamps: true,
