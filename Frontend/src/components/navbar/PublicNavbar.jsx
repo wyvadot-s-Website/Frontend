@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import AuthModal from '../pages/AuthModal';
-import logo from "../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png"
+import AuthModal from '@/pages/AuthModal.jsx';
+import logo from '../../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png';
 
-function Navigation() {
+function PublicNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
@@ -165,4 +165,4 @@ function Navigation() {
   );
 }
 
-export default Navigation;
+export default PublicNavbar;

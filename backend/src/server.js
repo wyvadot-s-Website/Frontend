@@ -38,7 +38,7 @@ app.use("/api/admin", adminHomeRoutes);
 app.use("/api/admin", projectAdminRoutes);
 app.use("/api", homeRoutes);
 app.use("/api", projectPublicRoute);
-app.use("/api/users", userRoutes);
+app.use("/users", userRoutes);
 app.use("/api/admin", aboutAdminRoutes);
 app.use("/api", aboutPublicRoutes);
 app.use("/api/admin", teamAdminRoutes);

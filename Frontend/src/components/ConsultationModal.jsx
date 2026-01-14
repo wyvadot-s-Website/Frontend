@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { X } from 'lucide-react'
 import {
@@ -358,7 +357,7 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
             <div className="space-y-2">
               <Label>Location of your project</Label>
               <div className="flex gap-2">
-                {['Urgent', '1-2 days', '1 week', '1 month+'].map((loc) => (
+                {['Nigeria', 'US', 'UK', 'Canada'].map((loc) => (
                   <Button
                     key={loc}
                     type="button"

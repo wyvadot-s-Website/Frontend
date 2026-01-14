@@ -4,6 +4,9 @@ import {
   verifyEmail,
   loginUser,
   googleAuth,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
 } from "../controllers/userController.js";
 import userAuthMiddleware from "../middleware/userAuthMiddleware.js";
 
@@ -14,6 +17,9 @@ router.post("/signup", registerUser);
 router.post("/verify-email", verifyEmail);
 router.post("/login", loginUser);
 router.post("/google", googleAuth);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-code", verifyResetCode);
+router.post("/reset-password", resetPassword);
 
 
 // protected route
