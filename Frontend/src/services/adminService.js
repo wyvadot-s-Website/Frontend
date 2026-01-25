@@ -6,16 +6,23 @@ export const adminSignup = async (data) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  return res.json();
+
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || "Signup failed");
+  return result;
 };
 
-export const adminVerify = async (code) => {
-  const res = await fetch(`${BASE_URL}/api/admin/verify-otp/${code}`, {
-    method: "GET",
+export const adminVerifyOTP = async ({ email, code }) => {
+  const res = await fetch(`${BASE_URL}/api/admin/verify-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code }),
   });
-  return res.json();
-};
 
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || "Verification failed");
+  return result;
+};
 
 export const adminLogin = async (data) => {
   const res = await fetch(`${BASE_URL}/api/admin/login`, {
@@ -23,5 +30,8 @@ export const adminLogin = async (data) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  return res.json();
+
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message || "Login failed");
+  return result;
 };
