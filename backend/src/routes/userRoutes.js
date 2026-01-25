@@ -8,6 +8,11 @@ import {
   verifyResetCode,
   resetPassword,
 } from "../controllers/userController.js";
+import {
+  updateProfile,
+  changePassword,
+} from "../controllers/userController.js";
+
 import userAuthMiddleware from "../middleware/userAuthMiddleware.js";
 
 const router = express.Router();
@@ -20,7 +25,8 @@ router.post("/google", googleAuth);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-code", verifyResetCode);
 router.post("/reset-password", resetPassword);
-
+router.put("/profile", userAuthMiddleware, updateProfile);
+router.put("/change-password", userAuthMiddleware, changePassword);
 
 // protected route
 router.get("/me", userAuthMiddleware, (req, res) => {
@@ -31,4 +37,3 @@ router.get("/me", userAuthMiddleware, (req, res) => {
 });
 
 export default router;
-

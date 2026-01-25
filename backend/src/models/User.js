@@ -27,20 +27,26 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    country: {
-      type: String,
-      required: true,
-    },
+ country: {
+  type: String,
+  required: function () {
+    return this.authProvider === "local";
+  },
+},
 
-    countryCode: {
-      type: String,
-      required: true,
-    },
+countryCode: {
+  type: String,
+  required: function () {
+    return this.authProvider === "local";
+  },
+},
 
-    phoneNumber: {
-      type: String,
-      required: true,
-    },
+phoneNumber: {
+  type: String,
+  required: function () {
+    return this.authProvider === "local";
+  },
+},
 
     password: {
       type: String,
@@ -69,10 +75,13 @@ const userSchema = new mongoose.Schema(
     // 🔴 PASSWORD RESET (NEW)
     resetPasswordCode: String,
     resetPasswordExpires: Date,
+
+    // ✅ WISHLIST (login-only)
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export default mongoose.model("User", userSchema);
