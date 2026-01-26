@@ -4,12 +4,12 @@ import { toast } from "sonner";
 
 import ShopListing from "../ShopListing";
 import ProductDetail from "../ProductDetail";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 import { fetchProducts, fetchProductById } from "../../services/shopService";
 
 /** =========================
- * Helpers (same as your Shop.jsx)
+ * Helpers
  * ========================= */
 const getId = (p) => p?._id || p?.id;
 const getStockQty = (p) => Number(p?.stockQuantity ?? 0);
@@ -44,7 +44,10 @@ function UserShop() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // ✅ server-driven filters + pagination
   const [filters, setFilters] = useState({
@@ -86,27 +89,53 @@ function UserShop() {
     }
   }, [filters]);
 
+  /** =========================
+   * Open product detail
+   * ========================= */
+  const onProductClick = useCallback(async (productOrId) => {
+    try {
+      const id =
+        typeof productOrId === "string" ? productOrId : getId(productOrId);
+      if (!id) return;
 
-  const [searchParams] = useSearchParams();
+      const product = await fetchProductById(id);
 
-  // ✅ sync "search" filter with URL query param
+      setSelectedProduct(product);
+      setQuantity(1);
+      setCurrentView("product");
+    } catch (err) {
+      toast.error(err.message || "Failed to open product");
+    }
+  }, []);
+
+  /** ✅ NEW: open product when coming from navbar search */
+  useEffect(() => {
+    const openId = location?.state?.openProductId;
+    if (!openId) return;
+
+    onProductClick(openId);
+
+    // clear state so refresh/back doesn't reopen
+    navigate("/shop", { replace: true, state: {} });
+  }, [location?.state, navigate, onProductClick]);
+
+  /** ✅ sync "search" filter with URL query param */
   useEffect(() => {
     const q = (searchParams.get("search") || "").trim();
 
-    // only update if different (prevents loops)
     setFilters((f) => {
       if ((f.search || "") === q) return f;
       return { ...f, search: q, page: 1 };
     });
   }, [searchParams]);
 
-  // ✅ reload whenever filters change (while on listing)
+  /** ✅ reload whenever filters change (while on listing) */
   useEffect(() => {
     if (currentView === "listing") loadProducts();
   }, [currentView, loadProducts]);
 
   /** =========================
-   * Cart persistence (same key as guest)
+   * Cart persistence
    * ========================= */
   useEffect(() => {
     const saved = localStorage.getItem("wyvadot_cart");
@@ -168,25 +197,6 @@ function UserShop() {
     }
 
     toast.success("Added to cart");
-  };
-
-  /** =========================
-   * Open product detail
-   * ========================= */
-  const onProductClick = async (productOrId) => {
-    try {
-      const id =
-        typeof productOrId === "string" ? productOrId : getId(productOrId);
-      if (!id) return;
-
-      const product = await fetchProductById(id);
-
-      setSelectedProduct(product);
-      setQuantity(1);
-      setCurrentView("product");
-    } catch (err) {
-      toast.error(err.message || "Failed to open product");
-    }
   };
 
   const relatedProducts = useMemo(() => {
@@ -273,7 +283,6 @@ function UserShop() {
         cartCount={cartCount}
         onAddToCartFromListing={addToCartFromListing}
         showFloatingCart={false}
-        // ✅ controlled filters + pagination
         filters={filters}
         meta={meta}
         onChangeCategory={setCategory}
