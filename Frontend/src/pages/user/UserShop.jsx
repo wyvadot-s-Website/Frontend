@@ -30,6 +30,7 @@ const normalizeCartItem = (p, qty = 1) => {
     __cartId: id,
     name: p?.name || "",
     price: Number(p?.price || 0),
+    shippingFee: Number(p?.shippingFee || 0),
     stockQuantity: getStockQty(p),
     status: p?.status || "active",
     image: imageUrl,
