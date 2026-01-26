@@ -1,3 +1,5 @@
+// backend/controllers/product.admin.controller.js 
+
 import Product from "../models/Product.js";
 import cloudinary from "../config/cloudinary.js";
 import {
@@ -70,6 +72,7 @@ export const createProduct = async (req, res) => {
       category,
       stockQuantity,
       status,
+      shippingFee, // ✅ ADD
     } = req.body;
 
     if (!name || !price) {
@@ -107,6 +110,8 @@ export const createProduct = async (req, res) => {
       category: category || "Uncategorized",
       stockQuantity: stockQuantity ? Number(stockQuantity) : 0,
       status: status || "active",
+      // ✅ ADD
+      shippingFee: shippingFee ? Number(shippingFee) : 0,
       images: uploads,
       createdBy: req.admin?._id || null,
     });
@@ -119,8 +124,6 @@ export const createProduct = async (req, res) => {
 };
 
 // ✅ Admin: update product fields (not images)
-// ✅ FIX: if stockQuantity goes from 0 -> >0, auto switch status out_of_stock -> active
-// ✅ FIX: if stockQuantity becomes <=0, force out_of_stock (unless archived/draft)
 export const updateProduct = async (req, res) => {
   const allowed = [
     "name",
@@ -131,6 +134,7 @@ export const updateProduct = async (req, res) => {
     "category",
     "stockQuantity",
     "status",
+    "shippingFee", // ✅ ADD
   ];
 
   const update = {};
@@ -139,6 +143,8 @@ export const updateProduct = async (req, res) => {
   }
 
   if (update.price !== undefined) update.price = Number(update.price);
+  if (update.shippingFee !== undefined)
+    update.shippingFee = Number(update.shippingFee); // ✅ ADD
   if (update.oldPrice !== undefined)
     update.oldPrice = update.oldPrice ? Number(update.oldPrice) : null;
   if (update.stockQuantity !== undefined)
@@ -146,17 +152,12 @@ export const updateProduct = async (req, res) => {
   if (update.saleEndsAt !== undefined)
     update.saleEndsAt = update.saleEndsAt ? new Date(update.saleEndsAt) : null;
 
-  // ✅ fetch existing first so we can safely decide status transitions
   const existing = await Product.findById(req.params.id);
   if (!existing) return res.status(404).json({ message: "Product not found" });
 
-  // ✅ Stock-driven status sync
-  // - If admin updates stockQuantity to > 0 and product was out_of_stock, make it active (unless admin explicitly set another valid status)
-  // - If stockQuantity becomes <= 0, set out_of_stock (but don't override archived/draft)
   if (update.stockQuantity !== undefined) {
     const nextQty = Number(update.stockQuantity || 0);
 
-    // If going to 0 or below => out_of_stock (unless archived/draft already or explicitly set)
     if (nextQty <= 0) {
       const statusToRespect = update.status ?? existing.status;
       if (statusToRespect !== "archived" && statusToRespect !== "draft") {
@@ -164,7 +165,6 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    // If qty becomes > 0 and current is out_of_stock => active (unless explicitly set to archived/draft)
     if (nextQty > 0) {
       const statusToRespect = update.status ?? existing.status;
       const wasOut = existing.status === "out_of_stock";
@@ -177,7 +177,6 @@ export const updateProduct = async (req, res) => {
     }
   }
 
-  // ✅ apply update
   const product = await Product.findByIdAndUpdate(req.params.id, update, {
     new: true,
   });

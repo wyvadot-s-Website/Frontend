@@ -1,3 +1,6 @@
+// admin AddProductModal.jsx
+// ✅ Changes: rename deliveryFee -> shippingFee so it matches backend + cart
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,8 +28,9 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
     category: "Uncategorized",
     stockQuantity: "",
     status: "active",
-    deliveryFee: "",
+    shippingFee: "", // ✅ rename from deliveryFee
   });
+
   const [images, setImages] = useState([]);
 
   const reset = () => {
@@ -39,7 +43,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
       category: "Uncategorized",
       stockQuantity: "",
       status: "active",
-      deliveryFee: "",
+      shippingFee: "", // ✅
     });
     setImages([]);
   };
@@ -51,8 +55,6 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Pass raw values up — parent decides toast + api + reload
     await onSubmit?.({ form, images, reset, close: handleClose });
   };
 
@@ -102,9 +104,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">
-              OLD PRICE (optional)
-            </label>
+            <label className="text-xs font-semibold">OLD PRICE (optional)</label>
             <Input
               value={form.oldPrice}
               onChange={(e) => setForm({ ...form, oldPrice: e.target.value })}
@@ -152,13 +152,11 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">
-              DELIVERY FEE (UI only for now)
-            </label>
+            <label className="text-xs font-semibold">SHIPPING FEE</label>
             <Input
-              value={form.deliveryFee}
+              value={form.shippingFee}
               onChange={(e) =>
-                setForm({ ...form, deliveryFee: e.target.value })
+                setForm({ ...form, shippingFee: e.target.value })
               }
               placeholder="Enter Amount"
               type="number"
