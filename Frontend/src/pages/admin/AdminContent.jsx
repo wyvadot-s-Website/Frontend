@@ -1,15 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Briefcase,
   Users,
   MessageSquare,
-  Upload,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HomeCMS from "./ContentManagement/HomeCMS.jsx";
 import AboutCMS from "./ContentManagement/AboutCMS.jsx";
@@ -17,6 +13,9 @@ import ProjectCMS from "./ContentManagement/ProjectCMS.jsx";
 import TeamCMS from "./ContentManagement/TeamCMS.jsx";
 import TestimonialCMS from "./ContentManagement/TestimonialCMS.jsx";
 import FooterCMS from "./ContentManagement/FooterCMS.jsx";
+import { fetchProjectsAdmin } from "@/services/adminProjectService";
+import { fetchTeamAdmin } from "@/services/adminTeamService";
+import { fetchTestimonialsAdmin } from "@/services/adminTestimonialService";
 
 function ContentStatsCard({ icon: Icon, title, value }) {
   return (
@@ -34,25 +33,62 @@ function ContentStatsCard({ icon: Icon, title, value }) {
   );
 }
 
-function StatCard({ label, value }) {
-  return (
-    <Card className="border shadow-sm">
-      <CardContent className="p-6">
-        <p className="text-sm text-gray-600 mb-2">{label}</p>
-        <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function AdminContent() {
   const [selectedFile, setSelectedFile] = useState(null);
 
+  const token = localStorage.getItem("admin_token");
+
+  const [stats, setStats] = useState({
+    pages: 6, // Home, About, Projects, Team, Testimonials, Footer
+    projects: 0,
+    team: 0,
+    testimonials: 0,
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [pRes, tRes, tesRes] = await Promise.all([
+          fetchProjectsAdmin(token),
+          fetchTeamAdmin(token),
+          fetchTestimonialsAdmin(token),
+        ]);
+
+        const projectsArr = Array.isArray(pRes?.data)
+          ? pRes.data
+          : Array.isArray(pRes)
+            ? pRes
+            : [];
+        const teamArr = Array.isArray(tRes)
+          ? tRes
+          : Array.isArray(tRes?.data)
+            ? tRes.data
+            : [];
+        const testArr = Array.isArray(tesRes?.data)
+          ? tesRes.data
+          : Array.isArray(tesRes)
+            ? tesRes
+            : [];
+
+        setStats((prev) => ({
+          ...prev,
+          projects: projectsArr.length,
+          team: teamArr.length,
+          testimonials: testArr.length,
+        }));
+      } catch (e) {
+        toast.error(e?.message || "Failed to load content stats");
+      }
+    };
+
+    if (token) loadStats();
+  }, [token]);
+
   const contentStats = [
-    { icon: FileText, title: "Pages", value: 8 },
-    { icon: Briefcase, title: "Services", value: 6 },
-    { icon: Users, title: "Team Members", value: 12 },
-    { icon: MessageSquare, title: "Testimonials", value: 24 },
+    { icon: FileText, title: "Pages", value: stats.pages },
+    { icon: Briefcase, title: "Projects", value: stats.projects },
+    { icon: Users, title: "Team Members", value: stats.team },
+    { icon: MessageSquare, title: "Testimonials", value: stats.testimonials },
   ];
 
   const performanceStats = [
@@ -70,7 +106,6 @@ export default function AdminContent() {
 
   return (
     <div className="space-y-6">
-      {/* Content Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {contentStats.map((stat, index) => (
           <ContentStatsCard key={index} {...stat} />
@@ -111,10 +146,9 @@ export default function AdminContent() {
               <ProjectCMS />
             </TabsContent>
 
-
             <TabsContent value="team" className="space-y-6">
               {/* Team Members */}
-              <TeamCMS />  
+              <TeamCMS />
             </TabsContent>
 
             <TabsContent value="testimonials" className="space-y-6">

@@ -10,18 +10,24 @@ import Projects from "./pages/Projects.jsx";
 import Products from "./pages/Products.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Contact from "./pages/Contact.jsx";
-import Shop from "./pages/Shop.jsx";
+import ShopRouter from "./pages/ShopRouter.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminRoutes from "./routes/AdminRoutes.jsx";
 import AdminAuth from "./pages/AdminAuth.jsx";
 import AdminAuthLayout from "./Layout/AdminAuthLayout.jsx";
 import AdminLayout from "./Layout/AdminLayout.jsx";
 import AdminContent from "./pages/admin/AdminContent.jsx";
-import AdminServices from "./pages/admin/AdminServices.jsx";
-import AdminProjects from "./pages/admin/AdminProjects.jsx";
-import AdminForms from "./pages/admin/AdminForms.jsx";
+import AdminAccount from "./pages/admin/AdminAccount.jsx";
+import AdminShop from "./pages/admin/ShopManagment.jsx";
+import AdminProjects from "./pages/admin/ProjectManagement.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import UserDashboard from "./pages/user/UserDashboard.jsx";
+import ServiceRequestDetail from "./pages/admin/ServiceRequestDetail.jsx";
+import CartRouter from "./pages/CartRouter.jsx";
+import PaymentCallback from "./pages/PaymentCallback.jsx";
+import OrderComplete from "./pages/OrderCompletePage.jsx";
+import Wishlist from "./pages/user/Wishlist.jsx";
+import UserAccount from "./pages/user/UserAccount.jsx";
 
 function UserLayout({ children }) {
   return (
@@ -91,8 +97,41 @@ function App() {
             path="/shop"
             element={
               <UserLayout>
-                <Shop />
+                <ShopRouter />
               </UserLayout>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <UserLayout>
+                <CartRouter />
+              </UserLayout>
+            }
+          />
+          <Route
+            path="/payment/callback"
+            element={
+              <UserLayout>
+                <PaymentCallback />
+              </UserLayout>
+            }
+          />
+
+          <Route
+            path="/order-complete"
+            element={
+              <UserLayout>
+                <OrderComplete />
+              </UserLayout>
+            }
+          />
+          <Route
+            path="/theboss/account"
+            element={
+              <AdminRoutes>
+                <AdminAccount />
+              </AdminRoutes>
             }
           />
 
@@ -117,6 +156,32 @@ function App() {
             }
           />
 
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <Wishlist
+                    onAddToCart={(p) => {
+                      addToCart(p);
+                    }}
+                  />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <UserLayout>
+                  <UserAccount />
+                </UserLayout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* ADMIN ROUTES */}
           <Route path="/theboss" element={<AdminAuthLayout />}>
             <Route index element={<AdminAuth />} />
@@ -125,9 +190,13 @@ function App() {
           <Route path="/theboss" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="content" element={<AdminContent />} />
-            <Route path="services" element={<AdminServices />} />
+            <Route path="services" element={<AdminShop />} />
             <Route path="projects" element={<AdminProjects />} />
-            <Route path="forms" element={<AdminForms />} />
+
+            <Route
+              path="service-requests/:id"
+              element={<ServiceRequestDetail />}
+            />
           </Route>
         </Routes>
       </Router>

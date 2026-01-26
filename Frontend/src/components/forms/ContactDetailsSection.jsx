@@ -1,17 +1,17 @@
-import React from 'react'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import React from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 function ContactDetailsSection({ formData, onChange }) {
   const handleInputChange = (e) => {
-    onChange(e.target.name, e.target.value)
-  }
+    onChange(e.target.name, e.target.value);
+  };
 
   return (
     <div className="space-y-4">
       <h3 className="font-semibold">Contact Details</h3>
-      
+
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -37,10 +37,22 @@ function ContactDetailsSection({ formData, onChange }) {
 
       <div className="space-y-2">
         <Label htmlFor="tel">Tel</Label>
+
         <div className="flex gap-2">
-          <div className="flex items-center gap-1 px-3 py-2 border rounded-md bg-gray-50">
-            <span className="text-sm">🇳🇬 +234</span>
-          </div>
+          {/* Country code selector */}
+          <select
+            name="countryCode"
+            value={formData.countryCode || "+234"}
+            onChange={handleInputChange}
+            className="px-3 py-2 border rounded-md bg-gray-50 text-sm outline-none"
+          >
+            <option value="+234">🇳🇬 +234 (Nigeria)</option>
+            <option value="+1">🇺🇸 +1 (United States)</option>
+            <option value="+1">🇨🇦 +1 (Canada)</option>
+            <option value="+44">🇬🇧 +44 (United Kingdom)</option>
+          </select>
+
+          {/* Phone number */}
           <Input
             id="tel"
             name="tel"
@@ -51,6 +63,11 @@ function ContactDetailsSection({ formData, onChange }) {
             className="flex-1"
           />
         </div>
+
+        {/* Optional: show full phone preview */}
+        <p className="text-xs text-gray-500">
+          Full: {(formData.countryCode || "+234") + (formData.tel || "")}
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -77,7 +94,7 @@ function ContactDetailsSection({ formData, onChange }) {
         />
       </div>
     </div>
-  )
+  );
 }
 
-export default ContactDetailsSection
+export default ContactDetailsSection;
