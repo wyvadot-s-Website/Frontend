@@ -130,6 +130,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
       const res = await loginUser(formData);
 
       localStorage.setItem("token", res.token);
+      window.dispatchEvent(new Event("wyvadot_auth_updated"));
       toast.success("Login successful");
 
       onClose();
@@ -148,6 +149,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     try {
       const res = await googleAuthUser(idToken);
       localStorage.setItem("token", res.token);
+      window.dispatchEvent(new Event("wyvadot_auth_updated"));
       toast.success("Authenticated with Google");
       resetForm();
       onClose();
@@ -211,12 +213,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   // VIEW RENDERING
   // ===============================
   if (view === "success")
-    return (
-      <SuccessView
-        isOpen={isOpen}
-        onContinue={() => setView("login")}
-      />
-    );
+    return <SuccessView isOpen={isOpen} onContinue={() => setView("login")} />;
 
   if (view === "signup")
     return (
@@ -294,4 +291,3 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
 }
 
 export default AuthModal;
-

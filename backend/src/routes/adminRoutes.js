@@ -5,37 +5,34 @@ import dotenv from "dotenv";
 import Admin from "../models/Admin.js";
 import protectAdmin from "../middleware/authMiddleware.js";
 import { sendAdminVerificationEmail } from "../config/email.js";
+import { ADMIN_ROLES } from "../models/Admin.js";
 
 dotenv.config();
 
 const router = express.Router();
 
-/**
- * Generate 6-digit OTP
- */
-const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-};
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // ==============================
-// ADMIN SIGNUP
+// ADMIN SIGNUP (role-based)
 // ==============================
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const adminExists = await Admin.findOne({ email });
-    if (adminExists) {
-      return res.status(400).json({ message: "Admin already exists" });
+    if (!ADMIN_ROLES.includes(role)) {
+      return res.status(400).json({ message: "Invalid admin role" });
     }
+
+    const adminExists = await Admin.findOne({ email });
+    if (adminExists) return res.status(400).json({ message: "Admin already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🔐 Generate OTP
     const otp = generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 10);
 
@@ -43,24 +40,28 @@ router.post("/signup", async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role,
       isVerified: false,
       verificationToken: hashedOTP,
-      verificationTokenExpires: Date.now() + 10 * 60 * 1000 // 10 minutes
+      verificationTokenExpires: Date.now() + 10 * 60 * 1000,
     });
 
-    // 📩 Send OTP to CONTROL EMAIL (EMAIL_USER)
-    await sendAdminVerificationEmail(otp, process.env.ADMIN_CONTROL_EMAIL);
-
-    res.status(201).json({
-      message: "Verification code sent for admin approval"
+    // ✅ Send OTP to CONTROL EMAIL with role + details
+    await sendAdminVerificationEmail({
+      code: otp,
+      requestedName: name,
+      requestedEmail: email,
+      requestedRole: role,
     });
+
+    res.status(201).json({ message: "Verification code sent for admin approval" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 // ==============================
-// VERIFY ADMIN OTP
+// VERIFY ADMIN OTP (POST)
 // ==============================
 router.post("/verify-otp", async (req, res) => {
   try {
@@ -71,39 +72,23 @@ router.post("/verify-otp", async (req, res) => {
     }
 
     const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-    if (admin.isVerified) {
-      return res.status(400).json({ message: "Admin already verified" });
-    }
+    if (admin.isVerified) return res.status(400).json({ message: "Admin already verified" });
 
-    if (
-      !admin.verificationTokenExpires ||
-      admin.verificationTokenExpires < Date.now()
-    ) {
+    if (!admin.verificationTokenExpires || admin.verificationTokenExpires < Date.now()) {
       return res.status(400).json({ message: "Verification code expired" });
     }
 
-    const isValidCode = await bcrypt.compare(
-      code,
-      admin.verificationToken
-    );
+    const isValidCode = await bcrypt.compare(code, admin.verificationToken);
+    if (!isValidCode) return res.status(400).json({ message: "Invalid verification code" });
 
-    if (!isValidCode) {
-      return res.status(400).json({ message: "Invalid verification code" });
-    }
-
-    // ✅ Verify admin
     admin.isVerified = true;
     admin.verificationToken = undefined;
     admin.verificationTokenExpires = undefined;
     await admin.save();
 
-    res.json({
-      message: "Admin verified successfully. Please log in."
-    });
+    res.json({ message: "Admin verified successfully. Please log in." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -116,25 +101,15 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
-    }
+    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
 
     const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!admin) return res.status(401).json({ message: "Invalid credentials" });
 
-    if (!admin.isVerified) {
-      return res.status(403).json({
-        message: "Admin not verified yet"
-      });
-    }
+    if (!admin.isVerified) return res.status(403).json({ message: "Admin not verified yet" });
 
     const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: admin._id, role: admin.role },
@@ -149,8 +124,8 @@ router.post("/login", async (req, res) => {
         id: admin._id,
         name: admin.name,
         email: admin.email,
-        role: admin.role
-      }
+        role: admin.role,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -158,13 +133,10 @@ router.post("/login", async (req, res) => {
 });
 
 // ==============================
-// TEST PROTECTED ROUTE
+// PROFILE
 // ==============================
 router.get("/profile", protectAdmin, (req, res) => {
-  res.json({
-    message: "Admin profile accessed",
-    admin: req.admin
-  });
+  res.json({ message: "Admin profile accessed", admin: req.admin });
 });
 
 export default router;

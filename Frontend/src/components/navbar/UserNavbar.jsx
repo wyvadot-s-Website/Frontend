@@ -1,14 +1,19 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  Heart,
-  ShoppingCart,
-  Search,
-  Bell,
-  LogOut,
-  User,
-} from "lucide-react";
+import { Heart, ShoppingCart, Search, Bell, LogOut, User } from "lucide-react";
 import logo from "../../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png";
+
+import UserNotificationsPopover from "@/components/UserNotificationsPopover";
+import { fetchUserNotifications } from "@/services/notificationService";
+import { useWishlist } from "@/context/WishlistContext";
+import { getCurrentUser } from "@/services/userService";
+
+import { fetchProducts } from "@/services/shopService";
+import { fetchMyOrders } from "@/services/userOrderService";
+import { fetchMyServiceRequests } from "@/services/userServiceRequestService";
+
+import UserOrderDetailModal from "@/components/user/UserOrderDetailModal";
+import ServiceRequestDetailModal from "@/components/user/ServiceRequestDetailModal";
 
 function UserNavbar() {
   const location = useLocation();
@@ -19,6 +24,156 @@ function UserNavbar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const profileRef = useRef(null);
 
+  // ✅ Global search
+  const [navSearch, setNavSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchErr, setSearchErr] = useState("");
+  const [searchData, setSearchData] = useState({
+    products: [],
+    orders: [],
+    services: [],
+  });
+  const searchRef = useRef(null);
+
+  // ✅ detail modals (open from navbar)
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [activeOrderId, setActiveOrderId] = useState(null);
+
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [activeServiceId, setActiveServiceId] = useState(null);
+
+  const [cartCount, setCartCount] = useState(0);
+  const { count: wishlistCount } = useWishlist();
+
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [user, setUser] = useState(null);
+
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notifRef = useRef(null);
+
+  // keep token in sync
+  useEffect(() => {
+    const sync = () => setToken(localStorage.getItem("token"));
+
+    window.addEventListener("wyvadot_auth_updated", sync);
+    window.addEventListener("storage", (e) => {
+      if (e.key === "token") sync();
+    });
+
+    return () => {
+      window.removeEventListener("wyvadot_auth_updated", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  // close notification popover on outside click
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  // notifications unread badge polling
+  useEffect(() => {
+    if (!token) return;
+
+    let alive = true;
+
+    const pull = async () => {
+      try {
+        const data = await fetchUserNotifications(token, 1, 1);
+        if (!alive) return;
+        setUnreadCount(Number(data.unread || 0));
+      } catch {}
+    };
+
+    pull();
+    const id = setInterval(pull, 25000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [token]);
+
+  // load current user
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    let alive = true;
+
+    (async () => {
+      try {
+        const data = await getCurrentUser(token);
+        if (!alive) return;
+        setUser(data?.user || null);
+      } catch {
+        localStorage.removeItem("token");
+        window.dispatchEvent(new Event("wyvadot_auth_updated"));
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [token]);
+
+  const initials = useMemo(() => {
+    const first = (user?.firstName || "").trim();
+    const last = (user?.lastName || "").trim();
+    const a = first ? first[0] : "";
+    const b = last ? last[0] : "";
+    const val = (a + b).toUpperCase();
+    return val || "U";
+  }, [user]);
+
+  const displayName = useMemo(() => {
+    const first = (user?.firstName || "").trim();
+    const last = (user?.lastName || "").trim();
+    const full = `${first} ${last}`.trim();
+    return full || "User";
+  }, [user]);
+
+  // cart count from localStorage
+  useEffect(() => {
+    const compute = () => {
+      try {
+        const saved = localStorage.getItem("wyvadot_cart");
+        const parsed = saved ? JSON.parse(saved) : [];
+        const count = Array.isArray(parsed)
+          ? parsed.reduce((sum, i) => sum + Number(i?.quantity || 0), 0)
+          : 0;
+        setCartCount(count);
+      } catch {
+        setCartCount(0);
+      }
+    };
+
+    compute();
+
+    const onUpdated = () => compute();
+    window.addEventListener("wyvadot_cart_updated", onUpdated);
+
+    const onStorage = (e) => {
+      if (e.key === "wyvadot_cart") compute();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("wyvadot_cart_updated", onUpdated);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
+  // close profile dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -27,8 +182,19 @@ function UserNavbar() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // close search dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -36,6 +202,136 @@ function UserNavbar() {
     setOpenProfile(false);
     setShowLogoutConfirm(false);
     navigate("/");
+  };
+
+  const safeLower = (v) => String(v || "").toLowerCase();
+
+  // ✅ Debounced global search
+  useEffect(() => {
+    const q = navSearch.trim();
+
+    // reset when empty
+    if (!q) {
+      setSearchErr("");
+      setSearchLoading(false);
+      setSearchData({ products: [], orders: [], services: [] });
+      return;
+    }
+
+    setSearchOpen(true);
+
+    const t = setTimeout(async () => {
+      setSearchLoading(true);
+      setSearchErr("");
+
+      try {
+        // 1) products (public)
+        const prodRes = await fetchProducts({ search: q, limit: 5, page: 1 });
+        const products = Array.isArray(prodRes?.items) ? prodRes.items : [];
+
+        // 2) orders + services (requires token)
+        let orders = [];
+        let services = [];
+
+        if (token) {
+          try {
+            const ordRes = await fetchMyOrders(token, { search: q, limit: 5, page: 1 });
+            const ordItems = ordRes?.items || ordRes?.data?.items || ordRes?.data || ordRes;
+            orders = Array.isArray(ordItems) ? ordItems.slice(0, 5) : [];
+          } catch {
+            orders = [];
+          }
+
+          try {
+            const srvRes = await fetchMyServiceRequests(token);
+            const srvItems = srvRes?.data || srvRes?.items || srvRes;
+            const all = Array.isArray(srvItems) ? srvItems : [];
+
+            // filter client-side because your service endpoint currently has no params
+            const qq = safeLower(q);
+            services = all
+              .filter((r) => {
+                const projectId = safeLower(r?.projectId);
+                const title = safeLower(r?.title);
+                const serviceName = safeLower(r?.serviceName);
+                const stage = safeLower(r?.stage);
+                return (
+                  projectId.includes(qq) ||
+                  title.includes(qq) ||
+                  serviceName.includes(qq) ||
+                  stage.includes(qq)
+                );
+              })
+              .slice(0, 5);
+          } catch {
+            services = [];
+          }
+        }
+
+        setSearchData({ products, orders, services });
+      } catch (err) {
+        setSearchErr(err?.message || "Search failed");
+        setSearchData({ products: [], orders: [], services: [] });
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(t);
+  }, [navSearch, token]);
+
+  // click handlers
+  const openProductFromSearch = (product) => {
+    const id = product?._id || product?.id;
+    if (!id) return;
+
+    setSearchOpen(false);
+    setNavSearch("");
+
+    // ✅ Your shop has no product route; it is state-driven.
+    // We pass openProductId to /shop and UserShop will open it.
+    navigate("/shop", { state: { openProductId: id } });
+  };
+
+  const openOrderFromSearch = (order) => {
+    const id = order?._id || order?.id;
+    if (!id) return;
+
+    setSearchOpen(false);
+    setNavSearch("");
+
+    if (!token) {
+      navigate("/home");
+      return;
+    }
+
+    setActiveOrderId(id);
+    setOrderModalOpen(true);
+  };
+
+  const openServiceFromSearch = (req) => {
+    const id = req?._id || req?.id;
+    if (!id) return;
+
+    setSearchOpen(false);
+    setNavSearch("");
+
+    if (!token) {
+      navigate("/home");
+      return;
+    }
+
+    setActiveServiceId(id);
+    setServiceModalOpen(true);
+  };
+
+  const onEnterFallback = () => {
+    const q = navSearch.trim();
+    if (!q) return navigate("/shop");
+
+    // fallback: if user presses Enter, go to shop results
+    setSearchOpen(false);
+    navigate(`/shop?search=${encodeURIComponent(q)}`);
   };
 
   return (
@@ -76,32 +372,258 @@ function UserNavbar() {
             {/* Right actions */}
             <div className="hidden lg:flex items-center gap-4">
               {/* Search */}
-              <div className="relative">
+              <div className="relative" ref={searchRef}>
                 <input
                   type="text"
-                  placeholder="What are you looking for?"
-                  className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm w-56"
+                  placeholder="Search products, orders, services..."
+                  value={navSearch}
+                  onChange={(e) => setNavSearch(e.target.value)}
+                  onFocus={() => {
+                    if (navSearch.trim()) setSearchOpen(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") onEnterFallback();
+                    if (e.key === "Escape") setSearchOpen(false);
+                  }}
+                  className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm w-72"
                 />
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+
+                <Search
+                  onClick={() => onEnterFallback()}
+                  className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
+                />
+
+                {/* Dropdown */}
+                {searchOpen && navSearch.trim() && (
+                  <div className="absolute left-0 mt-2 w-96 bg-white border rounded-xl shadow-lg z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b">
+                      <p className="text-xs text-gray-500">
+                        Searching for:{" "}
+                        <span className="font-semibold text-gray-900">
+                          {navSearch.trim()}
+                        </span>
+                      </p>
+                    </div>
+
+                    {searchLoading ? (
+                      <div className="px-4 py-6 text-sm text-gray-600">
+                        Loading results...
+                      </div>
+                    ) : searchErr ? (
+                      <div className="px-4 py-6 text-sm text-red-600">
+                        {searchErr}
+                      </div>
+                    ) : (
+                      <div className="max-h-[360px] overflow-auto">
+                        {/* Products */}
+                        <div className="px-4 py-2">
+                          <p className="text-xs font-semibold text-gray-600 mb-2">
+                            Products
+                          </p>
+
+                          {searchData.products.length === 0 ? (
+                            <p className="text-sm text-gray-500 py-2">
+                              No products found.
+                            </p>
+                          ) : (
+                            <div className="space-y-1">
+                              {searchData.products.map((p) => (
+                                <button
+                                  key={p._id}
+                                  onClick={() => openProductFromSearch(p)}
+                                  className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 text-left"
+                                >
+                                  <div className="w-10 h-10 rounded-md bg-gray-100 overflow-hidden flex items-center justify-center">
+                                    {p?.images?.[0]?.url ? (
+                                      <img
+                                        src={p.images[0].url}
+                                        alt={p.name}
+                                        className="w-full h-full object-contain p-1"
+                                      />
+                                    ) : (
+                                      <span className="text-[10px] text-gray-400">
+                                        No image
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {p.name || "—"}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {p.category || "Uncategorized"}
+                                    </p>
+                                  </div>
+
+                                  <span className="text-xs text-orange-600 font-semibold">
+                                    Open
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="border-t" />
+
+                        {/* Orders */}
+                        <div className="px-4 py-2">
+                          <p className="text-xs font-semibold text-gray-600 mb-2">
+                            My Orders
+                          </p>
+
+                          {!token ? (
+                            <p className="text-sm text-gray-500 py-2">
+                              Login to search your orders.
+                            </p>
+                          ) : searchData.orders.length === 0 ? (
+                            <p className="text-sm text-gray-500 py-2">
+                              No matching orders.
+                            </p>
+                          ) : (
+                            <div className="space-y-1">
+                              {searchData.orders.map((o) => (
+                                <button
+                                  key={o._id}
+                                  onClick={() => openOrderFromSearch(o)}
+                                  className="w-full flex items-center justify-between gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 text-left"
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {o.orderId || "Order"}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Status: {o.status || "—"}
+                                    </p>
+                                  </div>
+
+                                  <span className="text-xs text-orange-600 font-semibold">
+                                    View
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="border-t" />
+
+                        {/* Services */}
+                        <div className="px-4 py-2">
+                          <p className="text-xs font-semibold text-gray-600 mb-2">
+                            My Services
+                          </p>
+
+                          {!token ? (
+                            <p className="text-sm text-gray-500 py-2">
+                              Login to search your service requests.
+                            </p>
+                          ) : searchData.services.length === 0 ? (
+                            <p className="text-sm text-gray-500 py-2">
+                              No matching services.
+                            </p>
+                          ) : (
+                            <div className="space-y-1">
+                              {searchData.services.map((r) => (
+                                <button
+                                  key={r._id}
+                                  onClick={() => openServiceFromSearch(r)}
+                                  className="w-full flex items-center justify-between gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 text-left"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                      {r.title || r.serviceName || "Service"}
+                                    </p>
+                                    <p className="text-xs text-gray-500 truncate">
+                                      {r.projectId || "—"} • {r.stage || "—"}
+                                    </p>
+                                  </div>
+
+                                  <span className="text-xs text-orange-600 font-semibold">
+                                    View
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="px-4 py-3 border-t flex justify-between items-center">
+                      <button
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setNavSearch("");
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-900"
+                      >
+                        Close
+                      </button>
+
+                      <button
+                        onClick={() => onEnterFallback()}
+                        className="text-xs font-semibold text-orange-600 hover:text-orange-700"
+                      >
+                        View shop results
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Wishlist */}
-              <button className="text-gray-600 hover:text-orange-500">
+              <button
+                onClick={() => navigate("/wishlist")}
+                className="relative text-gray-600 hover:text-orange-500"
+                title="Wishlist"
+              >
                 <Heart size={20} />
+
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+                    {wishlistCount}
+                  </span>
+                )}
               </button>
 
               {/* Cart */}
-              <button className="text-gray-600 hover:text-orange-500">
+              <button
+                onClick={() => navigate("/cart")}
+                className="relative text-gray-600 hover:text-orange-500"
+                title="Cart"
+              >
                 <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+                    {cartCount}
+                  </span>
+                )}
               </button>
 
               {/* Notification */}
-              <button className="relative text-gray-600 hover:text-orange-500">
-                <Bell size={20} />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
-                  3
-                </span>
-              </button>
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={() => setNotifOpen((p) => !p)}
+                  className="relative text-gray-600 hover:text-orange-500"
+                  title="Notifications"
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                <UserNotificationsPopover
+                  open={notifOpen}
+                  onClose={() => setNotifOpen(false)}
+                  token={token}
+                  onUnreadChange={(n) => setUnreadCount(Number(n || 0))}
+                />
+              </div>
 
               {/* Profile */}
               <div className="relative" ref={profileRef}>
@@ -109,19 +631,19 @@ function UserNavbar() {
                   onClick={() => setOpenProfile((prev) => !prev)}
                   className="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center font-semibold"
                 >
-                  JD
+                  {initials}
                 </button>
 
                 {openProfile && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-lg border z-50">
                     <div className="flex items-center gap-3 p-4 border-b">
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-700">
-                        JD
+                        {initials}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm">John Doe</p>
+                        <p className="font-semibold text-sm">{displayName}</p>
                         <p className="text-xs text-gray-500">
-                          johndoe@email.com
+                          {user?.email || ""}
                         </p>
                       </div>
                     </div>
@@ -154,13 +676,27 @@ function UserNavbar() {
         </div>
       </nav>
 
+      {/* Order Detail Modal (opened from navbar search) */}
+      <UserOrderDetailModal
+        open={orderModalOpen}
+        onClose={() => setOrderModalOpen(false)}
+        token={token}
+        orderId={activeOrderId}
+      />
+
+      {/* Service Detail Modal (opened from navbar search) */}
+      <ServiceRequestDetailModal
+        open={serviceModalOpen}
+        onClose={() => setServiceModalOpen(false)}
+        token={token}
+        requestId={activeServiceId}
+      />
+
       {/* Logout confirmation modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40">
           <div className="bg-white w-full max-w-sm rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-2">
-              Confirm logout
-            </h3>
+            <h3 className="text-lg font-semibold mb-2">Confirm logout</h3>
 
             <p className="text-sm text-gray-600 mb-6">
               Are you sure you want to log out of your account?
@@ -189,4 +725,3 @@ function UserNavbar() {
 }
 
 export default UserNavbar;
-
