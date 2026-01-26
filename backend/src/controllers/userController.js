@@ -269,3 +269,47 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Reset password failed" });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (firstName) user.firstName = String(firstName).trim();
+    if (lastName) user.lastName = String(lastName).trim();
+
+    await user.save();
+
+    const safeUser = await User.findById(user._id).select("-password");
+    res.json({ message: "Profile updated", user: safeUser });
+  } catch (e) {
+    res.status(500).json({ message: "Profile update failed" });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.authProvider === "google") {
+      return res.status(400).json({
+        message: "Google accounts cannot change password here. Use 'Forgot Password' or set a password feature.",
+      });
+    }
+
+    const ok = await bcrypt.compare(oldPassword, user.password);
+    if (!ok) return res.status(400).json({ message: "Old password is incorrect" });
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
+  } catch (e) {
+    res.status(500).json({ message: "Password change failed" });
+  }
+};
