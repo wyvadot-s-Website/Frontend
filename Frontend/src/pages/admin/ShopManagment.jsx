@@ -101,6 +101,13 @@ const ShopManagment = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, tab]);
 
+  useEffect(() => {
+    // Fetch orders once on mount for counts/cards, without forcing tab switch
+    if (!token) return;
+    loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
   const totals = useMemo(() => {
     const revenue = orders.reduce(
       (sum, o) => sum + Number(o?.totals?.total || o?.total || 0),
