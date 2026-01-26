@@ -1,4 +1,6 @@
 // src/pages/CartRouter.jsx
+// ✅ Replace constant shipping=2000 with per-product shipping fee calculation
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +28,6 @@ function CartRouter() {
   const [cart, setCart] = useState([]);
   const [lastOrder, setLastOrder] = useState(null);
 
-  // Load cart from localStorage
   useEffect(() => {
     const read = () => {
       const saved = localStorage.getItem("wyvadot_cart");
@@ -97,7 +98,14 @@ function CartRouter() {
     [cart],
   );
 
-  const shipping = 2000;
+  // ✅ per-product shipping: sum of each item's shippingFee
+  // If you want shippingFee to multiply by quantity, change to:
+  // sum + Number(item.shippingFee||0) * Number(item.quantity||0)
+  const shipping = useMemo(
+    () => cart.reduce((sum, item) => sum + Number(item.shippingFee || 0), 0),
+    [cart],
+  );
+
   const total = subtotal + shipping;
 
   const handleCompleteOrder = async ({ contact, address, paymentMethod }) => {
@@ -122,12 +130,12 @@ function CartRouter() {
           quantity: Number(i.quantity || 1),
           image: i.image || i?.images?.[0]?.url || "",
           category: i.category || "Uncategorized",
+          shippingFee: Number(i.shippingFee || 0), // ✅ include per item
         })),
         totals: { subtotal, shipping, total, currency: "NGN" },
-        paymentMethod, // "card" | "bank"
+        paymentMethod,
       };
 
-      // 1) Create order
       const orderRes = isLoggedIn
         ? await createUserOrder(payload, token)
         : await createPublicOrder(payload);
@@ -137,7 +145,6 @@ function CartRouter() {
 
       if (!orderId) throw new Error("Order created but orderId missing");
 
-      // 2) Init Paystack (guest must send email)
       const initRes = isLoggedIn
         ? await initPaystack({ orderId, paymentMethod }, token)
         : await initPaystackGuest({
@@ -149,7 +156,6 @@ function CartRouter() {
       const url = initRes.authorization_url;
       if (!url) throw new Error("Paystack authorization_url missing");
 
-      // 3) Redirect to Paystack
       window.location.href = url;
     } catch (err) {
       toast.error(err.message || "Failed to place order");
@@ -182,7 +188,6 @@ function CartRouter() {
       />
     );
   }
-
 
   return null;
 }

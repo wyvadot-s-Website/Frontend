@@ -1,3 +1,4 @@
+// backend/models/Product.js
 import mongoose from "mongoose";
 import { PRODUCT_CATEGORIES } from "../utils/productCategories.js";
 
@@ -10,7 +11,14 @@ const productSchema = new mongoose.Schema(
     oldPrice: { type: Number, default: null, min: 0 },
     saleEndsAt: { type: Date, default: null },
 
-    category: { type: String, enum: PRODUCT_CATEGORIES, default: "Uncategorized" },
+    // ✅ ADD THIS (per-product shipping fee)
+    shippingFee: { type: Number, default: 0, min: 0 },
+
+    category: {
+      type: String,
+      enum: PRODUCT_CATEGORIES,
+      default: "Uncategorized",
+    },
 
     images: [
       {
@@ -22,14 +30,22 @@ const productSchema = new mongoose.Schema(
     stockQuantity: { type: Number, default: 0, min: 0 },
     soldCount: { type: Number, default: 0, min: 0 },
 
-    status: { type: String, enum: ["active", "draft", "out_of_stock", "archived"], default: "active" },
+    status: {
+      type: String,
+      enum: ["active", "draft", "out_of_stock", "archived"],
+      default: "active",
+    },
 
     ratingAverage: { type: Number, default: 0, min: 0, max: 5 },
     ratingCount: { type: Number, default: 0, min: 0 },
 
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 productSchema.pre("save", function () {

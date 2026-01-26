@@ -1,4 +1,6 @@
 // src/pages/GuestShop.jsx
+// ✅ Fix: remove the hard-coded 2000 and calculate shipping from cart items (same as CartRouter)
+
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -32,6 +34,7 @@ const normalizeCartItem = (p, qty = 1) => {
     __cartId: id,
     name: p?.name || "",
     price: Number(p?.price || 0),
+    shippingFee: Number(p?.shippingFee || 0),
     stockQuantity: getStockQty(p),
     status: p?.status || "active",
     image: imageUrl,
@@ -107,6 +110,8 @@ function Shop() {
 
   useEffect(() => {
     localStorage.setItem("wyvadot_cart", JSON.stringify(cart));
+    // ✅ keep navbar/cart router in sync
+    window.dispatchEvent(new Event("wyvadot_cart_updated"));
   }, [cart]);
 
   const cartCount = useMemo(
@@ -243,11 +248,23 @@ function Shop() {
     toast.success("Removed from cart");
   };
 
-  const subtotal = cart.reduce(
-    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
-    0,
+  const subtotal = useMemo(
+    () =>
+      cart.reduce(
+        (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+        0,
+      ),
+    [cart],
   );
-  const shipping = 2000;
+
+  // ✅ FIX: remove constant 2000
+  // If you want shippingFee to multiply by quantity, use:
+  // sum + Number(item.shippingFee||0) * Number(item.quantity||0)
+  const shipping = useMemo(
+    () => cart.reduce((sum, item) => sum + Number(item.shippingFee || 0), 0),
+    [cart],
+  );
+
   const total = subtotal + shipping;
 
   const handleCompleteOrder = async ({ contact, address, paymentMethod }) => {
@@ -272,6 +289,7 @@ function Shop() {
           quantity: Number(i.quantity || 1),
           image: i.image || i?.images?.[0]?.url || "",
           category: i.category || "Uncategorized",
+          shippingFee: Number(i.shippingFee || 0), // ✅ include
         })),
         totals: { subtotal, shipping, total, currency: "NGN" },
         paymentMethod,
@@ -315,7 +333,6 @@ function Shop() {
         cartCount={cartCount}
         onOpenCart={() => setCurrentView("cart")}
         onAddToCartFromListing={addToCartFromListing}
-        // ✅ controlled filters + pagination
         filters={filters}
         meta={meta}
         onChangeCategory={setCategory}
