@@ -41,7 +41,9 @@ app.use(
     origin: [
       "http://localhost:5173", // Vite
       "http://localhost:3000", // if needed
-      "https://YOUR_FRONTEND_RENDER_URL",
+      "https://wyvadotpr.vercel.app",
+      "https://wyvadotpr.onrender.com"
+
     ],
     credentials: true,
   })
