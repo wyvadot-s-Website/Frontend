@@ -4,12 +4,12 @@ import { toast } from "sonner";
 import logo from "../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png";
 
 import SuccessView from "@/components/auth/SuccessView.jsx";
-import SignUpView from "@/components/auth/SignupView.jsx";
-import VerifyEmailView from "@/components/auth/VerifyEmailView.jsx";
-import LoginView from "@/components/auth/LoginView.jsx";
-import ForgotPasswordView from "@/components/auth/ForgotPasswordView.jsx";
-import VerifyResetView from "@/components/auth/VerifyResetView.jsx";
-import ResetSuccessView from "@/components/auth/ResetSuccessView.jsx";
+import SignUpView from "../components/auth/SignUpView.jsx";
+import VerifyEmailView from "../components/auth/VerifyEmailView.jsx";
+import LoginView from "../components/auth/LoginView.jsx";
+import ForgotPasswordView from "../components/auth/ForgotPasswordView.jsx";
+import VerifyResetView from "../components/auth/VerifyResetView.jsx";
+import ResetSuccessView from "../components/auth/ResetSuccessView.jsx";
 
 import {
   signupUser,
