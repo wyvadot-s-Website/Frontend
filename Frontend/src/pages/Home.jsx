@@ -34,12 +34,12 @@ function Home() {
     <div className="bg-white font-SF">
       <div className="bg-white pt-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="relative mb-10">
+          <div className="relative mb-15">
             <p className="absolute text-sm pl-2 lg:text-[40px] font-semibold max-w-[60%]">
                {home?.hero?.title}
             </p>
             <div
-              className="h-[90vh] bg-cover bg-center bg-no-repeat"
+              className="h-[90vh] bg-contain bg-center bg-no-repeat"
               style={
                 home?.hero?.backgroundImage?.url
                   ? { backgroundImage: `url(${home.hero.backgroundImage.url})` }
@@ -67,55 +67,70 @@ function Home() {
               </Button>
             </div>
           </div>
-          <div className=" flex font-geist">
-            <div className="flex  font-geist">
-              {home?.stats?.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-5xl font-bold text-gray-900 mb-3">
-                    {stat.value}
-                  </div>
-                  <div className="text-gray-600 text-md font-medium leading-relaxed">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="flex font-geist items-center justify-center px-4">
+  <div className="flex flex-col sm:flex-row font-geist w-full justify-evenly items-center sm:items-start gap-6 sm:gap-0">
+    {home?.stats?.map((stat, index) => (
+      <React.Fragment key={index}>
+        <div className="text-center px-4 sm:px-6 w-full sm:w-auto">
+          <div className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-2">
+            {stat.value}
           </div>
+          <div className="text-gray-500 text-sm font-normal leading-snug max-w-[200px] sm:max-w-[140px] mx-auto">
+            {stat.label}
+          </div>
+        </div>
+        {index < home.stats.length - 1 && (
+          <div className="hidden sm:block h-16 w-[2px] bg-gray-200 self-center" />
+        )}
+        {index < home.stats.length - 1 && (
+          <div className="block sm:hidden w-full max-w-[200px] h-[1px] bg-gray-200" />
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+</div>
         </div>
       </div>
 
       <SecondHero />
       <ServiceComponent />
 
-      <div className="flex flex-col gap-3 max-w-6xl mx-auto mb-20">
-        <div className="flex justify-center lg:justify-start items-center gap-1 mb-2">
-          <div className="flex w-5 h-1.5 bg-black rounded-lg place-self-center" />
-          <p className="flex text-gray-600 text-md font-medium place-self-center">
-            Our Company History
+      <div className="flex flex-col gap-3 max-w-6xl mx-auto mb-20 mt-10 px-4 sm:px-6">
+  <div className="flex justify-center lg:justify-start items-center gap-1 mb-2">
+    <div className="flex w-5 h-1.5 bg-black rounded-lg place-self-center" />
+    <p className="flex text-gray-600 text-sm sm:text-md font-medium place-self-center">
+      Our Company History
+    </p>
+  </div>
+  
+  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 text-center lg:text-left">
+    Why Choose Us
+  </h2>
+  
+  <div className="flex w-full justify-center items-center">
+    <div className="flex flex-wrap lg:flex-nowrap w-full justify-center lg:justify-between gap-4 sm:gap-5">
+      {home?.whyChooseUs?.map((item, index) => (
+        <div
+          key={item._id}
+          className={`bg-[#FAFAFA] rounded-lg p-4 sm:p-5 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] border border-[#F1F5F966] flex flex-col gap-3 sm:gap-4 ${
+            index === 0 && home?.whyChooseUs?.length === 1 ? 'lg:max-w-[400px]' : ''
+          }`}
+        >
+          <p className="text-xl sm:text-2xl font-semibold">{item.title}</p>
+          <p className="text-gray-600 font-normal text-sm leading-relaxed">
+            {item.description}
           </p>
         </div>
-        <h2 className="text-5xl font-bold text-gray-900 mb-6">Why Choose Us</h2>
-        <div className="flex-wrap lg:flex-nowrap flex w-full justify-between">
-          <div className="flex-wrap lg:flex-nowrap flex w-full justify-between">
-            {home?.whyChooseUs?.map((item) => (
-              <div
-                key={item._id}
-                className="mb-8 bg-[#FAFAFA] rounded-lg p-3 max-w-[30%] border border-[#F1F5F966] flex flex-col gap-4"
-              >
-                <p className="text-2xl font-semibold">{item.title}</p>
-                <p className="text-gray-600 font-normal text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <img
-          src={ChooseImage}
-          alt="A collage of construction workers and equipment"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      ))}
+    </div>
+  </div>
+  
+  <img
+    src={ChooseImage}
+    alt="A collage of construction workers and equipment"
+    className="w-full h-auto object-cover rounded-lg mt-4 sm:mt-6"
+  />
+</div>
 
       <Shop />
       <ContactForm />
