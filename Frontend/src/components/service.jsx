@@ -70,10 +70,10 @@ function ServiceComponent() {
     <div className="min-h-screen mt-15 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-5xl font-bold mb-4">
             What we Build, We Build With Purpose
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm">
             Our multidisciplinary team delivers engineering construction, and
             maintenance solutions with precision and purpose
           </p>

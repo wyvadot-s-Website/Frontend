@@ -44,7 +44,7 @@ function SecondHero({ promiseText, promiseImages }) {
 
       {/* CENTER TEXT */}
       <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-        <p className="text-2xl md:text-4xl font-semibold text-gray-800 max-w-xl">
+        <p className="text-2xl md:text-5xl font-medium text-gray-800 max-w-2xl ">
           {promiseText}
         </p>
       </div>
