@@ -12,12 +12,13 @@ function Projects() {
   
   return (
     <div className='font-SF mt-10'>
+      
             <div 
               className=" 
-                h-125 max-w-6xl mx-auto                     
+                h-125 max-w-7xl mx-auto                     
                 rounded-4xl 
                 relative 
-                opacity-90                     
+                opacity-90 mb-10                      
               "
             >
               {/* Background Image Container */}
@@ -48,6 +49,20 @@ function Projects() {
                 </h1>
               </div>
             </div>
+
+            <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+               <div className="flex items-center gap-2 mb-3">
+        <div className="w-4 h-2 bg-[#FF8D28] rounded-full" />
+        <p className="text-gray-600 text-sm font-medium">
+          This is our best work
+        </p>
+      </div>
+      
+      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-gray-900">
+        Projects
+      </h2>
+            </div>
+           
       <ProjectHistory/>
       
       <ContactForm />
