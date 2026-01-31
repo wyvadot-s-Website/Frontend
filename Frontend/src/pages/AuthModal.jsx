@@ -219,6 +219,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     return (
       <SignUpView
         isOpen={isOpen}
+        onClose={onClose}
         formData={formData}
         handleChange={handleChange}
         handleSignUp={handleSignUp}
@@ -236,6 +237,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     return (
       <VerifyEmailView
         isOpen={isOpen}
+        onClose={onClose}
         email={formData.email}
         verificationCode={verificationCode}
         handleVerificationChange={handleVerificationChange}
@@ -247,6 +249,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     return (
       <LoginView
         isOpen={isOpen}
+        onClose={onClose}
         formData={formData}
         handleChange={handleChange}
         handleLogin={handleLogin}
@@ -261,6 +264,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     return (
       <ForgotPasswordView
         isOpen={isOpen}
+        onClose={onClose}
         formData={formData}
         handleChange={handleChange}
         handleContinue={handleForgotPassword}
@@ -272,6 +276,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     return (
       <VerifyResetView
         isOpen={isOpen}
+        onClose={onClose}
         verificationCode={verificationCode}
         handleVerificationChange={handleVerificationChange}
         handleVerify={handleVerifyReset}
@@ -282,6 +287,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     return (
       <ResetSuccessView
         isOpen={isOpen}
+        onClose={onClose}
         logo={logo}
         continueToLogin={() => setView("login")}
       />

@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { Home, Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react'
 import union from "../../public/Contact.png"
 import { fetchFooter } from '@/services/footerService.js';
+import { toast, Toaster } from 'sonner'
 
 function Contact() {
   const [footer, setFooter] = useState(null);
 
-  
-
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: ''
-  })
+  name: '',
+  email: '',
+  subject: '',
+  message: ''
+})
 
   const handleChange = (e) => {
     setFormData({
@@ -21,10 +21,44 @@ function Contact() {
     })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
+  const handleSubmit = async (e) => {
+  e.preventDefault()
+  
+  const formDataToSend = new FormData(e.target);
+  formDataToSend.append("access_key", "2b13a7cb-5d36-436c-b73c-915bd7b8aa38");
+
+  // Show loading toast
+  const loadingToast = toast.loading('Sending your message...');
+
+  try {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formDataToSend
+    });
+
+    const data = await response.json();
+
+    // Dismiss loading toast
+    toast.dismiss(loadingToast);
+
+    if (data.success) {
+      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+    } else {
+      toast.error('Failed to send message. Please try again.');
+    }
+  } catch (error) {
+    console.error('Submission error:', error);
+    toast.dismiss(loadingToast);
+    toast.error('An error occurred. Please try again later.');
   }
+}
 
   useEffect(() => {
     loadFooter();
@@ -34,10 +68,12 @@ function Contact() {
     const data = await fetchFooter();
     setFooter(data);
   };
+  
   if (!footer) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 font-SF">
+      <Toaster position="top-right" richColors />
       <div className="max-w-5xl mx-auto">
         {/* Hero Section */}
         <div className=" mx-auto max-w-6xl rounded-4xl relative 
@@ -136,6 +172,7 @@ function Contact() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
@@ -150,23 +187,39 @@ function Contact() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
               {/* Subject */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  Subject (optional)
-                </label>
-                <textarea
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  rows="4"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
-                />
-              </div>
+<div>
+  <label className="block text-sm text-gray-600 mb-2">
+    Subject
+  </label>
+  <input
+    type="text"
+    name="subject"
+    value={formData.subject}
+    onChange={handleChange}
+    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+  />
+</div>
+
+{/* Message */}
+<div>
+  <label className="block text-sm text-gray-600 mb-2">
+    Message
+  </label>
+  <textarea
+    name="message"
+    value={formData.message}
+    onChange={handleChange}
+    required
+    rows="4"
+    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+  />
+</div>
 
               {/* Submit Button */}
               <div className="flex justify-center">
