@@ -239,6 +239,8 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
         isOpen={isOpen}
         onClose={onClose}
         email={formData.email}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
         verificationCode={verificationCode}
         handleVerificationChange={handleVerificationChange}
         handleVerify={handleVerifySignup}
@@ -246,19 +248,21 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
     );
 
   if (view === "login")
-    return (
-      <LoginView
-        isOpen={isOpen}
-        onClose={onClose}
-        formData={formData}
-        handleChange={handleChange}
-        handleLogin={handleLogin}
-        goToSignup={() => setView("signup")}
-        goToForgot={() => setView("forgot")}
-        onGoogleAuth={handleGoogleAuth}
-        loading={loading}
-      />
-    );
+  return (
+    <LoginView
+      isOpen={isOpen}
+      onClose={onClose}
+      formData={formData}
+      handleChange={handleChange}
+      showPassword={showPassword}           
+      setShowPassword={setShowPassword}     
+      handleLogin={handleLogin}
+      goToSignup={() => setView("signup")}
+      goToForgot={() => setView("forgot")}
+      onGoogleAuth={handleGoogleAuth}
+      loading={loading}
+    />
+  );
 
   if (view === "forgot")
     return (
