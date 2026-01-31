@@ -7,11 +7,13 @@ import Shop from "../components/Shop";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchHomeContent } from "../services/homeService";
+import { fetchAboutContent } from "../services/aboutService.js";
 
 function Home() {
   const navigate = useNavigate();
   const [home, setHome] = useState(null);
   const [loading, setLoading] = useState(true);
+     const [about, setAbout] = useState(null);
 
   useEffect(() => {
     fetchHomeContent()
@@ -19,6 +21,16 @@ function Home() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+    useEffect(() => {
+      const loadAbout = async () => {
+        const data = await fetchAboutContent();
+        setAbout(data.data);
+      };
+      loadAbout();
+    }, []);
+  
+    if (!about) return null;
 
   if (loading) return null; // or spinner
 
@@ -92,7 +104,10 @@ function Home() {
         </div>
       </div>
 
-      <SecondHero />
+       <SecondHero
+          promiseText={about.promiseText}
+          promiseImages={about.promiseImages}
+        />
       <ServiceComponent />
 
       <div className="flex flex-col gap-3 max-w-6xl mx-auto mb-20 mt-10 px-4 sm:px-6">
