@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CAT from "../../public/cat.png"
 import GTB from "../../public/gtb.png"
 import Arise from "../../public/Ariel.png"
@@ -7,7 +8,7 @@ import Baldor from "../../public/baldor.png"
 import ABB from "../../public/abb.png"
 function ContactForm() {
   const [openIndex, setOpenIndex] = useState(null);
-
+  const navigate = useNavigate();
   const faqs = [
     "What services does Wyvadot Projects & Resources Ltd offer?",
     "How do I book an oil rig or LNG Truck drivers? Are oil services available on demand?",
@@ -88,7 +89,7 @@ function ContactForm() {
           <p className="text-white text-md mb-6">
             Get in touch, and we’ll be happy to help you.
           </p>
-          <button className="bg-white text-orange-500 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+          <button className="bg-white text-orange-500 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors" onClick={() => navigate('/contact')}>
             Send a message
           </button>
         </div>

@@ -23,37 +23,35 @@ function LoginForm({ onNavigateToSignup }) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.email || !formData.password) return;
-
-    try {
-      setLoading(true);
-
-      const res = await fetch(`${BASE_URL}/api/admin/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // store token
-      localStorage.setItem("admin_token", data.token);
-      // ✅ store admin profile for AdminLayout (name/email/role)
-      localStorage.setItem("admin_data", JSON.stringify(data.admin));
-
-      navigate("/theboss/dashboard");
-    } catch (error) {
-      console.error("Admin login error:", error.message);
-    } finally {
-      setLoading(false);
+  if (!formData.email || !formData.password) return;
+  
+  try {
+    setLoading(true);
+    const res = await fetch(`${BASE_URL}/api/admin/login`, {  // ✅ Fixed
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.message || "Login failed");
     }
-  };
+    
+    // store token
+    localStorage.setItem("admin_token", data.token);
+    localStorage.setItem("admin_data", JSON.stringify(data.admin));
+    
+    navigate("/theboss/dashboard");
+  } catch (error) {
+    console.error("Admin login error:", error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="w-full max-w-sm mx-auto bg-white/80 backdrop-blur-sm rounded-lg p-8">
