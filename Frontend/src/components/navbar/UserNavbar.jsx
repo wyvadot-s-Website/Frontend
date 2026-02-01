@@ -48,6 +48,7 @@ function UserNavbar() {
 
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -336,57 +337,82 @@ function UserNavbar() {
 
   return (
     <>
-      <nav className="bg-transparent sticky top-0 z-50 pt-5">
-        <div className="max-w-6xl mx-auto px-6 py-2 shadow-lg lg:rounded-full bg-white">
-          <div className="flex justify-between items-center h-11">
-            {/* Logo */}
-            <Link to="/">
-              <img src={logo} alt="Wyvadot PR Logo" className="h-12" />
-            </Link>
+      <nav className="bg-transparent sticky top-0 z-50 pt-2 sm:pt-3 lg:pt-5">
+  <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 shadow-lg rounded-2xl lg:rounded-full bg-[#212121]">
+  <div className="flex justify-between items-center h-12 sm:h-14 lg:h-11">
+          {/* Logo */}
+<Link to="/" className="flex items-center">
+  <img src={logo} alt="Wyvadot PR Logo" className="h-8 sm:h-10 lg:h-12" />
+</Link>
 
-            {/* Navigation */}
-            <div className="hidden lg:flex gap-6 items-center">
-              <Link
-                to="/home"
-                className={`font-medium transition-colors ${
-                  isActive("/home")
-                    ? "bg-[#FF8D28] text-black px-5 py-2 rounded-full"
-                    : "text-gray-700 hover:text-orange-500"
-                }`}
-              >
-                Home
-              </Link>
 
-              <Link
-                to="/shop"
-                className={`font-medium transition-colors ${
-                  isActive("/shop")
-                    ? "bg-[#FF8D28] text-black px-5 py-2 rounded-full"
-                    : "text-gray-700 hover:text-orange-500"
-                }`}
-              >
-                Shop
-              </Link>
-            </div>
 
-            {/* Right actions */}
-            <div className="hidden lg:flex items-center gap-4">
+            {/* Navigation - Desktop */}
+<div className="hidden lg:flex gap-6 items-center">
+  <Link
+    to="/home"
+    className={`font-medium transition-colors ${
+      isActive("/home")
+        ? "bg-white text-black px-5 py-2 rounded-full"
+        : "text-white hover:text-orange-500"
+    }`}
+  >
+    Home
+  </Link>
+
+  <Link
+    to="/shop"
+    className={`font-medium transition-colors ${
+      isActive("/shop")
+        ? "bg-white text-black px-5 py-2 rounded-full"
+        : "text-white hover:text-orange-500"
+    }`}
+  >
+    Shop
+  </Link>
+</div>
+
+          {/* Mobile Right Section */}
+<div className="flex lg:hidden items-center gap-3">
+  {/* Mobile Cart Icon */}
+  <button
+    onClick={() => navigate("/cart")}
+    className="relative text-white p-1"
+  >
+    <ShoppingCart size={22} />
+    {cartCount > 0 && (
+      <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+        {cartCount}
+      </span>
+    )}
+  </button>
+
+  {/* Hamburger Menu Button */}
+  <button
+    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+    className="text-white p-1"
+  >
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {mobileMenuOpen ? (
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      ) : (
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      )}
+    </svg>
+  </button>
+</div>
+
+{/* Desktop right actions */}
+<div className="hidden lg:flex items-center gap-4">
               {/* Search */}
               <div className="relative" ref={searchRef}>
                 <input
-                  type="text"
-                  placeholder="Search products, orders, services..."
-                  value={navSearch}
-                  onChange={(e) => setNavSearch(e.target.value)}
-                  onFocus={() => {
-                    if (navSearch.trim()) setSearchOpen(true);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") onEnterFallback();
-                    if (e.key === "Escape") setSearchOpen(false);
-                  }}
-                  className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm w-72"
-                />
+  type="text"
+  placeholder="Search products, orders..."
+  value={navSearch}
+  onChange={(e) => setNavSearch(e.target.value)}
+  className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm w-56 xl:w-72 text-white"
+/>
 
                 <Search
                   onClick={() => onEnterFallback()}
@@ -579,7 +605,7 @@ function UserNavbar() {
                 className="relative text-gray-600 hover:text-orange-500"
                 title="Wishlist"
               >
-                <Heart size={20} />
+                <Heart size={20} color ='white' />
 
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
@@ -594,7 +620,7 @@ function UserNavbar() {
                 className="relative text-gray-600 hover:text-orange-500"
                 title="Cart"
               >
-                <ShoppingCart size={20} />
+                <ShoppingCart size={20} color='white'/>
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
                     {cartCount}
@@ -609,7 +635,7 @@ function UserNavbar() {
                   className="relative text-gray-600 hover:text-orange-500"
                   title="Notifications"
                 >
-                  <Bell size={20} />
+                  <Bell size={20} color ='white'/>
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
                       {unreadCount > 99 ? "99+" : unreadCount}
@@ -674,6 +700,124 @@ function UserNavbar() {
             </div>
           </div>
         </div>
+        {/* Mobile Menu Dropdown */}
+{mobileMenuOpen && (
+  <div className="lg:hidden absolute top-full left-0 right-0 bg-[#212121] mt-2 mx-3 sm:mx-4 rounded-2xl shadow-lg overflow-hidden z-50">
+    <div className="px-4 py-3">
+      {/* Search */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={navSearch}
+          onChange={(e) => setNavSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-600 bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+        />
+        <Search className="absolute left-7 top-5 h-4 w-4 text-gray-400" />
+      </div>
+
+      {/* Navigation Links */}
+      <div className="space-y-2 mb-4">
+        <Link
+          to="/home"
+          onClick={() => setMobileMenuOpen(false)}
+          className={`block w-full text-left px-4 py-2 rounded-lg ${
+            isActive("/home")
+              ? "bg-white text-black"
+              : "text-white hover:bg-gray-700"
+          }`}
+        >
+          Home
+        </Link>
+        <Link
+          to="/shop"
+          onClick={() => setMobileMenuOpen(false)}
+          className={`block w-full text-left px-4 py-2 rounded-lg ${
+            isActive("/shop")
+              ? "bg-white text-black"
+              : "text-white hover:bg-gray-700"
+          }`}
+        >
+          Shop
+        </Link>
+      </div>
+
+      {/* Mobile Actions */}
+      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
+        <button
+          onClick={() => {
+            setMobileMenuOpen(false);
+            navigate("/wishlist");
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          <Heart size={18} />
+          <span className="text-sm">Wishlist</span>
+          {wishlistCount > 0 && (
+            <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
+              {wishlistCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => {
+            setMobileMenuOpen(false);
+            navigate("/cart");
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          <ShoppingCart size={18} />
+          <span className="text-sm">Cart</span>
+          {cartCount > 0 && (
+            <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
+              {cartCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setNotifOpen(true);
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          <Bell size={18} />
+          <span className="text-sm">Notifications</span>
+          {unreadCount > 0 && (
+            <span className="bg-red-500 text-white text-xs px-1.5 rounded-full">
+              {unreadCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => {
+            setMobileMenuOpen(false);
+            navigate("/account");
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          <User size={18} />
+          <span className="text-sm">Account</span>
+        </button>
+      </div>
+
+      {/* Logout */}
+      <button
+        onClick={() => {
+          setMobileMenuOpen(false);
+          setShowLogoutConfirm(true);
+        }}
+        className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+      >
+        <LogOut size={18} />
+        <span className="text-sm">Log out</span>
+      </button>
+    </div>
+  </div>
+)}
       </nav>
 
       {/* Order Detail Modal (opened from navbar search) */}
