@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useWishlist } from "@/context/WishlistContext";
+import FeatureCards from "../pages/FeatureCards.jsx"; 
 
 function formatNaira(amount) {
   const n = Number(amount || 0);
@@ -74,6 +75,7 @@ function ShopListing({
     filters?.category || "All",
   );
   const [selectedPrice, setSelectedPrice] = useState("all"); // single select
+  const [showFilters, setShowFilters] = useState(false);
 
   // keep UI in sync when parent changes filters externally
   useEffect(() => setSearchUI(filters?.search || ""), [filters?.search]);
@@ -138,17 +140,19 @@ function ShopListing({
   return (
     <div className="min-h-screen bg-white mt-10">
       {/* Hero Section */}
-      <div className="h-125 max-w-6xl mx-auto rounded-4xl relative opacity-90">
-        <img src={union} alt="Shop hero" className="w-full h-full" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-white text-4xl md:text-5xl font-bold z-10">
-            Shop
-          </h1>
-        </div>
-      </div>
-
+      {/* Hero Section */}
+<div className="h-48 sm:h-64 lg:h-125 max-w-6xl mx-auto rounded-2xl sm:rounded-4xl relative overflow-hidden mb-6 sm:mb-10 mx-4 sm:mx-6 lg:mx-auto">
+  <img src={union} alt="Shop hero" className="w-full h-full object-cover" />
+  <div className="absolute inset-0 flex items-center justify-center">
+    <h1 className="text-white text-2xl sm:text-4xl lg:text-5xl font-bold z-10">
+      Shop
+    </h1>
+  </div>
+</div>
+    
+        <FeatureCards />
       {/* Features Bar */}
-      <div className="border-b max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="grid grid-cols-4 gap-8">
             {/* (unchanged icons/blocks) */}
@@ -157,132 +161,126 @@ function ShopListing({
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-4 gap-8">
-          {/* Sidebar Filters */}
-          <div className="col-span-1">
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  className="pr-10"
-                  value={searchUI}
-                  onChange={(e) => setSearchUI(e.target.value)}
-                />
-                <Search
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-              </div>
-            </div>
+     {/* Main Content */}
+<div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
+  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+{/* Mobile Filter Toggle */}
+<div className="lg:hidden mb-6">
+  <Button
+    variant="outline"
+    className="w-full justify-start gap-2 border-gray-300"
+    onClick={() => setShowFilters(!showFilters)}
+  >
+    <SlidersHorizontal size={18} />
+    {showFilters ? "Hide Filters" : "Show Filters"}
+  </Button>
+</div>
 
-            {/* Filter Button (kept) */}
-            <Button
-              variant="outline"
-              className="w-full mb-6 justify-start gap-2"
-            >
-              <SlidersHorizontal size={18} />
-              Filter
-            </Button>
+{/* Sidebar Filters - Add state for mobile toggle */}
+<div className={`${showFilters ? 'block' : 'hidden'} lg:block col-span-1 bg-white p-4 sm:p-6 rounded-lg`}>
+  {/* Remove the desktop filter button on mobile */}
+  <Button
+    variant="outline"
+    className="hidden lg:flex w-full mb-6 justify-start gap-2 border-gray-300"
+  >
+    <SlidersHorizontal size={18} />
+    Filter
+  </Button>
 
-            {/* Categories */}
-            <div className="mb-8">
-              <h3 className="font-bold text-sm uppercase mb-4">CATEGORIES</h3>
-              <div className="space-y-2">
-                {categories.map((category, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      onChangeCategory?.(category);
-                    }}
-                    className={`block w-full text-left text-sm py-1 ${
-                      selectedCategory === category
-                        ? "text-orange-500 font-semibold"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
+  {/* Categories */}
+  <div className="mb-8">
+    <h3 className="font-bold text-sm uppercase mb-4 text-black">CATEGORIES</h3>
+    <div className="space-y-2.5">
+      {categories.map((category, index) => (
+        <button
+          key={index}
+          onClick={() => {
+            setSelectedCategory(category);
+            onChangeCategory?.(category);
+          }}
+          className={`block w-full text-left text-sm py-1 transition-colors ${
+            selectedCategory === category
+              ? "text-orange-500 font-semibold"
+              : "text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          {category}
+        </button>
+      ))}
+    </div>
+  </div>
 
-            {/* Price */}
-            <div className="mb-8">
-              <h3 className="font-bold text-sm uppercase mb-4">PRICE</h3>
-              <div className="space-y-3">
-                {priceRanges.map((range, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={range.value}
-                      checked={selectedPrice === range.value}
-                      onCheckedChange={() => handleTogglePrice(range.value)}
-                      className={
-                        selectedPrice === range.value
-                          ? "border-orange-500 bg-orange-500"
-                          : ""
-                      }
-                    />
-                    <label
-                      htmlFor={range.value}
-                      className="text-sm text-gray-600 cursor-pointer"
-                    >
-                      {range.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
+  {/* Price */}
+  <div className="mb-8">
+    <h3 className="font-bold text-sm uppercase mb-4 text-black">PRICE</h3>
+    <div className="space-y-3">
+      {priceRanges.map((range, index) => (
+        <div key={index} className="flex items-center justify-between">
+          <label
+            htmlFor={range.value}
+            className="text-sm text-gray-600 cursor-pointer flex-1"
+          >
+            {range.label}
+          </label>
+          <Checkbox
+            id={range.value}
+            checked={selectedPrice === range.value}
+            onCheckedChange={() => handleTogglePrice(range.value)}
+            className={
+              selectedPrice === range.value
+                ? "border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500"
+                : "border-gray-300"
+            }
+          />
+        </div>
+      ))}
+    </div>
+  </div>
 
-            {/* In-stock (optional but backend supports it) */}
-            <div>
-              <h3 className="font-bold text-sm uppercase mb-4">AVAILABILITY</h3>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="inStock"
-                  checked={filters?.inStock === "true"}
-                  onCheckedChange={(checked) =>
-                    onChangeInStock?.(checked ? "true" : "")
-                  }
-                  className={
-                    filters?.inStock === "true"
-                      ? "border-orange-500 bg-orange-500"
-                      : ""
-                  }
-                />
-                <label
-                  htmlFor="inStock"
-                  className="text-sm text-gray-600 cursor-pointer"
-                >
-                  In stock only
-                </label>
-              </div>
-            </div>
-          </div>
+  {/* Availability (optional - remove if not in image) */}
+  <div>
+    <h3 className="font-bold text-sm uppercase mb-4 text-black">AVAILABILITY</h3>
+    <div className="flex items-center justify-between">
+      <label
+        htmlFor="inStock"
+        className="text-sm text-gray-600 cursor-pointer flex-1"
+      >
+        In stock only
+      </label>
+      <Checkbox
+        id="inStock"
+        checked={filters?.inStock === "true"}
+        onCheckedChange={(checked) =>
+          onChangeInStock?.(checked ? "true" : "")
+        }
+        className={
+          filters?.inStock === "true"
+            ? "border-orange-500 bg-orange-500"
+            : "border-gray-300"
+        }
+      />
+    </div>
+  </div>
+    </div>
 
           {/* Products Grid */}
-          <div className="col-span-3">
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">
-                Showing {products.length} product
-                {products.length !== 1 ? "s" : ""}
-                {total ? ` (Total: ${total})` : ""}
-              </p>
+          <div className="col-span-1 lg:col-span-3">
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    <p className="text-sm sm:text-base text-gray-600">
+      Showing {products.length} product{products.length !== 1 ? "s" : ""}
+      {total ? ` (Total: ${total})` : ""}
+    </p>
 
-              <select
-                className="border rounded px-4 py-2 text-sm"
-                value={filters?.sort || "newest"}
-                onChange={(e) => onChangeSort?.(e.target.value)}
-              >
-                <option value="newest">Sort by: Newest</option>
-                <option value="price_asc">Sort by: Price (Low → High)</option>
-                <option value="price_desc">Sort by: Price (High → Low)</option>
-              </select>
-            </div>
+    <select
+      className="w-full sm:w-auto border rounded px-4 py-2 text-sm"
+      value={filters?.sort || "newest"}
+      onChange={(e) => onChangeSort?.(e.target.value)}
+    >
+      <option value="newest">Sort by: Newest</option>
+      <option value="price_asc">Sort by: Price (Low → High)</option>
+      <option value="price_desc">Sort by: Price (High → Low)</option>
+    </select>
+  </div>
 
             {/* Empty state */}
             {products.length === 0 ? (
@@ -290,7 +288,7 @@ function ShopListing({
                 No products found for these filters.
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {products.map((product) => {
                   const id = product._id || product.id;
                   const wished = isWished(id);
@@ -397,21 +395,22 @@ function ShopListing({
                           </div>
                         </div>
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isOut) return;
-                            onAddToCartFromListing?.(product);
-                          }}
-                          disabled={isOut}
-                          className={`w-full font-medium py-3 rounded-lg transition-colors ${
-                            isOut
-                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                              : "bg-[#FF8D28] hover:bg-[#e67d1f] text-white"
-                          }`}
-                        >
-                          {isOut ? "Out of Stock" : "Add to cart"}
-                        </button>
+                        {/* Add to Cart Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isOut) return;
+          onAddToCartFromListing?.(product);
+        }}
+        disabled={isOut}
+        className={`w-full font-medium py-2.5 rounded-lg transition-colors text-sm ${
+          isOut
+            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+            : "bg-gray-400 hover:bg-gray-500 text-white"
+        }`}
+      >
+        {isOut ? "Out of Stock" : "Add to cart"}
+      </button>
                       </div>
                     </div>
                   );
@@ -419,77 +418,75 @@ function ShopListing({
               </div>
             )}
 
-            {/* ✅ Functional Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <button
-                  className="w-8 h-8 border rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-40"
-                  disabled={page <= 1}
-                  onClick={() => onChangePage?.(page - 1)}
-                >
-                  ←
-                </button>
+            {/* Pagination */}
+{totalPages > 1 && (
+  <div className="flex items-center justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 flex-wrap">
+    <button
+      className="w-8 h-8 sm:w-10 sm:h-10 border rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 text-sm sm:text-base"
+      disabled={page <= 1}
+      onClick={() => onChangePage?.(page - 1)}
+    >
+      ←
+    </button>
 
-                {pagesToShow.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => onChangePage?.(p)}
-                    className={`w-8 h-8 border rounded flex items-center justify-center hover:bg-gray-100 ${
-                      p === page
-                        ? "bg-orange-500 text-white hover:bg-orange-500"
-                        : ""
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+    {pagesToShow.map((p) => (
+      <button
+        key={p}
+        onClick={() => onChangePage?.(p)}
+        className={`w-8 h-8 sm:w-10 sm:h-10 border rounded flex items-center justify-center hover:bg-gray-100 text-sm sm:text-base ${
+          p === page
+            ? "bg-orange-500 text-white hover:bg-orange-500"
+            : ""
+        }`}
+      >
+        {p}
+      </button>
+    ))}
 
-                <button
-                  className="w-8 h-8 border rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-40"
-                  disabled={page >= totalPages}
-                  onClick={() => onChangePage?.(page + 1)}
-                >
-                  →
-                </button>
-              </div>
-            )}
+    <button
+      className="w-8 h-8 sm:w-10 sm:h-10 border rounded flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 text-sm sm:text-base"
+      disabled={page >= totalPages}
+      onClick={() => onChangePage?.(page + 1)}
+    >
+      →
+    </button>
+  </div>
+)}
           </div>
         </div>
       </div>
 
-      {/* Floating Cart Button – Guest shop only */}
-      {showFloatingCart && typeof onOpenCart === "function" && (
-        <button
-          onClick={onOpenCart}
-          className="
-            fixed bottom-6 right-6
-            w-14 h-14 rounded-full
-            bg-[#FF8D28] hover:bg-[#e67d1f]
-            text-white shadow-lg
-            flex items-center justify-center
-            z-50
-          "
-          title="View cart"
-        >
-          <ShoppingCart size={22} />
+      {/* Floating Cart Button */}
+{showFloatingCart && typeof onOpenCart === "function" && (
+  <button
+    onClick={onOpenCart}
+    className="
+      fixed bottom-4 right-4 sm:bottom-6 sm:right-6
+      w-12 h-12 sm:w-14 sm:h-14 rounded-full
+      bg-[#FF8D28] hover:bg-[#e67d1f]
+      text-white shadow-lg
+      flex items-center justify-center
+      z-50
+    "
+    title="View cart"
+  >
+    <ShoppingCart size={20} className="sm:w-[22px] sm:h-[22px]" />
 
-          {cartCount > 0 && (
-            <span
-              className="
-                absolute -top-2 -right-2
-                min-w-[24px] h-6
-                px-2
-                rounded-full
-                bg-black text-white
-                text-xs font-bold
-                flex items-center justify-center
-              "
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
-      )}
+    {cartCount > 0 && (
+      <span className="
+        absolute -top-1 -right-1 sm:-top-2 sm:-right-2
+        min-w-[20px] h-5 sm:min-w-[24px] sm:h-6
+        px-1.5 sm:px-2
+        rounded-full
+        bg-black text-white
+        text-xs font-bold
+        flex items-center justify-center
+      ">
+        {cartCount}
+      </span>
+    )}
+  </button>
+)}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductReviews from "@/components/ProductReviews";
 import { fetchProductById } from "@/services/shopService";
+import { ArrowLeft } from 'lucide-react';
 
 const formatMoney = (amount) =>
   Number(amount || 0).toLocaleString("en-NG", {
@@ -236,13 +237,19 @@ function ProductDetail({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <p className="text-sm text-gray-500">
-          Home › Shop › {product?.category || "Uncategorized"} ›{" "}
-          {product?.name || "Product"}
-        </p>
-      </div>
+      {/* Breadcrumb with Back Button */}
+<div className="max-w-7xl mx-auto px-6 py-4">
+  <button
+    onClick={() => navigate(-1)}
+    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-2"
+  >
+    <ArrowLeft size={20} />
+    <span className="font-medium">Back to Shop</span>
+  </button>
+  <p className="text-sm text-gray-500">
+    Home › Shop › {product?.category || "Uncategorized"} › {product?.name || "Product"}
+  </p>
+</div>
 
       {/* Product Section */}
       <div className="max-w-7xl mx-auto px-6 py-8">
