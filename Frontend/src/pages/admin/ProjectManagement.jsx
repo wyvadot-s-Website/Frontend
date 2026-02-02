@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
 
 import {
   fetchServiceRequestsAdmin,
@@ -158,120 +159,230 @@ export default function ProjectManagement() {
       </div>
 
       {/* Table heading row */}
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-semibold text-gray-800">
-          All Service Requests ({filtered.length})
-        </h2>
+<div className="flex items-center justify-between mb-4">
+  <h2 className="text-sm font-semibold text-gray-900">
+    All Service Requests ({filtered.length})
+  </h2>
+  <button
+    onClick={loadRequests}
+    disabled={loading}
+    className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-xs font-medium px-4 py-2 rounded-lg"
+  >
+    {loading ? "Refreshing..." : "Refresh"}
+  </button>
+</div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={loadRequests} disabled={loading}>
-            {loading ? "Refreshing..." : "Refresh"}
-          </Button>
-        </div>
+{/* Table */}
+<div className="bg-white border rounded-xl overflow-hidden">
+  {loading ? (
+    <div className="p-8 text-center text-sm text-gray-600">Loading...</div>
+  ) : filtered.length === 0 ? (
+    <div className="p-8 text-center text-sm text-gray-600">
+      No service requests found.
+    </div>
+  ) : (
+    <>
+      {/* Desktop Table - Hidden on mobile */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-400 text-xs border-b bg-gray-50">
+              <th className="px-4 py-3 font-medium">Project ID</th>
+              <th className="px-4 py-3 font-medium">Title</th>
+              <th className="px-4 py-3 font-medium">Client</th>
+              <th className="px-4 py-3 font-medium">Progress</th>
+              <th className="px-4 py-3 font-medium">Stage</th>
+              <th className="px-4 py-3 font-medium">Manager</th>
+              <th className="px-4 py-3 font-medium">Date</th>
+              <th className="px-4 py-3 font-medium">Email</th>
+              <th className="px-4 py-3 font-medium">Project</th>
+              <th className="px-4 py-3 font-medium text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y">
+            {filtered.map((r) => {
+              const progressPercent = Math.max(0, Math.min(100, r.progress ?? 0));
+              const projectStage = r.projectStage || "Service";
+              
+              return (
+                <tr key={r._id} className="text-sm hover:bg-gray-50">
+                  {/* Project ID */}
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {r.projectId}
+                  </td>
+
+                  {/* Title */}
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-800">{r.title}</div>
+                    <div className="text-xs text-gray-500">
+                      {r.serviceName || "—"}
+                    </div>
+                  </td>
+
+                  {/* Client */}
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-800">
+                      {r.contact?.name || "—"}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Category: {r.serviceAbbr || "—"}
+                    </div>
+                  </td>
+
+                  {/* Progress */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gray-900 rounded-full transition-all"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-600 font-medium min-w-[32px]">
+                        {progressPercent}%
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Stage */}
+                  <td className="px-4 py-3">
+                    <StagePill stage={r.stage} />
+                  </td>
+
+                  {/* Manager */}
+                  <td className="px-4 py-3 text-gray-800">
+                    {r.assignedAdmin?.name || "Unassigned"}
+                  </td>
+
+                  {/* Date */}
+                  <td className="px-4 py-3 text-gray-600">
+                    {formatDate(r.createdAt)}
+                  </td>
+
+                  {/* Email */}
+                  <td className="px-4 py-3 text-gray-600 truncate max-w-[150px]">
+                    {r.contact?.email || "—"}
+                  </td>
+
+                  {/* Project Stage Badge */}
+                  <td className="px-4 py-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        projectStage === "Service"
+                          ? "bg-teal-100 text-teal-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {projectStage}
+                    </span>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => openUpdate(r)}
+                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-1"
+                    >
+                      <Pencil size={12} />
+                      Update
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
-        {/* Header */}
-        <div className="grid grid-cols-12 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700">
-          <div className="col-span-2">Project ID</div>
-          <div className="col-span-2">Title</div>
-          <div className="col-span-2">Client</div>
-          <div className="col-span-1">Progress</div>
-          <div className="col-span-1">Stage</div>
-          <div className="col-span-2">Manager</div>
-          <div className="col-span-1">Date</div>
-          <div className="col-span-1">Email</div>
-        </div>
+      {/* Mobile Cards - Hidden on desktop */}
+      <div className="lg:hidden divide-y">
+        {filtered.map((r) => {
+          const progressPercent = Math.max(0, Math.min(100, r.progress ?? 0));
+          const projectStage = r.projectStage || "Service";
 
-        {/* Body */}
-        {filtered.length === 0 ? (
-          <div className="p-4 text-sm text-gray-600">
-            {loading ? "Loading..." : "No service requests found."}
-          </div>
-        ) : (
-          filtered.map((r) => (
-            <div
-              key={r._id}
-              className="grid grid-cols-12 px-3 py-3 text-sm border-t items-center gap-2"
-            >
-              {/* Project ID */}
-              <div className="col-span-2 font-medium">{r.projectId}</div>
-
-              {/* Title */}
-              <div className="col-span-2">{r.title}</div>
-
-              {/* Client */}
-              <div className="col-span-2">
-                <div className="font-medium">{r.contact?.name || "—"}</div>
-                <div className="text-xs text-gray-600">
-                  Category: {r.serviceAbbr || "—"}
+          return (
+            <div key={r._id} className="p-4 space-y-3">
+              {/* Header Row */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {r.projectId}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">
+                    {r.title}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      projectStage === "Service"
+                        ? "bg-teal-100 text-teal-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {projectStage}
+                  </span>
+                  <StagePill stage={r.stage} />
                 </div>
               </div>
 
-              {/* Progress */}
-              <div className="col-span-1">
-                <div className="text-xs font-medium">{r.progress ?? 0}%</div>
-                <div className="h-1.5 bg-gray-200 rounded mt-1">
+              {/* Client & Contact Info */}
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">
+                  <span className="font-medium text-gray-700">Client:</span>{" "}
+                  {r.contact?.name || "—"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  <span className="font-medium text-gray-700">Email:</span>{" "}
+                  {r.contact?.email || "—"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  <span className="font-medium text-gray-700">Service:</span>{" "}
+                  {r.serviceName || "—"}
+                </p>
+              </div>
+
+              {/* Progress Bar */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-500">Progress</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {progressPercent}%
+                  </span>
+                </div>
+                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-1.5 bg-black rounded"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, r.progress ?? 0))}%`,
-                    }}
+                    className="h-full bg-gray-900 rounded-full transition-all"
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
               </div>
 
-              {/* Stage */}
-              <div className="col-span-1">
-                <StagePill stage={r.stage} />
+              {/* Manager & Date */}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">
+                  <span className="font-medium text-gray-700">Manager:</span>{" "}
+                  {r.assignedAdmin?.name || "Unassigned"}
+                </span>
+                <span className="text-gray-500">{formatDate(r.createdAt)}</span>
               </div>
 
-              {/* Manager */}
-              <div className="col-span-2">
-                {r.assignedAdmin?.name || "Unassigned"}
-              </div>
-
-              {/* Date */}
-              <div className="col-span-1">{formatDate(r.createdAt)}</div>
-
-              {/* Email */}
-              <div className="col-span-1 truncate">
-                {r.contact?.email || "—"}
-              </div>
-
-              {/* Actions (overlay style like screenshot) */}
-              <div className="col-span-12 flex justify-end gap-2 mt-2">
-                {!r.assignedAdmin ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAssignToMe(r)}
-                  >
-                    Assign to me
-                  </Button>
-                ) : null}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
-                >
-                  View
-                </Button>
-
-                <Button
-                  size="sm"
-                  className="bg-[#FF8D28] hover:bg-orange-600 text-white"
-                  onClick={() => openUpdate(r)}
-                >
-                  Update
-                </Button>
-              </div>
+              {/* Action Button */}
+              <button
+                onClick={() => openUpdate(r)}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg inline-flex items-center justify-center gap-2"
+              >
+                <Pencil size={14} />
+                Update
+              </button>
             </div>
-          ))
-        )}
+          );
+        })}
       </div>
+    </>
+  )}
+</div>
 
       {/* Update modal */}
       <UpdateServiceRequestModal
