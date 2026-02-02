@@ -136,8 +136,14 @@ export default function AdminDashboard() {
               setProducts(Array.isArray(prodItems) ? prodItems : []);
 
               const orderRes = await fetchAdminOrders(token, { search: "" });
-              const orderItems = orderRes.items || orderRes.data?.items || orderRes.data || orderRes;
-              setOrders(Array.isArray(orderItems) ? orderItems : []);
+
+const orderItems = orderRes.items || orderRes.data?.items || orderRes.data || orderRes;
+
+if (Array.isArray(orderItems) && orderItems.length > 0) {
+
+}
+
+setOrders(Array.isArray(orderItems) ? orderItems : []);
             })(),
           );
         }
@@ -287,100 +293,373 @@ export default function AdminDashboard() {
       {loading ? <p className="text-sm text-gray-600">Loading dashboard…</p> : null}
 
       {/* Overview sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* SHOP OVERVIEW */}
-        {access.shop ? (
-          <SectionCard
-            title="Shop Overview"
-            actionLabel="View all"
-            onAction={() => navigate("/theboss/services")}
-          >
-            <div className="space-y-5">
-              {/* Products first (as you requested) */}
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Recent Products</p>
-                {latestProducts.length === 0 ? (
-                  <p className="text-sm text-gray-600 mt-2">No products yet.</p>
-                ) : (
-                  <div className="mt-3 space-y-2">
-                    {latestProducts.map((p) => (
-                      <div key={p._id} className="flex items-center justify-between border rounded-lg p-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
-                          <p className="text-xs text-gray-600">
-                            {p.category || "Uncategorized"} • {formatMoney(p.price)}
-                          </p>
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          Stock: {p.stockQuantity ?? 0}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+        {/* PROJECT TABLE */}
+{access.projects ? (
+  <div className="bg-white rounded-xl border p-5">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-sm font-semibold text-gray-900">Project</h2>
+      <button
+        onClick={() => navigate("/theboss/projects")}
+        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+      >
+        View all
+      </button>
+    </div>
 
-              {/* Orders (preview) */}
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Recent Orders</p>
-                {latestOrders.length === 0 ? (
-                  <p className="text-sm text-gray-600 mt-2">No orders yet.</p>
-                ) : (
-                  <div className="mt-3 space-y-2">
-                    {latestOrders.map((o) => (
-                      <div key={o._id} className="flex items-center justify-between border rounded-lg p-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {o.orderId || "—"}
-                          </p>
-                          <p className="text-xs text-gray-600 truncate">
-                            {o?.customer?.email || "—"}
-                          </p>
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {formatMoney(o?.totals?.total || o?.total || 0)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+    {/* Desktop Table */}
+    <div className="hidden sm:block overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-gray-400 text-xs border-b">
+            <th className="pb-3 font-medium">Name</th>
+            <th className="pb-3 font-medium">Email</th>
+            <th className="pb-3 font-medium">Tel</th>
+            <th className="pb-3 font-medium">Country</th>
+            <th className="pb-3 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {latestRequests.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="py-6 text-sm text-gray-500">
+                No service requests yet.
+              </td>
+            </tr>
+          ) : (
+            latestRequests.map((r) => {
+              const status = r.stage || "Pending";
+              const statusMap = {
+                Completed: "bg-green-100 text-green-600",
+                Pending: "bg-green-100 text-green-600",
+                Active: "bg-green-100 text-green-600",
+                Execution: "bg-blue-100 text-blue-600",
+                Rejected: "bg-red-100 text-red-600",
+                "Site Visit": "bg-purple-100 text-purple-600",
+                Review: "bg-yellow-100 text-yellow-700",
+                Documentation: "bg-orange-100 text-orange-600",
+              };
+              const statusCls = statusMap[status] || "bg-green-100 text-green-600";
+
+              return (
+                <tr key={r._id} className="text-sm">
+                  <td className="py-3 text-gray-800">{r.contact?.name || "—"}</td>
+                  <td className="py-3 text-gray-500">{r.contact?.email || "—"}</td>
+                  <td className="py-3 text-gray-500">{r.contact?.countryCode || "—"}</td>
+                  <td className="py-3 text-gray-500">{r.contact?.tel || "—"}</td>
+
+                  <td className="py-3">
+                    <span className={`px-3 py-1 text-xs rounded-full ${statusCls}`}>
+                      {status}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Mobile Cards */}
+    <div className="sm:hidden space-y-3">
+      {latestRequests.length === 0 ? (
+        <p className="text-sm text-gray-500">No service requests yet.</p>
+      ) : (
+        latestRequests.map((r) => {
+          const status = r.stage || "Pending";
+          const statusMap = {
+            Completed: "bg-green-100 text-green-600",
+            Pending: "bg-green-100 text-green-600",
+            Active: "bg-green-100 text-green-600",
+            Execution: "bg-blue-100 text-blue-600",
+            Rejected: "bg-red-100 text-red-600",
+            "Site Visit": "bg-purple-100 text-purple-600",
+            Review: "bg-yellow-100 text-yellow-700",
+            Documentation: "bg-orange-100 text-orange-600",
+          };
+          const statusCls = statusMap[status] || "bg-green-100 text-green-600";
+
+          return (
+            <div key={r._id} className="border rounded-lg p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {r.contact?.name || "—"}
+                </p>
+                <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${statusCls}`}>
+                  {status}
+                </span>
               </div>
+              <p className="text-xs text-gray-500 mt-1 truncate">{r.contact?.email || "—"}</p>
+              <p className="text-xs text-gray-500">{r.contact?.phone || "—"} • {r.contact?.country || "—"}</p>
             </div>
-          </SectionCard>
-        ) : null}
+          );
+        })
+      )}
+    </div>
+  </div>
+) : null}
+
+{/* ORDERS TABLE */}
+{access.shop ? (
+  <div className="bg-white rounded-xl border p-5">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-sm font-semibold text-gray-900">Orders</h2>
+      <button
+        onClick={() => navigate("/theboss/services")}
+        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+      >
+        View all
+      </button>
+    </div>
+
+    {/* Desktop Table */}
+    <div className="hidden sm:block overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-gray-400 text-xs border-b">
+            <th className="pb-3 font-medium">Name</th>
+            <th className="pb-3 font-medium">Date</th>
+            <th className="pb-3 font-medium">Product</th>
+            <th className="pb-3 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {latestOrders.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="py-6 text-sm text-gray-500">
+                No orders yet.
+              </td>
+            </tr>
+          ) : (
+            latestOrders.map((o) => {
+              const status = o.status || "processing";
+              const statusMap = {
+                processing: "bg-orange-100 text-orange-600",
+                pending: "bg-orange-100 text-orange-600",
+                pending_payment: "bg-orange-100 text-orange-600",
+                shipped: "bg-blue-100 text-blue-600",
+                delivered: "bg-green-100 text-green-600",
+                cancelled: "bg-red-100 text-red-600",
+                "still in cart": "bg-gray-100 text-gray-600",
+                "still_in_cart": "bg-gray-100 text-gray-600",
+              };
+              const statusCls = statusMap[status] || "bg-gray-100 text-gray-600";
+
+              // Format status for display: replace underscores, capitalize words
+              const displayStatus = status
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase());
+
+              const productName = o?.items?.[0]?.name || "—";
+              const createdAt = o.createdAt
+                ? new Date(o.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "—";
+
+              return (
+                <tr key={o._id} className="text-sm">
+                  <td className="py-3 text-gray-800">{o?.customer?.fullName || "—"}</td>
+                  <td className="py-3 text-gray-500">{createdAt}</td>
+                  <td className="py-3 text-gray-500">{productName}</td>
+                  <td className="py-3">
+                    <span className={`px-3 py-1 text-xs rounded-full ${statusCls}`}>
+                      {displayStatus}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Mobile Cards */}
+    <div className="sm:hidden space-y-3">
+      {latestOrders.length === 0 ? (
+        <p className="text-sm text-gray-500">No orders yet.</p>
+      ) : (
+        latestOrders.map((o) => {
+          const status = o.status || "processing";
+          const statusMap = {
+            processing: "bg-orange-100 text-orange-600",
+            pending: "bg-orange-100 text-orange-600",
+            pending_payment: "bg-orange-100 text-orange-600",
+            shipped: "bg-blue-100 text-blue-600",
+            delivered: "bg-green-100 text-green-600",
+            cancelled: "bg-red-100 text-red-600",
+            "still in cart": "bg-gray-100 text-gray-600",
+            "still_in_cart": "bg-gray-100 text-gray-600",
+          };
+          const statusCls = statusMap[status] || "bg-gray-100 text-gray-600";
+          const displayStatus = status
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+
+          const productName = o?.items?.[0]?.name || "—";
+          const createdAt = o.createdAt
+            ? new Date(o.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "—";
+
+          return (
+            <div key={o._id} className="border rounded-lg p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium text-gray-900 truncate">
+  {o?.customer?.fullName || "—"}
+</p>
+                <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${statusCls}`}>
+                  {displayStatus}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{productName}</p>
+              <p className="text-xs text-gray-500">{createdAt}</p>
+            </div>
+          );
+        })
+      )}
+    </div>
+  </div>
+) : null}
 
         {/* PROJECT/SERVICE OVERVIEW */}
-        {access.projects ? (
-          <SectionCard
-            title="Project/Service Overview"
-            actionLabel="View all"
-            onAction={() => navigate("/theboss/projects")}
-          >
-            {latestRequests.length === 0 ? (
-              <p className="text-sm text-gray-600">No service requests yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {latestRequests.map((r) => (
-                  <div key={r._id} className="border rounded-lg p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {r.projectId || "—"} • {r.title || "—"}
-                        </p>
-                        <p className="text-xs text-gray-600 truncate">
-                          {r.contact?.name || "—"} • {r.contact?.email || "—"}
-                        </p>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {Number(r.progress ?? 0)}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
+{access.projects ? (
+  <div className="bg-white rounded-xl border p-5">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-sm font-semibold text-gray-900">Forms</h2>
+      <button
+        onClick={() => navigate("/theboss/projects")}
+        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+      >
+        View all
+      </button>
+    </div>
+
+    {/* Desktop Table */}
+    <div className="hidden sm:block overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-gray-400 text-xs border-b">
+            <th className="pb-3 font-medium">Forms</th>
+            <th className="pb-3 font-medium">Email</th>
+            <th className="pb-3 font-medium">Form Type</th>
+            <th className="pb-3 font-medium">Submitted</th>
+            <th className="pb-3 font-medium">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {latestRequests.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="py-6 text-sm text-gray-500">
+                No service requests yet.
+              </td>
+            </tr>
+          ) : (
+            latestRequests.map((r) => {
+              const submittedDate = r.createdAt
+                ? new Date(r.createdAt).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                  })
+                : "—";
+              
+              const submittedTime = r.createdAt
+                ? new Date(r.createdAt).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                : "";
+
+              return (
+                <tr key={r._id} className="text-sm">
+                  <td className="py-3 text-gray-800">{r.projectId || "—"}</td>
+                  <td className="py-3 text-gray-500">{r.contact?.email || "—"}</td>
+                  <td className="py-3">
+                    <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700">
+                      Contact Info
+                    </span>
+                  </td>
+                  <td className="py-3 text-gray-500">
+                    {submittedDate} {submittedTime}
+                  </td>
+                  <td className="py-3">
+                    <button
+                      onClick={() => navigate(`/theboss/projects/${r._id}`)}
+                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+                    >
+                      Details
+                    </button>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Mobile Cards */}
+    <div className="sm:hidden space-y-3">
+      {latestRequests.length === 0 ? (
+        <p className="text-sm text-gray-500">No service requests yet.</p>
+      ) : (
+        latestRequests.map((r) => {
+          const submittedDate = r.createdAt
+            ? new Date(r.createdAt).toLocaleDateString("en-US", {
+                month: "2-digit",
+                day: "2-digit",
+                year: "numeric",
+              })
+            : "—";
+          
+          const submittedTime = r.createdAt
+            ? new Date(r.createdAt).toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : "";
+
+          return (
+            <div key={r._id} className="border rounded-lg p-3">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {r.projectId || "—"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">
+                    {r.contact?.email || "—"}
+                  </p>
+                </div>
+                <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700 flex-shrink-0">
+                  Contact Info
+                </span>
               </div>
-            )}
-          </SectionCard>
-        ) : null}
+              <p className="text-xs text-gray-500 mb-2">
+                {submittedDate} {submittedTime}
+              </p>
+              <button
+                onClick={() => navigate(`/theboss/projects/${r._id}`)}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+              >
+                Details
+              </button>
+            </div>
+          );
+        })
+      )}
+    </div>
+  </div>
+) : null}
 
         {/* CONTENT OVERVIEW */}
         {access.content ? (
