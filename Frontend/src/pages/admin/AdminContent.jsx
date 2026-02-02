@@ -20,14 +20,15 @@ import { fetchTestimonialsAdmin } from "@/services/adminTestimonialService";
 function ContentStatsCard({ icon: Icon, title, value }) {
   return (
     <Card className="border shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-3">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-start mb-3 gap-3">
           <div className="p-2 rounded-lg bg-orange-50">
             <Icon className="h-4 w-4 text-orange-600" />
           </div>
+          <p className="text-xs text-gray-600 font-medium ">{title}</p>
         </div>
-        <p className="text-xs text-gray-600 font-medium mb-2">{title}</p>
-        <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
+        
+        <h3 className="text-4xl font-semibold text-gray-900">{value}</h3>
       </CardContent>
     </Card>
   );
@@ -115,17 +116,30 @@ export default function AdminContent() {
       {/* Web Content Section */}
       <Card>
         <CardContent className="p-6">
-          <h2 className="text-lg font-semibold mb-6">Web Content</h2>
+          <h2 className="text-2xl font-bold mb-6">Web Content</h2>
 
           <Tabs defaultValue="home" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6">
-              <TabsTrigger value="home">Home</TabsTrigger>
-              <TabsTrigger value="about">About Us</TabsTrigger>
-              <TabsTrigger value="project">Projects</TabsTrigger>
-              <TabsTrigger value="team">Team</TabsTrigger>
-              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-              <TabsTrigger value="footer">Footer</TabsTrigger>
-            </TabsList>
+           <div className="w-full mb-6 overflow-x-auto">
+  <TabsList className="inline-flex h-auto bg-[#F6F6F6] border border-orange-100 rounded-md p-1 gap-1 min-w-full md:w-auto">
+    {[
+      { value: "home", label: "Home" },
+      { value: "about", label: "About Us" },
+      { value: "project", label: "Projects" },
+      { value: "team", label: "Team" },
+      { value: "testimonials", label: "Testimonials" },
+      { value: "footer", label: "Contact Us" },
+      { value: "shop", label: "Shop" },
+    ].map((tab) => (
+      <TabsTrigger
+        key={tab.value}
+        value={tab.value}
+        className="h-auto bg-transparent border-0 rounded-full px-3 py-2 md:px-4 md:py-3 text-xs md:text-sm font-normal text-gray-600 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-transparent data-[state=active]:text-orange-500 data-[state=active]:shadow-none data-[state=active]:font-medium transition-all"
+      >
+        {tab.label}
+      </TabsTrigger>
+    ))}
+  </TabsList>
+</div>
 
             <TabsContent value="home" className="space-y-6">
               {/* Hero Section */}
