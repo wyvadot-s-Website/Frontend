@@ -46,22 +46,22 @@ function Footer() {
            </div>
             
             {/* Social Media Icons */}
-            <div className="flex gap-7">
+            <div className="flex gap-4 lg:gap-7">
               <a href={footer.socialLinks.facebook} className="text-blue-600 hover:text-blue-700 transition-colors">
-                <img src={fb} alt="" className='w-9' />
+                <img src={fb} alt="" className='w-8 lg:w-9' />
                 
               </a>
               <a href={footer.socialLinks.twitter} className="text-gray-800 hover:text-gray-900 transition-colors">
-                <img src={x} alt="" className='w-9' />
+                <img src={x} alt="" className='w-8 lg:w-9' />
               </a>
               <a href={footer.socialLinks.instagram} className="text-pink-600 hover:text-pink-700 transition-colors">
-                <img src={Ig} alt="" className='w-9' />
+                <img src={Ig} alt="" className='w-8 lg:w-9' />
               </a>
               <a href={footer.socialLinks.linkedin} className="text-blue-700 hover:text-blue-800 transition-colors">
-                <img src={lkdn} alt="" className='w-9' />
+                <img src={lkdn} alt="" className='w-8 lg:w9' />
               </a>
               <a href={footer.socialLinks.whatsapp} className="text-green-600 hover:text-green-700 transition-colors">
-                <img src={whts} alt="" className='w-9' />
+                <img src={whts} alt="" className='w-8 lg:w-9' />
               </a>
             </div>
           </div>
