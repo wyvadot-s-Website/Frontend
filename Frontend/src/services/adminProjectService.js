@@ -9,7 +9,6 @@ export const fetchProjectsAdmin = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   });
-
   return res.json();
 };
 
@@ -25,13 +24,10 @@ export const addProject = async (formData, token) => {
     },
     body: formData,
   });
-
   const result = await res.json();
-
   if (!res.ok || result.success === false) {
     throw new Error(result.message || "Failed to add project");
   }
-
   return result;
 };
 
@@ -46,13 +42,10 @@ export const updateProject = async (id, formData, token) => {
     },
     body: formData,
   });
-
   const result = await res.json();
-
   if (!res.ok || result.success === false) {
     throw new Error(result.message || "Failed to update project");
   }
-
   return result;
 };
 
@@ -66,12 +59,9 @@ export const deleteProject = async (id, token) => {
       Authorization: `Bearer ${token}`,
     },
   });
-
   const result = await res.json();
-
   if (!res.ok || result.success === false) {
     throw new Error(result.message || "Failed to delete project");
   }
-
   return result;
 };

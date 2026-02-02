@@ -24,8 +24,8 @@ function PublicNavbar() {
   
   return (
     <>
-      <nav className="bg-transparent sticky top-0 z-50 pt-5">
-        <div className="max-w-6xl mx-auto px-6 py-2 shadow-lg lg:rounded-full bg-white">
+      <nav className="bg-transparent sticky top-0 z-50 pt-5 px-5">
+        <div className="max-w-6xl mx-auto px-6 py-2 shadow-lg rounded-2xl lg:rounded-full bg-white">
           <div className="flex justify-between items-center h-11 ">
             {/* Logo */}
             <div className="flex items-center">

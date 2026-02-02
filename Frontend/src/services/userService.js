@@ -13,13 +13,10 @@ export const signupUser = async (formData) => {
     },
     body: JSON.stringify(formData),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Signup failed");
   }
-
   return data;
 };
 
@@ -32,13 +29,10 @@ export const verifyUserEmail = async ({ email, code }) => {
     },
     body: JSON.stringify({ email, code }),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Verification failed");
   }
-
   return data;
 };
 
@@ -51,13 +45,10 @@ export const loginUser = async ({ email, password }) => {
     },
     body: JSON.stringify({ email, password }),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Login failed");
   }
-
   return data;
 };
 
@@ -70,18 +61,15 @@ export const googleAuthUser = async (idToken) => {
     },
     body: JSON.stringify({ idToken }),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Google authentication failed");
   }
-
   return data;
 };
 
 // ===============================
-// PASSWORD RESET SERVICES (NEW)
+// PASSWORD RESET SERVICES
 // ===============================
 
 // FORGOT PASSWORD
@@ -93,13 +81,10 @@ export const forgotPassword = async (email) => {
     },
     body: JSON.stringify({ email }),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Password reset request failed");
   }
-
   return data;
 };
 
@@ -112,13 +97,10 @@ export const verifyResetCode = async ({ email, code }) => {
     },
     body: JSON.stringify({ email, code }),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Reset code verification failed");
   }
-
   return data;
 };
 
@@ -131,13 +113,10 @@ export const resetPassword = async ({ email, code, newPassword }) => {
     },
     body: JSON.stringify({ email, code, newPassword }),
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Password reset failed");
   }
-
   return data;
 };
 
@@ -153,12 +132,9 @@ export const getCurrentUser = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   });
-
   const data = await res.json();
-
   if (!res.ok) {
     throw new Error(data.message || "Authentication failed");
   }
-
   return data;
 };

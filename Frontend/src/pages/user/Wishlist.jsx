@@ -119,82 +119,118 @@ export default function Wishlist() {
         </div>
 
         {/* Body */}
-        <div className="divide-y">
-          {loading ? (
-            <div className="px-6 py-10 text-sm text-gray-500">Loading...</div>
-          ) : rows.length === 0 ? (
-            <div className="px-6 py-10 text-sm text-gray-500">
-              No items in your wishlist yet.
+<div className="divide-y">
+  {loading ? (
+    <div className="px-4 sm:px-6 py-10 text-sm text-gray-500">Loading...</div>
+  ) : rows.length === 0 ? (
+    <div className="px-4 sm:px-6 py-10 text-sm text-gray-500">
+      No items in your wishlist yet.
+    </div>
+  ) : (
+    rows.map((p) => {
+      const img = p?.images?.[0]?.url || "";
+      const stockQty = Number(p?.stockQuantity || 0);
+      const isOut =
+        p?.status === "out_of_stock" ||
+        p?.status === "archived" ||
+        stockQty <= 0;
+
+      return (
+        <div key={p._id} className="px-4 sm:px-6 py-4 sm:py-5">
+          {/* Desktop Layout */}
+          <div className="hidden sm:grid grid-cols-12 items-center gap-4">
+            {/* Product (X + Image + Name) */}
+            <div className="col-span-7 flex items-center gap-4">
+              <button
+                onClick={() => handleRemove(p._id)}
+                className="w-8 h-8 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-100"
+                title="Remove"
+              >
+                <X size={16} />
+              </button>
+              <div className="w-14 h-14 bg-gray-50 border rounded flex items-center justify-center overflow-hidden">
+                {img ? (
+                  <img
+                    src={img}
+                    alt={p?.name || "Product"}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : (
+                  <div className="text-[10px] text-gray-400">No image</div>
+                )}
+              </div>
+              <div className="font-medium text-gray-900">{p?.name || "—"}</div>
             </div>
-          ) : (
-            rows.map((p) => {
-              const img = p?.images?.[0]?.url || "";
-              const stockQty = Number(p?.stockQuantity || 0);
-              const isOut =
-                p?.status === "out_of_stock" ||
-                p?.status === "archived" ||
-                stockQty <= 0;
+            {/* Price */}
+            <div className="col-span-2 text-sm text-gray-900">
+              {formatNaira(p?.price)}
+            </div>
+            {/* Action */}
+            <div className="col-span-3 flex justify-end">
+              <button
+                onClick={() => addToCart(p)}
+                disabled={isOut}
+                className={`px-6 py-2 rounded-lg text-sm font-medium ${
+                  isOut
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-900 text-white hover:bg-gray-800"
+                }`}
+              >
+                Add to cart
+              </button>
+            </div>
+          </div>
 
-              return (
-                <div key={p._id} className="px-6 py-5">
-                  <div className="grid grid-cols-12 items-center gap-4">
-                    {/* Product (X + Image + Name) */}
-                    <div className="col-span-7 flex items-center gap-4">
-                      <button
-                        onClick={() => handleRemove(p._id)}
-                        className="w-8 h-8 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                        title="Remove"
-                      >
-                        <X size={16} />
-                      </button>
+          {/* Mobile Layout */}
+          <div className="flex items-start gap-3 sm:hidden">
+            {/* Image */}
+            <div className="w-16 h-16 flex-shrink-0 bg-gray-50 border rounded flex items-center justify-center overflow-hidden">
+              {img ? (
+                <img
+                  src={img}
+                  alt={p?.name || "Product"}
+                  className="w-full h-full object-contain p-1.5"
+                />
+              ) : (
+                <div className="text-[10px] text-gray-400">No image</div>
+              )}
+            </div>
 
-                      <div className="w-14 h-14 bg-gray-50 border rounded flex items-center justify-center overflow-hidden">
-                        {img ? (
-                          <img
-                            src={img}
-                            alt={p?.name || "Product"}
-                            className="w-full h-full object-contain p-2"
-                          />
-                        ) : (
-                          <div className="text-[10px] text-gray-400">
-                            No image
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col">
-                        <div className="font-medium text-gray-900">
-                          {p?.name || "—"}
-                        </div>
-                        {/* ✅ No color line (you said remove it) */}
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className="col-span-2 text-sm text-gray-900">
-                      {formatNaira(p?.price)}
-                    </div>
-
-                    {/* Action */}
-                    <div className="col-span-3 flex justify-end">
-                      <button
-                        onClick={() => addToCart(p)}
-                        disabled={isOut}
-                        className={`px-6 py-2 rounded-lg text-sm font-medium ${
-                          isOut
-                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                            : "bg-gray-900 text-white hover:bg-gray-800"
-                        }`}
-                      >
-                        Add to cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
+            {/* Info + Actions */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-medium text-sm text-gray-900 truncate">
+                  {p?.name || "—"}
+                </p>
+                <button
+                  onClick={() => handleRemove(p._id)}
+                  className="w-6 h-6 flex-shrink-0 rounded-full border flex items-center justify-center text-gray-400 hover:bg-gray-100"
+                  title="Remove"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+              <p className="text-sm text-gray-900 mt-1">
+                {formatNaira(p?.price)}
+              </p>
+              <button
+                onClick={() => addToCart(p)}
+                disabled={isOut}
+                className={`mt-2.5 w-full px-4 py-1.5 rounded-lg text-xs font-medium ${
+                  isOut
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-900 text-white hover:bg-gray-800"
+                }`}
+              >
+                Add to cart
+              </button>
+            </div>
+          </div>
         </div>
+      );
+    })
+  )}
+</div>
       </div>
     </div>
   );

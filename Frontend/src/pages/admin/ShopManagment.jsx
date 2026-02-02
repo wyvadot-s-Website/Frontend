@@ -4,6 +4,7 @@ import { Trash2, Plus, Search, Pencil } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Package, ShoppingCart, FileText } from "lucide-react";
 
 import {
   fetchAdminProducts,
@@ -263,253 +264,260 @@ const ShopManagment = () => {
     return d.toLocaleDateString("en-GB");
   };
 
+  const statCards = useMemo(() => {
+    return [
+      {
+        icon: Package,
+        title: "Total Products",
+        value: String(totals.totalProducts),
+      },
+      {
+        icon: ShoppingCart,
+        title: "Total Orders",
+        value: String(totals.totalOrders),
+      },
+      {
+        icon: FileText,
+        title: "Revenue",
+        value: formatMoney(totals.revenue),
+      },
+    ];
+  }, [totals]);
+
   return (
-    <div className="w-full">
-      {/* Cards */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border p-5 flex items-center justify-between">
+    <div className="w-full space-y-6">
+     {/* Top stat cards */}
+<div className={`grid grid-cols-1 md:grid-cols-3 gap-6`}>
+  {statCards.map((c, i) => {
+    const IconComponent = c.icon;
+    return (
+      <div key={i} className="bg-white rounded-xl border p-5">
+        <div className="flex items-start justify-between">
           <div>
-            <p className="text-gray-500 text-sm">Total Products</p>
-            <p className="text-2xl font-semibold">{totals.totalProducts}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-4 h-4 rounded bg-orange-50 flex items-center justify-center">
+                <IconComponent className="w-2.5 h-2.5 text-orange-500" />
+              </div>
+              <p className="text-xs text-gray-500">{c.title}</p>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mt-2">{c.value}</h3>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-            <span className="text-orange-500">🧾</span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border p-5 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm">Total Orders</p>
-            <p className="text-2xl font-semibold">{totals.totalOrders}</p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-            <span className="text-orange-500">📦</span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border p-5 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm">Revenue</p>
-            <p className="text-2xl font-semibold">
-              {formatMoney(totals.revenue)}
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-            <span className="text-orange-500">💳</span>
+          <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+            <IconComponent className="w-5 h-5 text-orange-500" />
           </div>
         </div>
       </div>
+    );
+  })}
+</div>
 
-      {/* Search */}
-      <div className="mt-6">
-        <div className="relative">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search products or orders"
-            className="pl-10"
-          />
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-        </div>
+     {/* Search */}
+      <div className="relative">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search products or orders"
+          className="pl-10"
+        />
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          size={18}
+        />
       </div>
 
-      {/* Shop Data */}
-      <div className="mt-6 bg-white border rounded-xl p-5">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Shop Data</h3>
+     {/* Shop Data */}
+<div className="bg-white border rounded-xl p-5">
+  <div className="flex items-center justify-between mb-4">
+    <h3 className="text-sm font-semibold text-gray-900">Shop Data</h3>
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="border-gray-200"
-              onClick={() => setShowAdd(true)}
-            >
-              <Plus size={16} className="mr-2" />
-              Add Product
-            </Button>
-            <Button className="bg-[#FF8D28] hover:bg-[#e67d1f]">
-              View all
-            </Button>
-          </div>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => setShowAdd(true)}
+        className="bg-gray-700 hover:bg-gray-800 text-white text-xs font-medium px-4 py-2 rounded-lg"
+      >
+        Add Product
+      </button>
+      <button
+        onClick={() => {/* navigate to full view or do nothing */}}
+        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-2 rounded-lg"
+      >
+        View all
+      </button>
+    </div>
+  </div>
+
+  {/* Tabs */}
+  <div className="inline-flex rounded-full bg-gray-100 p-1">
+    <button
+      onClick={() => setTab("products")}
+      className={`px-4 py-1.5 rounded-full text-xs ${
+        tab === "products"
+          ? "bg-white shadow font-medium"
+          : "text-gray-600"
+      }`}
+    >
+      Products ({products.length})
+    </button>
+    <button
+      onClick={() => setTab("orders")}
+      className={`px-4 py-1.5 rounded-full text-xs ${
+        tab === "orders" ? "bg-white shadow font-medium" : "text-gray-600"
+      }`}
+    >
+      Orders ({orders.length})
+    </button>
+  </div>
+
+  {/* Table - same as before */}
+  <div className="mt-4 overflow-x-auto">
+    {tab === "orders" ? (
+      ordersLoading ? (
+        <div className="py-10 text-center text-gray-600 text-sm">
+          Loading orders...
         </div>
-
-        {/* Tabs */}
-        <div className="mt-4 inline-flex rounded-full bg-gray-100 p-1">
-          <button
-            onClick={() => setTab("products")}
-            className={`px-4 py-2 rounded-full text-sm ${
-              tab === "products"
-                ? "bg-white shadow font-medium"
-                : "text-gray-600"
-            }`}
-          >
-            Products ({products.length})
-          </button>
-          <button
-            onClick={() => setTab("orders")}
-            className={`px-4 py-2 rounded-full text-sm ${
-              tab === "orders" ? "bg-white shadow font-medium" : "text-gray-600"
-            }`}
-          >
-            Orders ({orders.length})
-          </button>
+      ) : orders.length === 0 ? (
+        <div className="py-10 text-center text-gray-600 text-sm">
+          No orders yet.
         </div>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-400 text-xs border-b">
+              <th className="pb-3 font-medium">Order ID</th>
+              <th className="pb-3 font-medium">Customer</th>
+              <th className="pb-3 font-medium">Items</th>
+              <th className="pb-3 font-medium">Total</th>
+              <th className="pb-3 font-medium">Status</th>
+              <th className="pb-3 font-medium">Order Date</th>
+              <th className="pb-3 font-medium text-right">Actions</th>
+            </tr>
+          </thead>
 
-        {/* Table */}
-        <div className="mt-4 overflow-x-auto">
-          {tab === "orders" ? (
-            ordersLoading ? (
-              <div className="py-10 text-center text-gray-600">
-                Loading orders...
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="py-10 text-center text-gray-600">
-                No orders yet.
-              </div>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="text-gray-500">
-                  <tr className="border-b">
-                    <th className="text-left py-3 font-medium">Order ID</th>
-                    <th className="text-left py-3 font-medium">Customer</th>
-                    <th className="text-left py-3 font-medium">Items</th>
-                    <th className="text-left py-3 font-medium">Total</th>
-                    <th className="text-left py-3 font-medium">Status</th>
-                    <th className="text-left py-3 font-medium">Order Date</th>
-                    <th className="text-right py-3 font-medium">Actions</th>
-                  </tr>
-                </thead>
+          <tbody className="divide-y">
+            {orders.map((o) => {
+              const itemsCount = Array.isArray(o?.items)
+                ? o.items.reduce(
+                    (sum, i) => sum + Number(i?.quantity || 0),
+                    0,
+                  )
+                : Number(o?.itemsCount || 0);
 
-                <tbody>
-                  {orders.map((o) => {
-                    const itemsCount = Array.isArray(o?.items)
-                      ? o.items.reduce(
-                          (sum, i) => sum + Number(i?.quantity || 0),
-                          0,
-                        )
-                      : Number(o?.itemsCount || 0);
+              const totalNgn = Number(o?.totals?.total ?? o?.total ?? 0);
 
-                    const totalNgn = Number(o?.totals?.total ?? o?.total ?? 0);
+              return (
+                <tr key={o._id} className="text-sm">
+                  <td className="py-3 font-medium text-gray-800">{o.orderId || "—"}</td>
 
-                    return (
-                      <tr key={o._id} className="border-b last:border-b-0">
-                        <td className="py-4 font-medium">{o.orderId || "—"}</td>
+                  <td className="py-3">
+                    <div className="font-medium text-gray-800">
+                      {o?.customer?.fullName || "—"}
+                    </div>
+                    <div className="text-gray-500 text-xs">
+                      {o?.customer?.email || "—"}
+                    </div>
+                  </td>
 
-                        <td className="py-4">
-                          <div className="font-medium">
-                            {o?.customer?.email || "—"}
-                          </div>
-                          <div className="text-gray-500 text-xs">
-                            {o?.customer?.phone || "—"}
-                          </div>
-                        </td>
+                  <td className="py-3 text-gray-500">{itemsCount}</td>
 
-                        <td className="py-4">{itemsCount}</td>
+                  <td className="py-3 text-gray-500">{formatMoney(totalNgn)}</td>
 
-                        <td className="py-4">{formatMoney(totalNgn)}</td>
+                  <td className="py-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs ${orderBadgeClass(o.status)}`}
+                    >
+                      {orderStatusLabel(o.status)}
+                    </span>
+                  </td>
 
-                        <td className="py-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs ${orderBadgeClass(o.status)}`}
-                          >
-                            {orderStatusLabel(o.status)}
-                          </span>
-                        </td>
+                  <td className="py-3 text-gray-500">{formatDate(o.createdAt)}</td>
 
-                        <td className="py-4">{formatDate(o.createdAt)}</td>
-
-                        <td className="py-4 text-right">
-                          <button
-                            onClick={() => onUpdateOrder(o)}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#FF8D28] text-white text-xs font-semibold hover:bg-[#e67d1f]"
-                            title="Update"
-                          >
-                            <Pencil size={14} />
-                            Update
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )
-          ) : loading ? (
-            <div className="py-10 text-center text-gray-600">
-              Loading products...
-            </div>
-          ) : products.length === 0 ? (
-            <div className="py-10 text-center text-gray-600">
-              No products yet. Create your first product.
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="text-gray-500">
-                <tr className="border-b">
-                  <th className="text-left py-3 font-medium">Product Name</th>
-                  <th className="text-left py-3 font-medium">Category</th>
-                  <th className="text-left py-3 font-medium">Price</th>
-                  <th className="text-left py-3 font-medium">Stock</th>
-                  <th className="text-left py-3 font-medium">Sold</th>
-                  <th className="text-left py-3 font-medium">Status</th>
-                  <th className="text-right py-3 font-medium">Action</th>
+                  <td className="py-3 text-right">
+                    <button
+                      onClick={() => onUpdateOrder(o)}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100"
+                      title="Update Order"
+                    >
+                      <Pencil size={16} className="text-gray-600" />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {products.map((p) => (
-                  <tr key={p._id} className="border-b last:border-b-0">
-                    <td className="py-4">{p.name}</td>
-                    <td className="py-4">
-                      <span className="px-3 py-1 rounded-full border text-xs">
-                        {p.category || "Uncategorized"}
-                      </span>
-                    </td>
-                    <td className="py-4">{formatMoney(p.price)}</td>
-                    <td className="py-4">{p.stockQuantity ?? 0}</td>
-                    <td className="py-4">{p.soldCount ?? 0}</td>
-                    <td className="py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs ${badgeClass(
-                          p.status,
-                        )}`}
-                      >
-                        {p.status === "out_of_stock"
-                          ? "Out of stock"
-                          : p.status}
-                      </span>
-                    </td>
-
-                    {/* ✅ Actions: Edit + Archive */}
-                    <td className="py-4 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => onEdit(p)}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100"
-                          title="Edit"
-                        >
-                          <Pencil size={18} className="text-gray-500" />
-                        </button>
-
-                        <button
-                          onClick={() => onArchive(p._id)}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100"
-                          title="Archive"
-                        >
-                          <Trash2 size={18} className="text-gray-500" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+              );
+            })}
+          </tbody>
+        </table>
+      )
+    ) : loading ? (
+      <div className="py-10 text-center text-gray-600 text-sm">
+        Loading products...
       </div>
+    ) : products.length === 0 ? (
+      <div className="py-10 text-center text-gray-600 text-sm">
+        No products yet. Create your first product.
+      </div>
+    ) : (
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-gray-400 text-xs border-b">
+            <th className="pb-3 font-medium">Product Name</th>
+            <th className="pb-3 font-medium">Category</th>
+            <th className="pb-3 font-medium">Price</th>
+            <th className="pb-3 font-medium">Stock</th>
+            <th className="pb-3 font-medium">Sold</th>
+            <th className="pb-3 font-medium">Status</th>
+            <th className="pb-3 font-medium text-right">Action</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y">
+          {products.map((p) => (
+            <tr key={p._id} className="text-sm">
+              <td className="py-3 text-gray-800 font-medium">{p.name}</td>
+              <td className="py-3">
+                <span className="px-3 py-1 rounded-full bg-gray-50 border text-xs text-gray-700">
+                  {p.category || "Uncategorized"}
+                </span>
+              </td>
+              <td className="py-3 text-gray-500">{formatMoney(p.price)}</td>
+              <td className="py-3 text-gray-500">{p.stockQuantity ?? 0}</td>
+              <td className="py-3 text-gray-500">{p.soldCount ?? 0}</td>
+              <td className="py-3">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs ${badgeClass(
+                    p.status,
+                  )}`}
+                >
+                  {p.status === "out_of_stock"
+                    ? "Out of stock"
+                    : p.status}
+                </span>
+              </td>
+
+              <td className="py-3 text-right">
+                <div className="inline-flex items-center gap-1">
+                  <button
+                    onClick={() => onEdit(p)}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100"
+                    title="Edit"
+                  >
+                    <Pencil size={16} className="text-gray-600" />
+                  </button>
+
+                  <button
+                    onClick={() => onArchive(p._id)}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100"
+                    title="Archive"
+                  >
+                    <Trash2 size={16} className="text-gray-600" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+</div>
 
       <AddProductModal
         open={showAdd}
