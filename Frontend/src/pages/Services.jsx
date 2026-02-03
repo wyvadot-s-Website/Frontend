@@ -10,10 +10,10 @@ const Services = () => {
       
       <div 
         className=" 
-          h-125 max-w-5xl mx-auto                     
+          max-w-5xl mx-auto                     
           rounded-4xl 
           relative 
-          opacity-90                     
+          opacity-90 px-5 lg:px-0                     
         "
       >
         {/* Background Image Container */}
