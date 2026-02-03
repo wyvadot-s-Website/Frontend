@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
+import { Trash2 } from "lucide-react";
 
 import {
   fetchTeamAdmin,
@@ -97,66 +99,144 @@ export default function TeamCMS() {
   return (
     <div className="space-y-6">
       {/* ===== ADD / EDIT FORM ===== */}
-      <div className="space-y-4 pb-6 border-b">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <Input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Team Member Name"
-            />
-          </div>
+     <div className="space-y-6">
+  {/* Input Fields in Grid Layout */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {/* Name */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Name
+      </label>
+      <Input
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Team Member 1"
+        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+      />
+    </div>
 
-          <div className="space-y-2">
-            <Label>Role</Label>
-            <Input
-              name="position"
-              value={form.position}
-              onChange={handleChange}
-              placeholder="Position"
-            />
-          </div>
+    {/* Role */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Role
+      </label>
+      <Input
+        name="position"
+        value={form.position}
+        onChange={handleChange}
+        placeholder="Project Manager"
+        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+      />
+    </div>
 
-          <div className="space-y-2">
-            <Label>Bio</Label>
-            <Input
-              name="bio"
-              value={form.bio}
-              onChange={handleChange}
-              placeholder="Bio"
-            />
-          </div>
-        </div>
+    {/* Bio */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Bio
+      </label>
+      <Input
+        name="bio"
+        value={form.bio}
+        onChange={handleChange}
+        placeholder="Bio"
+        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+      />
+    </div>
+  </div>
 
-        <div className="space-y-2">
-          <Label>Team Image</Label>
-          <div className="flex items-center gap-4">
-            <Input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              id="team-image"
-              onChange={(e) => setImage(e.target.files[0])}
-            />
-            <Label
-              htmlFor="team-image"
-              className="flex-1 border-2 border-dashed rounded-lg p-4 text-center cursor-pointer"
-            >
-              {image ? image.name : "Choose image"}
-            </Label>
-          </div>
-        </div>
+  {/* Team Image Upload */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      Team Image
+    </label>
+    <div className="flex items-center gap-4">
+      <div className="flex-1">
+        <Input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          id="team-image"
+          onChange={(e) => setImage(e.target.files?.[0] || null)}
+        />
+        <Label
+          htmlFor="team-image"
+          className="flex items-center justify-between w-full border border-gray-300 rounded-md p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-gray-600">
+            {image ? image.name : "No file chosen"}
+          </span>
+        </Label>
       </div>
-
       <Button
         onClick={handleSubmit}
-        className="bg-orange-500 hover:bg-orange-600 w-full"
+        className="bg-orange-500 hover:bg-orange-600 text-white px-6"
       >
         <Upload className="mr-2 h-4 w-4" />
-        {editingId ? "Update Team Member" : "Save Team Member"}
+        Upload
       </Button>
+    </div>
+  </div>
+
+  {/* Existing Team Members List */}
+  {team.length > 0 && (
+    <div className="space-y-4 pt-6 border-t">
+      <h3 className="font-semibold text-gray-900">Team Members</h3>
+      <div className="space-y-3">
+        {team.map((member) => (
+          <Card key={member._id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {/* Team Member Image */}
+                {member.imageUrl && (
+                  <img
+                    src={member.imageUrl}
+                    alt={member.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                  />
+                )}
+                
+                {/* Team Member Info */}
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Name</p>
+                    <p className="font-medium text-gray-900">{member.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Role</p>
+                    <p className="text-gray-700">{member.position}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Bio</p>
+                    <p className="text-gray-600 text-sm">{member.bio}</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(member)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(member._id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
 
       {/* ===== CREATED TEAM MEMBERS ===== */}
       {team.length === 0 ? (

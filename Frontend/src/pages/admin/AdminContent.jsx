@@ -128,7 +128,7 @@ export default function AdminContent() {
       { value: "team", label: "Team" },
       { value: "testimonials", label: "Testimonials" },
       { value: "footer", label: "Contact Us" },
-      { value: "shop", label: "Shop" },
+      // { value: "shop", label: "Shop" },
     ].map((tab) => (
       <TabsTrigger
         key={tab.value}
