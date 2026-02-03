@@ -5,7 +5,11 @@ export const getOrCreateHomeContent = async () => {
 
   if (!home) {
     home = await HomeContent.create({
-      hero: {},
+      hero: {
+        title: "",
+        subtitle: "",
+        backgroundImages: [],
+      },
       stats: [
         { label: "Years of Combined Experience", value: "0+" },
         { label: "Projects Delivered", value: "0+" },
@@ -14,6 +18,13 @@ export const getOrCreateHomeContent = async () => {
       ],
       whyChooseUs: []
     });
+  }
+
+  // ✅ for older DB records that still have hero but not backgroundImages
+  if (!home.hero) home.hero = {};
+  if (!Array.isArray(home.hero.backgroundImages)) {
+    home.hero.backgroundImages = [];
+    await home.save();
   }
 
   return home;
