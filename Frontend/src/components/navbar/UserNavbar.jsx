@@ -353,8 +353,8 @@ function UserNavbar() {
     to="/home"
     className={`font-medium transition-colors ${
       isActive("/home")
-        ? "bg-white text-black px-5 py-2 rounded-full"
-        : "text-white hover:text-orange-500"
+        ? "bg-white text-orange-500 px-5 py-2 rounded-full"
+        : "text-black hover:text-orange-500"
     }`}
   >
     Home
@@ -365,7 +365,7 @@ function UserNavbar() {
     className={`font-medium transition-colors ${
       isActive("/shop")
         ? "bg-white text-black px-5 py-2 rounded-full"
-        : "text-white hover:text-orange-500"
+        : "text-black hover:text-orange-500"
     }`}
   >
     Shop
@@ -411,7 +411,7 @@ function UserNavbar() {
   placeholder="Search products, orders..."
   value={navSearch}
   onChange={(e) => setNavSearch(e.target.value)}
-  className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm w-56 xl:w-72 text-white"
+  className="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm w-56 xl:w-72"
 />
 
                 <Search
@@ -605,7 +605,7 @@ function UserNavbar() {
                 className="relative text-gray-600 hover:text-orange-500"
                 title="Wishlist"
               >
-                <Heart size={20} color ='white' />
+                <Heart size={20} />
 
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
@@ -620,7 +620,7 @@ function UserNavbar() {
                 className="relative text-gray-600 hover:text-orange-500"
                 title="Cart"
               >
-                <ShoppingCart size={20} color='white'/>
+                <ShoppingCart size={20}/>
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
                     {cartCount}
@@ -635,7 +635,7 @@ function UserNavbar() {
                   className="relative text-gray-600 hover:text-orange-500"
                   title="Notifications"
                 >
-                  <Bell size={20} color ='white'/>
+                  <Bell size={20}/>
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
                       {unreadCount > 99 ? "99+" : unreadCount}

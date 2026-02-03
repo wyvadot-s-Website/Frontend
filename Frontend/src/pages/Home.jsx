@@ -45,24 +45,47 @@ function Home() {
   return (
     <div className="bg-white font-SF">
       <div className="bg-white pt-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="relative mb-15">
-            <p className="absolute text-sm pl-2 lg:text-[40px] font-semibold max-w-[60%]">
-               {home?.hero?.title}
-            </p>
-            <div
-              className="h-[90vh] bg-contain bg-center bg-no-repeat"
-              style={
-                home?.hero?.backgroundImage?.url
-                  ? { backgroundImage: `url(${home.hero.backgroundImage.url})` }
-                  : {}
-              }
-            ></div>
+        <div className="max-w-5xl mx-auto">
+         <div className="relative w-full h-[90vh] rounded-2xl overflow-hidden mb-10">
+  {/* Background Image */}
+  <div
+    className="absolute inset-0 bg-cover bg-center bg-no-repeat "
+    style={
+      home?.hero?.backgroundImage?.url
+        ? { backgroundImage: `url(${home.hero.backgroundImage.url})` }
+        : { backgroundColor: '#1a1a1a' }
+    }
+  >
+    {/* Dark Overlay for better text readability */}
+    <div className="absolute inset-0 bg-black/50"></div>
+  </div>
 
-            <p className="max-w-[20%] text-xs absolute -right-2 bottom-5 font-semibold text-sm">
-              {home?.hero?.subtitle}
-            </p>
-            <div className="absolute bottom-10 left-10 flex gap-7">
+  {/* Content Container */}
+  <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+    {/* Badge */}
+    <div className="mb-6 bg-white backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 shadow-lg border border-white/30">
+      <div className="flex -space-x-2">
+        <div className="w-6 h-6 rounded-full bg-orange-400 border-2 border-white"></div>
+        <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
+        <div className="w-6 h-6 rounded-full bg-pink-400 border-2 border-white"></div>
+      </div>
+      <span className="text-sm font-medium text-gray-800">
+        500+ Happy Customers
+      </span>
+    </div>
+
+    {/* Main Heading */}
+    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semi-bold text-white text-center leading-tight mb-6 max-w-5xl">
+      {home?.hero?.title || "Delivering World-Class Projects, Locally and Beyond."}
+    </h1>
+
+    {/* Subtitle */}
+    <p className="text-base sm:text-lg md:text-xl text-white/90 text-center mb-8 max-w-2xl">
+      {home?.hero?.subtitle || "Your trusted partner for engineering, construction, and project management success."}
+    </p>
+
+   {/* CTA Buttons */}
+  <div className=" flex gap-7">
               <Button
                 onClick={handleClick}
                 variant="outline"
@@ -73,12 +96,13 @@ function Home() {
               <Button
                 variant="outline"
                 onClick={handleService}
-                className="flex w-35 h-13 rounded-4xl bg-[#FFDDBE] font-outfit text-lg"
+                className="flex w-35 h-13 rounded-4xl bg-white font-outfit text-lg"
               >
                 Book us now
               </Button>
             </div>
-          </div>
+  </div>
+</div>
           <div className="flex font-geist items-center justify-center px-4">
   <div className="flex flex-col sm:flex-row font-geist w-full justify-evenly items-center sm:items-start gap-6 sm:gap-0">
     {home?.stats?.map((stat, index) => (

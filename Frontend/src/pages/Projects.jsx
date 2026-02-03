@@ -15,7 +15,7 @@ function Projects() {
       
             <div 
               className=" 
-                h-125 max-w-7xl mx-auto                     
+                h-125 max-w-5xl mx-auto                     
                 rounded-4xl 
                 relative 
                 opacity-90 mb-10                      

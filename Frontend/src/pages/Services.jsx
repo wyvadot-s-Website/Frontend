@@ -10,7 +10,7 @@ const Services = () => {
       
       <div 
         className=" 
-          h-125 max-w-6xl mx-auto                     
+          h-125 max-w-5xl mx-auto                     
           rounded-4xl 
           relative 
           opacity-90                     
