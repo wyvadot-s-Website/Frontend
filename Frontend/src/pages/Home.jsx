@@ -61,7 +61,7 @@ function Home() {
   </div>
 
   {/* Content Container */}
-  <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+  <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 gap-5">
     {/* Badge */}
     <div className="mb-6 bg-white backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 shadow-lg border border-white/30">
       <div className="flex -space-x-2">
@@ -75,7 +75,7 @@ function Home() {
     </div>
 
     {/* Main Heading */}
-    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semi-bold text-white text-center leading-tight mb-6 max-w-5xl">
+    <h1 className="text-4xl sm:text-5xl md:text-5xl font-semi-bold text-white text-center leading-tight mb-6 max-w-4xl">
       {home?.hero?.title || "Delivering World-Class Projects, Locally and Beyond."}
     </h1>
 
