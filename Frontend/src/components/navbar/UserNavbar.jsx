@@ -338,7 +338,7 @@ function UserNavbar() {
   return (
     <>
       <nav className="bg-transparent sticky top-0 z-50 pt-2 sm:pt-3 lg:pt-5 px-5">
-  <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 shadow-lg rounded-2xl lg:rounded-full bg-[#212121]">
+  <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 shadow-lg rounded-2xl lg:rounded-full bg-white">
   <div className="flex justify-between items-center h-12 sm:h-14 lg:h-11">
           {/* Logo */}
 <Link to="/" className="flex items-center">

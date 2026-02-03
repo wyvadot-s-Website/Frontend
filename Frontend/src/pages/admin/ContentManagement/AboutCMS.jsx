@@ -101,119 +101,150 @@ export default function AboutCMS() {
   };
 
   return (
-    <TabsContent value="about" className="space-y-6">
-      {/* About Us - Main Heading */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">
-          About Us - Main Heading
-        </h3>
+    <TabsContent value="about" className="space-y-8">
+  {/* Hero Section Image */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      Hero Section Image
+    </label>
+    <div className="flex items-center gap-4">
+      <div className="flex-1">
         <Input
-          value={form.aboutText}
-          onChange={(e) =>
-            setForm({ ...form, aboutText: e.target.value })
-          }
+          type="file"
+          accept="image/*"
+          className="hidden"
+          id="about-hero-bg"
+          onChange={(e) => setHeroImage(e.target.files?.[0] || null)}
         />
+        <Label 
+          htmlFor="about-hero-bg" 
+          className="flex items-center justify-between w-full border border-gray-300 rounded-md p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-gray-600">
+            {heroImage ? heroImage.name : "No file chosen"}
+          </span>
+        </Label>
       </div>
+      <Button 
+        onClick={handleHeroUpload}
+        className="bg-orange-500 hover:bg-orange-600 text-white px-6"
+      >
+        <Upload className="mr-2 h-4 w-4" />
+        Upload
+      </Button>
+    </div>
+  </div>
 
-      {/* About Us - Scroll Text */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">
-          About Us - Scroll Text
-        </h3>
+  {/* About Us - Main Heading */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      About Us - Main Heading
+    </label>
+    <Input
+      value={form.aboutText}
+      onChange={(e) => setForm({ ...form, aboutText: e.target.value })}
+      placeholder="About Wyvadotr"
+      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+    />
+  </div>
+
+  {/* About Us - Scroll Text */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      About Us - Scroll Text
+    </label>
+    <Input
+      value={form.promiseText}
+      onChange={(e) => setForm({ ...form, promiseText: e.target.value })}
+      placeholder="Our Promise as a company ......"
+      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+    />
+  </div>
+
+  {/* History */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      History
+    </label>
+    <Input
+      value={form.history}
+      onChange={(e) => setForm({ ...form, history: e.target.value })}
+      placeholder="Our Promise as a company ......"
+      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+    />
+  </div>
+
+  {/* Mission */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      Mission
+    </label>
+    <Input
+      value={form.mission}
+      onChange={(e) => setForm({ ...form, mission: e.target.value })}
+      placeholder="Our Promise as a company ......"
+      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+    />
+  </div>
+
+  {/* Vision */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      Vision
+    </label>
+    <Input
+      value={form.vision}
+      onChange={(e) => setForm({ ...form, vision: e.target.value })}
+      placeholder="Our Promise as a company ......"
+      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+    />
+  </div>
+
+  {/* About Us - Scroll Images */}
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-gray-700">
+      About Us - Scroll Images
+    </label>
+    <div className="flex items-center gap-4">
+      <div className="flex-1">
         <Input
-          value={form.promiseText}
-          onChange={(e) =>
-            setForm({ ...form, promiseText: e.target.value })
-          }
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          id="about-spotlight"
+          onChange={(e) => setPromiseImages([...e.target.files])}
         />
+        <Label 
+          htmlFor="about-spotlight" 
+          className="flex items-center justify-between w-full border border-gray-300 rounded-md p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-gray-600">
+            {promiseImages && promiseImages.length > 0 
+              ? `${promiseImages.length} file(s) selected (Select 4)` 
+              : "No file chosen (Select 4)"}
+          </span>
+        </Label>
       </div>
+      <Button 
+        onClick={handlePromiseUpload}
+        className="bg-orange-500 hover:bg-orange-600 text-white px-6"
+      >
+        <Upload className="mr-2 h-4 w-4" />
+        Upload
+      </Button>
+    </div>
+  </div>
 
-      {/* History */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">History</h3>
-        <Input
-          value={form.history}
-          onChange={(e) =>
-            setForm({ ...form, history: e.target.value })
-          }
-        />
-      </div>
-
-      {/* Mission */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">Mission</h3>
-        <Input
-          value={form.mission}
-          onChange={(e) =>
-            setForm({ ...form, mission: e.target.value })
-          }
-        />
-      </div>
-
-      {/* Vision */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">Vision</h3>
-        <Input
-          value={form.vision}
-          onChange={(e) =>
-            setForm({ ...form, vision: e.target.value })
-          }
-        />
-      </div>
-
-      {/* Hero Section Background */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">
-          Hero Section Background
-        </h3>
-        <div className="flex items-center gap-4">
-          <Input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id="about-hero-bg"
-            onChange={(e) => setHeroImage(e.target.files[0])}
-          />
-          <Label htmlFor="about-hero-bg" className="border p-4 cursor-pointer">
-            Select Image
-          </Label>
-          <Button onClick={handleHeroUpload}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload
-          </Button>
-        </div>
-      </div>
-
-      {/* Spotlight Images */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">
-          About Us - Spotlight Images
-        </h3>
-        <div className="flex items-center gap-4">
-          <Input
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            id="about-spotlight"
-            onChange={(e) => setPromiseImages([...e.target.files])}
-          />
-          <Label htmlFor="about-spotlight" className="border p-4 cursor-pointer">
-            Select Images (Max 4)
-          </Label>
-          <Button onClick={handlePromiseUpload}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex justify-end pt-6">
-        <Button onClick={handleSaveText}>
-          <Upload className="mr-2 h-4 w-4" />
-          Save
-        </Button>
-      </div>
-    </TabsContent>
+  {/* Save Button */}
+  <div className="pt-4">
+    <Button 
+      onClick={handleSaveText}
+      className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-8"
+    >
+      Save About Section
+    </Button>
+  </div>
+</TabsContent>
   );
 }
