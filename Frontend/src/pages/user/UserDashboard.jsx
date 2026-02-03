@@ -4,7 +4,7 @@ import logo from "../../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png";
 import { toast } from "sonner";
 import { fetchMyServiceRequests } from "@/services/userServiceRequestService";
 import ServiceRequestDetailModal from "@/components/user/ServiceRequestDetailModal";
-import ServiceComponent from "@/components/service.jsx";
+import UserServiceComponent from "@/components/UserService.jsx";
 import { fetchMyOrders } from "@/services/userOrderService";
 import UserOrderDetailModal from "@/components/user/UserOrderDetailModal";
 
@@ -108,7 +108,7 @@ function UserDashboard() {
       {/* Dashboard Content */}
       <div className="min-h-screen bg-gray-50 px-6 py-8 space-y-10">
         {/* Top Service Cards */}
-        <ServiceComponent />
+        <UserServiceComponent />
 
         {/* Service Project Table */}
 <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">

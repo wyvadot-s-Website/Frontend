@@ -6,6 +6,7 @@ import Arise from "../../public/Ariel.png"
 import NNPC from "../../public/nnpc.png"
 import Baldor from "../../public/baldor.png"
 import ABB from "../../public/abb.png"
+import Marquee from "react-fast-marquee";
 function ContactForm() {
   const [openIndex, setOpenIndex] = useState(null);
   const navigate = useNavigate();
@@ -37,15 +38,35 @@ function ContactForm() {
     <div className="bg-white">
       {/* Client Logos Section */}
       <div className="bg-[#FF8D28] py-15 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h3 className="text-white text-4xl font-semibold mb-6">Clients / Expertise / Partners</h3>
-          <div className="flex items-center justify-start gap-6 flex-wrap">
-            {clientLogos.map((client, idx) => (
-              <img src={client.logo} alt="" className='w-40'/>
-            ))}
+  <div className="max-w-6xl mx-auto">
+    <h3 className="text-white text-4xl font-semibold mb-6">Clients / Expertise / Partners</h3>
+    
+    <div className="relative">
+      {/* Left gradient fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#FF8D28] to-transparent z-10 pointer-events-none"></div>
+      
+      {/* Right gradient fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#FF8D28] to-transparent z-10 pointer-events-none"></div>
+      
+      <Marquee 
+        gradient={false} 
+        speed={50}
+        pauseOnHover={true}
+        className="py-8"
+      >
+        {clientLogos.map((client, idx) => (
+          <div key={idx} className="mx-8">
+            <img 
+              src={client.logo} 
+              alt={client.name} 
+              className="w-40 h-auto object-contain"
+            />
           </div>
-        </div>
-      </div>
+        ))}
+      </Marquee>
+    </div>
+  </div>
+</div>
 
       {/* FAQ Section */}
       <div className="max-w-2xl mx-auto px-4 py-16">
