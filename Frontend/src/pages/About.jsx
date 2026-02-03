@@ -23,7 +23,7 @@ function About() {
   return (
     <div className="bg-white font-SF">
       {/* HERO */}
-      <div className="mx-auto max-w-5xl relative pt-10">
+      <div className="mx-auto max-w-5xl relative pt-10 px-5 lg:px-0">
         <img src={about.heroImage?.url} alt="About Hero" />
 
         <div className="absolute inset-0 flex items-center justify-center">

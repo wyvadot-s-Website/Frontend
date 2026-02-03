@@ -14,11 +14,10 @@ function Projects() {
     <div className='font-SF mt-10'>
       
             <div 
-              className=" 
-                h-125 max-w-5xl mx-auto                     
+              className="  max-w-5xl mx-auto                     
                 rounded-4xl 
                 relative 
-                opacity-90 mb-10                      
+                opacity-90 mb-10  px-5 lg:px-0                    
               "
             >
               {/* Background Image Container */}
