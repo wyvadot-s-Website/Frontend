@@ -392,7 +392,7 @@ function UserNavbar() {
     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
     className="text-white p-1"
   >
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-6 h-6" fill="none" stroke="black" viewBox="0 0 24 24">
       {mobileMenuOpen ? (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
       ) : (

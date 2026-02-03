@@ -141,7 +141,7 @@ function ShopListing({
     <div className="min-h-screen bg-white mt-10">
       {/* Hero Section */}
       {/* Hero Section */}
-<div className="h-48 sm:h-64 lg:h-125 max-w-6xl mx-auto rounded-2xl sm:rounded-4xl relative overflow-hidden mb-6 sm:mb-10 mx-4 sm:mx-6 lg:mx-auto">
+<div className="px-5 lg:px-0 max-w-6xl mx-auto rounded-2xl sm:rounded-4xl relative overflow-hidden mb-6 sm:mb-10 mx-4 sm:mx-6 lg:mx-auto">
   <img src={union} alt="Shop hero" className="w-full h-full object-cover" />
   <div className="absolute inset-0 flex items-center justify-center">
     <h1 className="text-white text-2xl sm:text-4xl lg:text-5xl font-bold z-10">
