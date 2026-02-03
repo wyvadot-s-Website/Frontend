@@ -15,10 +15,22 @@ const homeContentSchema = new mongoose.Schema(
     hero: {
       title: { type: String, default: "" },
       subtitle: { type: String, default: "" },
-      backgroundImage: {
-        url: { type: String, default: "" },
-        publicId: { type: String, default: "" }
-      }
+
+      // ✅ NEW: slider images (max 4)
+      backgroundImages: {
+        type: [
+          {
+            url: { type: String, default: "" },
+            publicId: { type: String, default: "" },
+            createdAt: { type: Date, default: Date.now },
+          },
+        ],
+        default: [],
+        validate: {
+          validator: (v) => v.length <= 4,
+          message: "Hero background images cannot exceed 4 items",
+        },
+      },
     },
 
     stats: {
