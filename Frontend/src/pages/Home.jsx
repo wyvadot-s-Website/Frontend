@@ -12,17 +12,7 @@ import image1 from "../../public/6ce65edd3fe199d15a1a3b3cec6faeec5ba9e8ce.png"
 import image2 from "../../public/733a1fa5964692a927dc20b6a0b74974823367a8.png"
 import image3 from "../../public/21ac43fe069af5d46cccba0f640e45e8116eff60.png"
 
-const settings = {
-  dots: true,
-  infinite: true,
-  speed: 700,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  autoplay: true,
-  autoplaySpeed: 4500,
-  fade: true,
-  cssEase: 'linear'
-};
+
 
 function Home() {
   const navigate = useNavigate();
