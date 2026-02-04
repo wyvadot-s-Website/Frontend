@@ -168,3 +168,4 @@ export const deleteWhyChoose = async (req, res) => {
     whyChooseUs: home.whyChooseUs,
   });
 };
+ 
