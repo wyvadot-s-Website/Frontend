@@ -3,12 +3,10 @@ import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import { sendPaidOrderNotificationToShopAdmins } from "../config/email.js";
 import { notifyAdminsByRoles, notifyUser } from "../utils/notify.js";
+import { getPaystackConfig } from "../config/paystack.js";
 
-const PAYSTACK_BASE_URL =
-  process.env.PAYSTACK_BASE_URL || "https://api.paystack.co";
-const SECRET = process.env.PAYSTACK_SECRET_KEY;
-const WEBHOOK_SECRET = process.env.PAYSTACK_WEBHOOK_SECRET || SECRET;
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const { BASE_URL: PAYSTACK_BASE_URL, SECRET, WEBHOOK_SECRET, FRONTEND_URL } =
+  getPaystackConfig();
 
 const SHOP_ALLOWED_ROLES = [
   "super_admin",
@@ -27,7 +25,6 @@ async function applyInventoryDeduction(order) {
   // already done
   if (order.inventoryUpdated) return { ok: true, skipped: true };
 
-  // no items -> nothing to do
   const items = Array.isArray(order.items) ? order.items : [];
   if (!items.length) {
     order.inventoryUpdated = true;
@@ -36,21 +33,18 @@ async function applyInventoryDeduction(order) {
     return { ok: true, skipped: true };
   }
 
-  // Validate + decrement per quantity (atomic per product)
   for (const it of items) {
-    if (!it?.productId) continue; // productId can be null in your schema
+    if (!it?.productId) continue;
 
     const qty = Number(it.quantity || 0);
     if (qty < 1) continue;
 
-    // Atomic check: only decrement if enough stock exists
     const result = await Product.updateOne(
       { _id: it.productId, stockQuantity: { $gte: qty } },
       { $inc: { stockQuantity: -qty, soldCount: qty } },
     );
 
     if (result.modifiedCount !== 1) {
-      // Not enough stock OR missing product
       return {
         ok: false,
         reason: `Insufficient stock for ${it.name}`,
@@ -58,11 +52,8 @@ async function applyInventoryDeduction(order) {
       };
     }
 
-    // Because updateOne bypasses productSchema.pre("save"),
-    // we must ensure status reflects stock after decrement.
-    const p = await Product.findById(it.productId).select(
-      "stockQuantity status",
-    );
+    // ensure status reflects stock after decrement.
+    const p = await Product.findById(it.productId).select("stockQuantity status");
     if (p) {
       if ((p.stockQuantity ?? 0) <= 0 && p.status === "active") {
         p.status = "out_of_stock";
@@ -75,7 +66,6 @@ async function applyInventoryDeduction(order) {
     }
   }
 
-  // Mark as done so webhook/verify won't double-decrement
   order.inventoryUpdated = true;
   order.inventoryUpdatedAt = new Date();
   await order.save();
@@ -86,7 +76,7 @@ async function applyInventoryDeduction(order) {
 // 1) INIT (guest + user)
 export const initPaystackPayment = async (req, res) => {
   try {
-    const { orderId, paymentMethod, email } = req.body; // email required for guest
+    const { orderId, paymentMethod, email } = req.body;
 
     if (!orderId) {
       return res
@@ -96,8 +86,6 @@ export const initPaystackPayment = async (req, res) => {
 
     const method = normalizeMethod(paymentMethod);
 
-    // ✅ If user is logged in, req.user exists
-    // ✅ If guest, req.user is undefined, so email is required
     let order = null;
 
     if (req.user?._id) {
@@ -128,8 +116,8 @@ export const initPaystackPayment = async (req, res) => {
         .json({ success: false, message: "Invalid order total" });
     }
 
+    // Reference must be unique
     const reference = `${order.orderId}_${Date.now()}`;
-
     const channels = method === "bank_transfer" ? ["bank_transfer"] : ["card"];
 
     const payload = {
@@ -137,9 +125,11 @@ export const initPaystackPayment = async (req, res) => {
       amount: amountKobo,
       reference,
       channels,
-      callback_url: `${FRONTEND_URL}/payment/callback?orderId=${order.orderId}`,
+      callback_url: `${FRONTEND_URL}/payment/callback?orderId=${encodeURIComponent(
+        order.orderId,
+      )}`,
       metadata: {
-        orderId: order.orderId,
+        orderId: order.orderId, // ✅ critical for verify safety
         userId: String(order.userId || ""),
         guestEmail: order.customer.email,
       },
@@ -164,7 +154,7 @@ export const initPaystackPayment = async (req, res) => {
     }
 
     order.payment.reference = reference;
-    order.payment.method = channels[0]; // "card" or "bank_transfer"
+    order.payment.method = channels[0];
     order.payment.status = "pending";
     await order.save();
 
@@ -178,7 +168,7 @@ export const initPaystackPayment = async (req, res) => {
   }
 };
 
-// 2) VERIFY (PUBLIC)
+// 2) VERIFY (PUBLIC) — HARDENED
 export const verifyPaystackPayment = async (req, res) => {
   try {
     const { reference, orderId } = req.query;
@@ -207,9 +197,8 @@ export const verifyPaystackPayment = async (req, res) => {
     const tx = data.data;
     const paid = tx.status === "success";
 
-    const order = await Order.findOne({
-      $or: [{ "payment.reference": reference }, { orderId }],
-    });
+    // ✅ CRITICAL FIX 1: find by reference only (prevents paying wrong order)
+    const order = await Order.findOne({ "payment.reference": reference });
 
     if (!order) {
       return res
@@ -217,8 +206,32 @@ export const verifyPaystackPayment = async (req, res) => {
         .json({ success: false, message: "Order not found for reference" });
     }
 
+    // ✅ Optional consistency check: orderId passed in callback must match
+    if (orderId && String(orderId) !== String(order.orderId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Order mismatch for this reference",
+      });
+    }
+
+    // ✅ CRITICAL FIX 2: verify amount & metadata
+    const expectedAmount = Math.round(Number(order?.totals?.total || 0) * 100);
+    if (Number(tx.amount) !== expectedAmount) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount mismatch. Verification rejected.",
+      });
+    }
+
+    const metaOrderId = tx?.metadata?.orderId;
+    if (metaOrderId && String(metaOrderId) !== String(order.orderId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Metadata order mismatch. Verification rejected.",
+      });
+    }
+
     if (paid) {
-      // only do paid actions once (idempotent)
       if (order.payment.status !== "paid") {
         order.payment.status = "paid";
         order.payment.reference = reference;
@@ -230,7 +243,6 @@ export const verifyPaystackPayment = async (req, res) => {
         });
         await order.save();
 
-        // email to shop-enabled admins (once)
         const itemsCount = Array.isArray(order.items)
           ? order.items.reduce((sum, it) => sum + Number(it.quantity || 0), 0)
           : 0;
@@ -245,7 +257,6 @@ export const verifyPaystackPayment = async (req, res) => {
           createdAt: order?.createdAt,
         });
 
-        // DB notification to shop admins (once)
         await notifyAdminsByRoles({
           roles: SHOP_ALLOWED_ROLES,
           scope: "shop",
@@ -255,7 +266,6 @@ export const verifyPaystackPayment = async (req, res) => {
           meta: { orderId: order.orderId },
         });
 
-        // DB notification to user (only if logged-in user)
         if (order.userId) {
           await notifyUser({
             userId: order.userId,
@@ -267,21 +277,24 @@ export const verifyPaystackPayment = async (req, res) => {
           });
         }
 
-        // inventory deduction
         const inv = await applyInventoryDeduction(order);
         if (!inv.ok) {
           order.updates.unshift({
             status: "processing",
-            note: `Payment paid but inventory deduction failed: ${inv.reason || "unknown"}`,
+            note: `Payment paid but inventory deduction failed: ${
+              inv.reason || "unknown"
+            }`,
             updatedBy: null,
           });
           await order.save();
         }
       }
     } else {
-      // only mark failed when paystack says it's not successful
-      order.payment.status = "failed";
-      await order.save();
+      // only mark failed if not success
+      if (order.payment.status !== "paid") {
+        order.payment.status = "failed";
+        await order.save();
+      }
     }
 
     return res.json({ success: true, paid, order });
@@ -290,7 +303,6 @@ export const verifyPaystackPayment = async (req, res) => {
   }
 };
 
-// 3) WEBHOOK (keep, but make sure rawBody exists)
 // 3) WEBHOOK (PUBLIC)
 export const paystackWebhook = async (req, res) => {
   try {
@@ -307,7 +319,6 @@ export const paystackWebhook = async (req, res) => {
 
     const event = req.body;
 
-    // ✅ Only handle successful charges
     if (event?.event !== "charge.success") {
       return res.sendStatus(200);
     }
@@ -315,11 +326,22 @@ export const paystackWebhook = async (req, res) => {
     const reference = event?.data?.reference;
     if (!reference) return res.sendStatus(200);
 
-    // ✅ Find the order for this payment reference
     const order = await Order.findOne({ "payment.reference": reference });
     if (!order) return res.sendStatus(200);
 
-    // ✅ Mark paid (idempotent)
+    // ✅ extra safety: validate amount from webhook too
+    const expectedAmount = Math.round(Number(order?.totals?.total || 0) * 100);
+    const webhookAmount = Number(event?.data?.amount || 0);
+    if (webhookAmount !== expectedAmount) {
+      order.updates.unshift({
+        status: order.status || "processing",
+        note: `Webhook amount mismatch: expected ${expectedAmount}, got ${webhookAmount}`,
+        updatedBy: null,
+      });
+      await order.save();
+      return res.sendStatus(200);
+    }
+
     if (order.payment.status !== "paid") {
       order.payment.status = "paid";
       order.status = "processing";
@@ -330,7 +352,6 @@ export const paystackWebhook = async (req, res) => {
       });
       await order.save();
 
-      // ✅ Send email to shop-enabled admins (only once)
       const itemsCount = Array.isArray(order.items)
         ? order.items.reduce((sum, it) => sum + Number(it.quantity || 0), 0)
         : 0;
@@ -346,12 +367,13 @@ export const paystackWebhook = async (req, res) => {
       });
     }
 
-    // ✅ Deduct inventory once (idempotent)
     const inv = await applyInventoryDeduction(order);
     if (!inv.ok) {
       order.updates.unshift({
         status: "processing",
-        note: `Webhook paid but inventory deduction failed: ${inv.reason || "unknown"}`,
+        note: `Webhook paid but inventory deduction failed: ${
+          inv.reason || "unknown"
+        }`,
         updatedBy: null,
       });
       await order.save();
