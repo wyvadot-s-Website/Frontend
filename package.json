@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "embla-carousel-autoplay": "^8.6.0",
-    "embla-carousel-react": "^8.6.0",
-    "react-slick": "^0.31.0",
-    "slick-carousel": "^1.8.1",
-    "swiper": "^12.1.0"
-  }
-}

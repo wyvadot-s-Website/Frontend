@@ -15,6 +15,12 @@ const homeContentSchema = new mongoose.Schema(
     hero: {
       title: { type: String, default: "" },
       subtitle: { type: String, default: "" },
+<<<<<<< HEAD
+      backgroundImage: {
+        url: { type: String, default: "" },
+        publicId: { type: String, default: "" }
+      }
+=======
 
       // ✅ NEW: slider images (max 4)
       backgroundImages: {
@@ -31,6 +37,7 @@ const homeContentSchema = new mongoose.Schema(
           message: "Hero background images cannot exceed 4 items",
         },
       },
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
     },
 
     stats: {

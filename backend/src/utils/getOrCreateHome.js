@@ -5,11 +5,15 @@ export const getOrCreateHomeContent = async () => {
 
   if (!home) {
     home = await HomeContent.create({
+<<<<<<< HEAD
+      hero: {},
+=======
       hero: {
         title: "",
         subtitle: "",
         backgroundImages: [],
       },
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
       stats: [
         { label: "Years of Combined Experience", value: "0+" },
         { label: "Projects Delivered", value: "0+" },
@@ -20,6 +24,8 @@ export const getOrCreateHomeContent = async () => {
     });
   }
 
+<<<<<<< HEAD
+=======
   // ✅ for older DB records that still have hero but not backgroundImages
   if (!home.hero) home.hero = {};
   if (!Array.isArray(home.hero.backgroundImages)) {
@@ -27,5 +33,6 @@ export const getOrCreateHomeContent = async () => {
     await home.save();
   }
 
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
   return home;
 };
