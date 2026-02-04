@@ -59,7 +59,7 @@ function CartView({
           <div className="md:col-span-2 space-y-4">
             {cart.length === 0 ? (
               <div className="bg-white rounded-lg p-10 text-center text-gray-600">
-                Your cart is empty.
+                <img src="../../../public/Frame 2147224274.svg" alt="Your cart is empty" className='flex place-self-center p-5' />
               </div>
             ) : (
               cart.map((item) => {

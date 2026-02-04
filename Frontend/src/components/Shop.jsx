@@ -3,6 +3,7 @@ import { Heart } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
 import { fetchProducts } from '../services/shopService'
 import { toast } from 'sonner'
+import AuthModal from '@/pages/AuthModal.jsx'
 
 function formatNaira(amount) {
   const n = Number(amount || 0);
@@ -38,6 +39,12 @@ function Shop({ onProductClick }) {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalView, setAuthModalView] = useState("login");
+
+  // Check if user is logged in
+  const token = localStorage.getItem("token");
+  const isLoggedIn = !!token;
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -75,6 +82,35 @@ function Shop({ onProductClick }) {
 
   const handleClick = () => { 
     navigate("/shop");
+  };
+
+  // Handle product click - check if logged in
+  const handleProductClick = (productId) => {
+    if (!isLoggedIn) {
+      toast.error("Please login to view product details");
+      setAuthModalView("login");
+      setShowAuthModal(true);
+      return;
+    }
+    
+    if (onProductClick) {
+      onProductClick(productId);
+    }
+  };
+
+  // Handle add to cart - check if logged in
+  const handleAddToCart = (e, product) => {
+    e.stopPropagation();
+    
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to cart");
+      setAuthModalView("login");
+      setShowAuthModal(true);
+      return;
+    }
+    
+    // Add to cart functionality
+    toast.success(`${product.name} added to cart!`);
   };
 
   if (loading) {
@@ -138,7 +174,7 @@ function Shop({ onProductClick }) {
             return (
               <div 
                 key={id} 
-                onClick={() => onProductClick?.(id)} 
+                onClick={() => handleProductClick(id)} 
                 className="rounded-lg overflow-hidden cursor-pointer"
               >
                 {/* Product Details */}
@@ -149,9 +185,19 @@ function Shop({ onProductClick }) {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
+                          
+                          if (!isLoggedIn) {
+                            toast.error("Please login to use Wishlist");
+                            setAuthModalView("login");
+                            setShowAuthModal(true);
+                            return;
+                          }
+                          
                           // Add wishlist functionality here if needed
+                          toast.success("Added to wishlist");
                         }}
                         className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Wishlist"
                       >
                         <Heart className="w-5 h-5 text-gray-400" />
                       </button>
@@ -199,11 +245,7 @@ function Shop({ onProductClick }) {
                   
                   {/* Add to Cart Button */}
                   <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Add to cart functionality
-                      toast.success(`${product.name} added to cart!`);
-                    }}
+                    onClick={(e) => handleAddToCart(e, product)}
                     className="w-full bg-[#FF8D28] hover:bg-[#e67d1f] text-white font-medium py-3 rounded-lg transition-colors"
                   >
                     Add to cart
@@ -224,6 +266,13 @@ function Shop({ onProductClick }) {
           </button>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        initialView={authModalView}
+      />
     </div>
   );
 }

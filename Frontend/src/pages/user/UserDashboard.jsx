@@ -140,7 +140,7 @@ function UserDashboard() {
         ) : myRequests.length === 0 ? (
           <tr>
             <td className="py-6 text-sm text-gray-500" colSpan={9}>
-              No service requests yet.
+              <img src="../../../public/Frame 2147224307.svg" alt="" srcset="" className='flex place-self-center p-5'/>
             </td>
           </tr>
         ) : (
@@ -213,7 +213,9 @@ function UserDashboard() {
       <p className="py-6 text-sm text-gray-500 text-center">Loading...</p>
     ) : myRequests.length === 0 ? (
       <p className="py-6 text-sm text-gray-500 text-center">
+        <img src="../../../public/Frame 2147224306.svg" alt="" srcset="" />
         No service requests yet.
+
       </p>
     ) : (
       myRequests.map((r) => {
@@ -327,7 +329,8 @@ function UserDashboard() {
         ) : myOrders.length === 0 ? (
           <tr>
             <td className="py-6 text-sm text-gray-500" colSpan={7}>
-              No orders yet.
+              <img src="../../../public/Frame 2147224306.svg" alt="" srcset="" className='flex place-self-center p-5' />
+              
             </td>
           </tr>
         ) : (
@@ -384,7 +387,9 @@ function UserDashboard() {
     {loadingOrders ? (
       <p className="py-6 text-sm text-gray-500 text-center">Loading orders...</p>
     ) : myOrders.length === 0 ? (
-      <p className="py-6 text-sm text-gray-500 text-center">No orders yet.</p>
+      <p className="py-6 text-sm text-gray-500 text-center">
+        <img src="../../../public/Frame 2147224306.svg" alt="" srcset="" />
+        No orders yet.</p>
     ) : (
       myOrders.map((o) => {
         const itemsCount = Array.isArray(o.items)

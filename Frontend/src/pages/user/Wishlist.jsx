@@ -124,7 +124,8 @@ export default function Wishlist() {
     <div className="px-4 sm:px-6 py-10 text-sm text-gray-500">Loading...</div>
   ) : rows.length === 0 ? (
     <div className="px-4 sm:px-6 py-10 text-sm text-gray-500">
-      No items in your wishlist yet.
+      <img src="../../../public/Group 2087326592.svg" alt="Your cart is empty" className='flex place-self-center p-5' />
+      <p className='flex place-self-center p-5'>No items in your wishlist yet.</p>
     </div>
   ) : (
     rows.map((p) => {
