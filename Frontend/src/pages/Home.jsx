@@ -8,14 +8,29 @@ import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchHomeContent } from "../services/homeService";
 import { fetchAboutContent } from "../services/aboutService.js";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import image1 from "../../public/6ce65edd3fe199d15a1a3b3cec6faeec5ba9e8ce.png"
+import image2 from "../../public/733a1fa5964692a927dc20b6a0b74974823367a8.png"
+import image3 from "../../public/21ac43fe069af5d46cccba0f640e45e8116eff60.png"
+
+const settings = {
+  dots: true,
+  infinite: true,
+  speed: 700,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  autoplay: true,
+  autoplaySpeed: 4500,
+  fade: true,
+  cssEase: 'linear'
+};
 
 function Home() {
   const navigate = useNavigate();
   const [home, setHome] = useState(null);
   const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
-     const [about, setAbout] = useState(null);
-=======
   const [about, setAbout] = useState(null);
 
   const [activeBg, setActiveBg] = useState(0);
@@ -39,7 +54,6 @@ function Home() {
   useEffect(() => {
     setActiveBg(0);
   }, [bgImages.length]);
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
 
   useEffect(() => {
     fetchHomeContent()
@@ -48,18 +62,6 @@ function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-<<<<<<< HEAD
-    useEffect(() => {
-      const loadAbout = async () => {
-        const data = await fetchAboutContent();
-        setAbout(data.data);
-      };
-      loadAbout();
-    }, []);
-  
-    if (!about) return null;
-
-=======
   useEffect(() => {
     const loadAbout = async () => {
       const data = await fetchAboutContent();
@@ -69,7 +71,6 @@ function Home() {
   }, []);
 
   if (!about) return null;
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
   if (loading) return null; // or spinner
 
   const handleClick = () => {
@@ -83,113 +84,68 @@ function Home() {
   return (
     <div className="bg-white font-SF">
       <div className="bg-white pt-16 px-4">
-        <div className="max-w-5xl mx-auto">
-<<<<<<< HEAD
-         <div className="relative w-full h-[90vh] rounded-2xl overflow-hidden mb-10">
-  {/* Background Image */}
-  <div
-    className="absolute inset-0 bg-cover bg-center bg-no-repeat "
-    style={
-      home?.hero?.backgroundImage?.url
-        ? { backgroundImage: `url(${home.hero.backgroundImage.url})` }
-        : { backgroundColor: '#1a1a1a' }
-    }
-  >
-    {/* Dark Overlay for better text readability */}
-    <div className="absolute inset-0 bg-black/50"></div>
-  </div>
-
-  {/* Content Container */}
-  <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 gap-5">
-    {/* Badge */}
-    <div className="mb-6 bg-white backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 shadow-lg border border-white/30">
-      <div className="flex -space-x-2">
-        <div className="w-6 h-6 rounded-full bg-orange-400 border-2 border-white"></div>
-        <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
-        <div className="w-6 h-6 rounded-full bg-pink-400 border-2 border-white"></div>
+        <div className="max-w-6xl mx-auto">
+          <div className="relative w-full h-[90vh] rounded-2xl overflow-hidden mb-10">
+         {/* Background Slider - Enhanced */}
+<div className="absolute inset-0">
+  {bgImages.map((img, idx) => (
+    <div
+      key={idx}
+      className={`absolute inset-0 transition-opacity duration-1000 ${
+        idx === activeBg ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className="w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${img.url})` }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
       </div>
-      <span className="text-sm font-medium text-gray-800">
-        500+ Happy Customers
-      </span>
     </div>
-
-    {/* Main Heading */}
-    <h1 className="text-4xl sm:text-5xl md:text-5xl font-semi-bold text-white text-center leading-tight mb-6 max-w-4xl">
-      {home?.hero?.title || "Delivering World-Class Projects, Locally and Beyond."}
-    </h1>
-
-    {/* Subtitle */}
-    <p className="text-base sm:text-lg md:text-xl text-white/90 text-center mb-8 max-w-2xl">
-      {home?.hero?.subtitle || "Your trusted partner for engineering, construction, and project management success."}
-    </p>
-
-   {/* CTA Buttons */}
-  <div className=" flex gap-7">
-              <Button
-                onClick={handleClick}
-                variant="outline"
-                className="flex w-35 h-13 rounded-4xl font-outfit bg-gradient-to-tr from-[#FF8D28] to-[#9E4A00] text-white text-lg"
-              >
-                Shop with us
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleService}
-                className="flex w-35 h-13 rounded-4xl bg-white font-outfit text-lg"
-              >
-                Book us now
-              </Button>
-            </div>
-  </div>
+  ))}
+  
+  {/* Fallback */}
+  {bgImages.length === 0 && (
+    <div className="absolute inset-0 bg-[#1a1a1a]">
+      <div className="absolute inset-0 bg-black/50"></div>
+    </div>
+  )}
 </div>
-          <div className="flex font-geist items-center justify-center px-4">
-  <div className="flex flex-col sm:flex-row font-geist w-full justify-evenly items-center sm:items-start gap-6 sm:gap-0">
-    {home?.stats?.map((stat, index) => (
-      <React.Fragment key={index}>
-        <div className="text-center px-4 sm:px-6 w-full sm:w-auto">
-          <div className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-2">
-            {stat.value}
-          </div>
-          <div className="text-gray-500 text-sm font-normal leading-snug max-w-[200px] sm:max-w-[140px] mx-auto">
-            {stat.label}
-          </div>
-        </div>
-        {index < home.stats.length - 1 && (
-          <div className="hidden sm:block h-16 w-[2px] bg-gray-200 self-center" />
-        )}
-        {index < home.stats.length - 1 && (
-          <div className="block sm:hidden w-full max-w-[200px] h-[1px] bg-gray-200" />
-        )}
-      </React.Fragment>
+
+
+
+{/* Pagination Dots */}
+{bgImages.length > 1 && (
+  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+    {bgImages.map((_, idx) => (
+      <button
+        key={idx}
+        onClick={() => setActiveBg(idx)}
+        className={`h-2 rounded-full transition-all ${
+          idx === activeBg ? 'bg-white w-8' : 'bg-white/50 w-2 hover:bg-white/70'
+        }`}
+        aria-label={`Go to slide ${idx + 1}`}
+      />
     ))}
   </div>
-</div>
-        </div>
-=======
-          <div className="relative w-full h-[90vh] rounded-2xl overflow-hidden mb-10">
-            {/* Background Image */}
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
-              style={
-                currentBgUrl
-                  ? { backgroundImage: `url(${currentBgUrl})` }
-                  : { backgroundColor: "#1a1a1a" }
-              }
-            >
-              {/* Dark Overlay for better text readability */}
-              <div className="absolute inset-0 bg-black/50"></div>
-            </div>
+)}
 
             {/* Content Container */}
             <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 gap-5">
               {/* Badge */}
               <div className="mb-6 bg-white backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 shadow-lg border border-white/30">
                 <div className="flex -space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-orange-400 border-2 border-white"></div>
-                  <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
-                  <div className="w-6 h-6 rounded-full bg-pink-400 border-2 border-white"></div>
+                  <div className="w-10 h-10 rounded-full border-2 border-white">
+                    <img src={image1} alt="" srcset="" className='w-full h-full object-cover rounded-full'/>
+                  </div>
+                  <div className="w-10 h-10 rounded-full border-2 border-white">
+                    <img src={image3} alt="" srcset="" className='w-full h-full object-cover rounded-full'/>
+                  </div>
+                  <div className="w-10 h-10 rounded-full  border-2 border-white">
+                    <img src={image2} alt="" srcset="" className='w-full h-full object-cover rounded-full'/>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-lg font-medium text-gray-800">
                   500+ Happy Customers
                 </span>
               </div>
@@ -297,7 +253,6 @@ function Home() {
           alt="A collage of construction workers and equipment"
           className="w-full h-auto object-cover rounded-lg mt-4 sm:mt-6"
         />
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
       </div>
 
        <SecondHero
@@ -349,8 +304,4 @@ function Home() {
   );
 }
 
-<<<<<<< HEAD
 export default Home;
-=======
-export default Home;
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e

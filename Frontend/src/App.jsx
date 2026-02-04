@@ -28,6 +28,7 @@ import PaymentCallback from "./pages/PaymentCallback.jsx";
 import OrderComplete from "./pages/OrderCompletePage.jsx";
 import Wishlist from "./pages/user/Wishlist.jsx";
 import UserAccount from "./pages/user/UserAccount.jsx";
+import FloatingWhatsApp from './components/FloatingWhatsApp.jsx';
 
 function UserLayout({ children }) {
   return (
@@ -43,6 +44,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" richColors />
+      <FloatingWhatsApp />
       <Router>
         <Routes>
           <Route

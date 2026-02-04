@@ -379,7 +379,7 @@ function UserNavbar() {
     onClick={() => navigate("/cart")}
     className="relative text-white p-1"
   >
-    <ShoppingCart size={22} />
+    <ShoppingCart size={22} color='black'/>
     {cartCount > 0 && (
       <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
         {cartCount}
@@ -767,7 +767,7 @@ function UserNavbar() {
           }}
           className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
         >
-          <ShoppingCart size={18} />
+          <ShoppingCart size={18} color='black'/>
           <span className="text-sm">Cart</span>
           {cartCount > 0 && (
             <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
