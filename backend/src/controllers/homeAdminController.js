@@ -11,11 +11,21 @@ export const getHomeContentAdmin = async (req, res) => {
 };
 
 /**
+<<<<<<< HEAD
  * UPDATE HERO SECTION
+=======
+ * UPDATE HERO SECTION (title/subtitle + slider background images)
+ * - Upload 1..4 images
+ * - If upload 1 => replace 1 oldest
+ * - If upload 2 => replace 2 oldest
+ * - If upload 4 => replace all
+ * - Always keep max 4
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
  */
 export const updateHero = async (req, res) => {
   try {
     const { title, subtitle } = req.body;
+<<<<<<< HEAD
     const file = req.file;
 
     const home = await getOrCreateHomeContent();
@@ -26,6 +36,25 @@ export const updateHero = async (req, res) => {
       }
 
       const uploadToCloudinary = () =>
+=======
+    const files = req.files || []; // ✅ multiple
+
+    const home = await getOrCreateHomeContent();
+
+    // Ensure array exists
+    if (!Array.isArray(home.hero.backgroundImages)) {
+      home.hero.backgroundImages = [];
+    }
+
+    // ✅ Upload images if provided
+    if (files.length > 0) {
+      // Safety: cap to 4
+      const incoming = files.slice(0, 4);
+      const k = incoming.length;
+
+      // Helper upload
+      const uploadOne = (file) =>
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
         new Promise((resolve, reject) => {
           cloudinary.uploader
             .upload_stream({ folder: "home" }, (error, result) => {
@@ -35,12 +64,55 @@ export const updateHero = async (req, res) => {
             .end(file.buffer);
         });
 
+<<<<<<< HEAD
       const upload = await uploadToCloudinary();
 
       home.hero.backgroundImage = {
         url: upload.secure_url,
         publicId: upload.public_id,
       };
+=======
+      // Upload all
+      const uploads = await Promise.all(incoming.map(uploadOne));
+
+      const newImages = uploads.map((u) => ({
+        url: u.secure_url,
+        publicId: u.public_id,
+        createdAt: new Date(),
+      }));
+
+      // Existing (oldest -> newest)
+      const existing = home.hero.backgroundImages;
+
+      // ✅ Overwrite rule
+      // If they upload 4 => clear all old
+      // else replace k oldest (but also respect max 4 even if existing < 4)
+      let toRemove = 0;
+
+      if (k >= 4) {
+        toRemove = existing.length;
+      } else {
+        // Replace k oldest, BUT if adding would exceed 4, remove the extra oldest too.
+        const wouldBe = existing.length + k;
+        const overflow = Math.max(0, wouldBe - 4);
+
+        // Must remove at least k oldest when already full, but also handle overflow
+        toRemove = Math.max(k, overflow);
+        toRemove = Math.min(toRemove, existing.length); // can't remove more than exists
+      }
+
+      // Delete removed images from Cloudinary
+      const removed = existing.slice(0, toRemove);
+      await Promise.all(
+        removed
+          .filter((img) => img?.publicId)
+          .map((img) => cloudinary.uploader.destroy(img.publicId))
+      );
+
+      // Keep remaining + append new
+      const remaining = existing.slice(toRemove);
+      home.hero.backgroundImages = [...remaining, ...newImages].slice(0, 4);
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
     }
 
     if (title !== undefined) home.hero.title = title;
@@ -122,3 +194,7 @@ export const deleteWhyChoose = async (req, res) => {
     whyChooseUs: home.whyChooseUs,
   });
 };
+<<<<<<< HEAD
+=======
+ 
+>>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
