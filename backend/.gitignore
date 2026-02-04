@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-.env
-=======
 .env
 .env.*
 backend/.env
 backend/.env.*
-<<<<<<< HEAD
-=======
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
->>>>>>> aedcdb623a7852626e88ab5fa528adbe00bff313
+
