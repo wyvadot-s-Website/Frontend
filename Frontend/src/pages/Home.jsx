@@ -214,52 +214,8 @@ function Home() {
       />
       <ServiceComponent />
 
-      <div className="flex flex-col gap-3 max-w-6xl mx-auto mb-20 mt-10 px-4 sm:px-6">
-        <div className="flex justify-center lg:justify-start items-center gap-1 mb-2">
-          <div className="flex w-5 h-1.5 bg-black rounded-lg place-self-center" />
-          <p className="flex text-gray-600 text-sm sm:text-md font-medium place-self-center">
-            Our Company History
-          </p>
-        </div>
 
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 text-center lg:text-left">
-          Why Choose Us
-        </h2>
 
-        <div className="flex w-full justify-center items-center">
-          <div className="flex flex-wrap lg:flex-nowrap w-full justify-center lg:justify-between gap-4 sm:gap-5">
-            {home?.whyChooseUs?.map((item, index) => (
-              <div
-                key={item._id}
-                className={`bg-[#FAFAFA] rounded-lg p-4 sm:p-5 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] border border-[#F1F5F966] flex flex-col gap-3 sm:gap-4 ${
-                  index === 0 && home?.whyChooseUs?.length === 1
-                    ? "lg:max-w-[400px]"
-                    : ""
-                }`}
-              >
-                <p className="text-xl sm:text-2xl font-semibold">
-                  {item.title}
-                </p>
-                <p className="text-gray-600 font-normal text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <img
-          src={ChooseImage}
-          alt="A collage of construction workers and equipment"
-          className="w-full h-auto object-cover rounded-lg mt-4 sm:mt-6"
-        />
-      </div>
-
-       <SecondHero
-          promiseText={about.promiseText}
-          promiseImages={about.promiseImages}
-        />
-      <ServiceComponent />
 
       <div className="flex flex-col gap-3 max-w-6xl mx-auto mb-20 mt-10 px-4 sm:px-6">
   <div className="flex justify-center lg:justify-start items-center gap-1 mb-2">
