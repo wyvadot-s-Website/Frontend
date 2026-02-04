@@ -11,32 +11,16 @@ export const getHomeContentAdmin = async (req, res) => {
 };
 
 /**
-<<<<<<< HEAD
- * UPDATE HERO SECTION
-=======
  * UPDATE HERO SECTION (title/subtitle + slider background images)
  * - Upload 1..4 images
  * - If upload 1 => replace 1 oldest
  * - If upload 2 => replace 2 oldest
  * - If upload 4 => replace all
  * - Always keep max 4
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
  */
 export const updateHero = async (req, res) => {
   try {
     const { title, subtitle } = req.body;
-<<<<<<< HEAD
-    const file = req.file;
-
-    const home = await getOrCreateHomeContent();
-
-    if (file) {
-      if (home.hero.backgroundImage?.publicId) {
-        await cloudinary.uploader.destroy(home.hero.backgroundImage.publicId);
-      }
-
-      const uploadToCloudinary = () =>
-=======
     const files = req.files || []; // ✅ multiple
 
     const home = await getOrCreateHomeContent();
@@ -54,7 +38,6 @@ export const updateHero = async (req, res) => {
 
       // Helper upload
       const uploadOne = (file) =>
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
         new Promise((resolve, reject) => {
           cloudinary.uploader
             .upload_stream({ folder: "home" }, (error, result) => {
@@ -64,14 +47,6 @@ export const updateHero = async (req, res) => {
             .end(file.buffer);
         });
 
-<<<<<<< HEAD
-      const upload = await uploadToCloudinary();
-
-      home.hero.backgroundImage = {
-        url: upload.secure_url,
-        publicId: upload.public_id,
-      };
-=======
       // Upload all
       const uploads = await Promise.all(incoming.map(uploadOne));
 
@@ -112,7 +87,6 @@ export const updateHero = async (req, res) => {
       // Keep remaining + append new
       const remaining = existing.slice(toRemove);
       home.hero.backgroundImages = [...remaining, ...newImages].slice(0, 4);
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
     }
 
     if (title !== undefined) home.hero.title = title;
@@ -194,7 +168,4 @@ export const deleteWhyChoose = async (req, res) => {
     whyChooseUs: home.whyChooseUs,
   });
 };
-<<<<<<< HEAD
-=======
  
->>>>>>> 6efa17bfc8de01febad764d06598d1a8e2c3442e
