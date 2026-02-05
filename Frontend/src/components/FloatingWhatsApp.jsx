@@ -6,8 +6,8 @@ function FloatingWhatsApp() {
   const [isHovered, setIsHovered] = useState(false);
   
   // Replace with your actual WhatsApp number (include country code, no + or spaces)
-  const whatsappNumber = '23481027305448'; // Example: Nigerian number
-  const message = encodeURIComponent('Hello! I need assistance with your services.');
+  const whatsappNumber = '2348102730544'; // Example: Nigerian number
+  const message = encodeURIComponent('Hello! I need assistance with your services on the wyvadot PR website.');
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   return (

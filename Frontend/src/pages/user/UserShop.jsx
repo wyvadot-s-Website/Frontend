@@ -1,10 +1,12 @@
 // src/pages/user/UserShop.jsx
+// ✅ FIXED: Properly handles loading state when navigating to product detail
+
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 
 import ShopListing from "../ShopListing";
 import ProductDetail from "../ProductDetail";
-import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 import { fetchProducts, fetchProductById } from "../../services/shopService";
 
@@ -38,17 +40,17 @@ const normalizeCartItem = (p, qty = 1) => {
   };
 };
 
-function UserShop() {
-  const [currentView, setCurrentView] = useState("listing");
+function UserShop({ isProductDetailRoute }) {
+  const navigate = useNavigate();
+  const params = useParams();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  
   const [quantity, setQuantity] = useState(1);
-
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [loadingProduct, setLoadingProduct] = useState(false); // ✅ NEW: Track product loading
 
   // ✅ server-driven filters + pagination
   const [filters, setFilters] = useState({
@@ -57,12 +59,11 @@ function UserShop() {
     minPrice: "",
     maxPrice: "",
     sort: "newest",
-    inStock: "", // "true" or ""
+    inStock: "",
     page: 1,
     limit: 12,
   });
 
-  // ✅ meta returned from backend
   const [meta, setMeta] = useState({
     page: 1,
     totalPages: 1,
@@ -90,37 +91,59 @@ function UserShop() {
     }
   }, [filters]);
 
-  /** =========================
-   * Open product detail
-   * ========================= */
-  const onProductClick = useCallback(async (productOrId) => {
-    try {
-      const id =
-        typeof productOrId === "string" ? productOrId : getId(productOrId);
-      if (!id) return;
-
-      const product = await fetchProductById(id);
-
-      setSelectedProduct(product);
-      setQuantity(1);
-      setCurrentView("product");
-    } catch (err) {
-      toast.error(err.message || "Failed to open product");
+  // ✅ Load products for listing page
+  useEffect(() => {
+    if (!isProductDetailRoute) {
+      loadProducts();
     }
-  }, []);
+  }, [isProductDetailRoute, loadProducts]);
 
-  /** ✅ NEW: open product when coming from navbar search */
+  // ✅ FIXED: Load product detail when on product route
+  useEffect(() => {
+    if (!isProductDetailRoute) {
+      setSelectedProduct(null);
+      setLoadingProduct(false);
+      return;
+    }
+
+    const productId = params.id;
+    if (!productId) {
+      setSelectedProduct(null);
+      setLoadingProduct(false);
+      return;
+    }
+
+    const loadProduct = async () => {
+      try {
+        setLoadingProduct(true); // ✅ Set loading to true
+        const result = await fetchProductById(productId);
+        
+        // Support both formats: { item: product } or product directly
+        const product = result?.item || result;
+        
+        setSelectedProduct(product);
+        setQuantity(1);
+      } catch (err) {
+        toast.error(err.message || "Failed to load product");
+        setSelectedProduct(null);
+        // Don't navigate away - let ProductDetail show error
+      } finally {
+        setLoadingProduct(false); // ✅ Set loading to false
+      }
+    };
+
+    loadProduct();
+  }, [isProductDetailRoute, params.id]);
+
+  /** ✅ Handle navbar search - open product directly */
   useEffect(() => {
     const openId = location?.state?.openProductId;
     if (!openId) return;
 
-    onProductClick(openId);
+    navigate(`/product/${openId}`, { replace: true, state: {} });
+  }, [location?.state, navigate]);
 
-    // clear state so refresh/back doesn't reopen
-    navigate("/shop", { replace: true, state: {} });
-  }, [location?.state, navigate, onProductClick]);
-
-  /** ✅ sync "search" filter with URL query param */
+  /** ✅ Sync "search" filter with URL query param */
   useEffect(() => {
     const q = (searchParams.get("search") || "").trim();
 
@@ -129,11 +152,6 @@ function UserShop() {
       return { ...f, search: q, page: 1 };
     });
   }, [searchParams]);
-
-  /** ✅ reload whenever filters change (while on listing) */
-  useEffect(() => {
-    if (currentView === "listing") loadProducts();
-  }, [currentView, loadProducts]);
 
   /** =========================
    * Cart persistence
@@ -200,6 +218,13 @@ function UserShop() {
     toast.success("Added to cart");
   };
 
+  /** =========================
+   * Navigate to product detail
+   * ========================= */
+  const onProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
   const relatedProducts = useMemo(() => {
     if (!selectedProduct?._id) return [];
     return products.filter((p) => p._id !== selectedProduct._id).slice(0, 4);
@@ -248,6 +273,7 @@ function UserShop() {
     }
 
     toast.success("Added to cart");
+    navigate("/cart");
   };
 
   /** =========================
@@ -274,29 +300,21 @@ function UserShop() {
   const setPage = (page) => setFilters((f) => ({ ...f, page }));
 
   /** =========================
-   * Views
+   * Render correct view based on route
    * ========================= */
-  if (currentView === "listing") {
-    return (
-      <ShopListing
-        products={products}
-        onProductClick={onProductClick}
-        cartCount={cartCount}
-        onAddToCartFromListing={addToCartFromListing}
-        showFloatingCart={false}
-        filters={filters}
-        meta={meta}
-        onChangeCategory={setCategory}
-        onChangeSearch={setSearch}
-        onChangePriceRange={setPriceRange}
-        onChangeInStock={setInStock}
-        onChangeSort={setSort}
-        onChangePage={setPage}
-      />
-    );
-  }
+  if (isProductDetailRoute) {
+    // ✅ FIXED: Show loading state while fetching product
+    if (loadingProduct) {
+      return (
+        <div className="min-h-screen bg-white">
+          <div className="max-w-7xl mx-auto px-6 py-10 text-center text-gray-600">
+            Loading product...
+          </div>
+        </div>
+      );
+    }
 
-  if (currentView === "product") {
+    // ✅ FIXED: Only render ProductDetail when we have the product
     return (
       <ProductDetail
         product={selectedProduct}
@@ -308,7 +326,24 @@ function UserShop() {
     );
   }
 
-  return null;
+  // Default: Shop Listing
+  return (
+    <ShopListing
+      products={products}
+      onProductClick={onProductClick}
+      cartCount={cartCount}
+      onAddToCartFromListing={addToCartFromListing}
+      showFloatingCart={false}
+      filters={filters}
+      meta={meta}
+      onChangeCategory={setCategory}
+      onChangeSearch={setSearch}
+      onChangePriceRange={setPriceRange}
+      onChangeInStock={setInStock}
+      onChangeSort={setSort}
+      onChangePage={setPage}
+    />
+  );
 }
 
 export default UserShop;

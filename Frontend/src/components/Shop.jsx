@@ -1,3 +1,6 @@
+// src/components/Shop.jsx
+// ✅ UPDATED: Properly handles product navigation and add-to-cart with modal login
+
 import React, { useEffect, useState } from 'react'
 import { Heart } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
@@ -35,7 +38,7 @@ function seededShuffle(array, seed) {
   return arr;
 }
 
-function Shop({ onProductClick }) {
+function Shop() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,37 +83,67 @@ function Shop({ onProductClick }) {
     loadProducts();
   }, []);
 
-  const handleClick = () => { 
+  // ✅ Navigate to shop listing page
+  const handleSeeAll = () => { 
     navigate("/shop");
   };
 
-  // Handle product click - check if logged in
+  // ✅ Handle product click - navigate to product detail page
   const handleProductClick = (productId) => {
-    if (!isLoggedIn) {
-      toast.error("Please login to view product details");
-      setAuthModalView("login");
-      setShowAuthModal(true);
-      return;
-    }
-    
-    if (onProductClick) {
-      onProductClick(productId);
-    }
+    // Navigate to product detail page (works for both logged in and guest users)
+    navigate(`/product/${productId}`);
   };
 
-  // Handle add to cart - check if logged in
+  // ✅ Handle add to cart - check if logged in first
   const handleAddToCart = (e, product) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent product click navigation
     
     if (!isLoggedIn) {
+      // Show login modal if not logged in
       toast.error("Please login to add items to cart");
       setAuthModalView("login");
       setShowAuthModal(true);
       return;
     }
     
-    // Add to cart functionality
+    // ✅ If logged in, add to cart and redirect to cart page
+    // The actual cart management happens in UserShop/GuestShop
+    // Here we just redirect to /cart where they can see their cart
     toast.success(`${product.name} added to cart!`);
+    
+    // Navigate to shop page where the proper cart logic exists
+    navigate('/shop', { 
+      state: { 
+        addToCart: product,
+        fromHome: true 
+      } 
+    });
+  };
+
+  // ✅ Handle wishlist - check if logged in first
+  const handleWishlist = (e, productId) => {
+    e.stopPropagation(); // Prevent product click navigation
+    
+    if (!isLoggedIn) {
+      toast.error("Please login to use Wishlist");
+      setAuthModalView("login");
+      setShowAuthModal(true);
+      return;
+    }
+    
+    // Add wishlist functionality here if needed
+    toast.success("Added to wishlist");
+  };
+
+  // ✅ After successful login, redirect to shop
+  const handleAuthModalClose = () => {
+    setShowAuthModal(false);
+    
+    // If user just logged in, redirect to shop
+    const justLoggedIn = localStorage.getItem("token");
+    if (justLoggedIn) {
+      navigate('/shop');
+    }
   };
 
   if (loading) {
@@ -175,7 +208,7 @@ function Shop({ onProductClick }) {
               <div 
                 key={id} 
                 onClick={() => handleProductClick(id)} 
-                className="rounded-lg overflow-hidden cursor-pointer"
+                className="rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
               >
                 {/* Product Details */}
                 <div className="p-4">
@@ -183,21 +216,9 @@ function Shop({ onProductClick }) {
                   <div className='bg-gray-50 border border-[#F1F5F966] rounded-lg mb-4 pb-2'>
                     <div className="relative p-0 flex items-center justify-center h-64">
                       <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          
-                          if (!isLoggedIn) {
-                            toast.error("Please login to use Wishlist");
-                            setAuthModalView("login");
-                            setShowAuthModal(true);
-                            return;
-                          }
-                          
-                          // Add wishlist functionality here if needed
-                          toast.success("Added to wishlist");
-                        }}
+                        onClick={(e) => handleWishlist(e, id)}
                         className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        title="Wishlist"
+                        title="Add to Wishlist"
                       >
                         <Heart className="w-5 h-5 text-gray-400" />
                       </button>
@@ -260,7 +281,7 @@ function Shop({ onProductClick }) {
         <div className="flex justify-center">
           <button 
             className="bg-[#DC3545] hover:bg-[#c82333] text-white font-medium px-10 py-3 rounded-lg transition-colors" 
-            onClick={handleClick}
+            onClick={handleSeeAll}
           >
             See All
           </button>
@@ -270,7 +291,7 @@ function Shop({ onProductClick }) {
       {/* Auth Modal */}
       <AuthModal 
         isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+        onClose={handleAuthModalClose} 
         initialView={authModalView}
       />
     </div>

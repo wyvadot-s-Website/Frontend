@@ -1,16 +1,14 @@
 // src/pages/GuestShop.jsx
-// ✅ Fix: remove the hard-coded 2000 and calculate shipping from cart items (same as CartRouter)
+// ✅ FIXED: Properly handles loading state when navigating to product detail
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
-import ShopListing from "./ShopListing";
-import ProductDetail from "./ProductDetail";
-import CartView from "./CartView";
-import CheckoutView from "./CheckoutView";
+import ShopListing from "../pages/ShopListing";
+import ProductDetail from "../pages/ProductDetail";
 
 import { fetchProducts, fetchProductById } from "../services/shopService";
-import { createPublicOrder, initPaystackGuest } from "../services/orderService";
 
 /** =========================
  * Helpers (single source of truth)
@@ -42,13 +40,16 @@ const normalizeCartItem = (p, qty = 1) => {
   };
 };
 
-function Shop() {
-  const [currentView, setCurrentView] = useState("listing");
+function GuestShop({ isProductDetailRoute }) {
+  const navigate = useNavigate();
+  const params = useParams();
+  const location = useLocation();
+  
   const [quantity, setQuantity] = useState(1);
-
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loadingProduct, setLoadingProduct] = useState(false); // ✅ NEW: Track product loading
 
   // ✅ server-driven filters + pagination
   const [filters, setFilters] = useState({
@@ -89,9 +90,49 @@ function Shop() {
     }
   }, [filters]);
 
+  // ✅ Load products for listing page
   useEffect(() => {
-    if (currentView === "listing") loadProducts();
-  }, [currentView, loadProducts]);
+    if (!isProductDetailRoute) {
+      loadProducts();
+    }
+  }, [isProductDetailRoute, loadProducts]);
+
+  // ✅ FIXED: Load product detail when on product route
+  useEffect(() => {
+    if (!isProductDetailRoute) {
+      setSelectedProduct(null);
+      setLoadingProduct(false);
+      return;
+    }
+
+    const productId = params.id;
+    if (!productId) {
+      setSelectedProduct(null);
+      setLoadingProduct(false);
+      return;
+    }
+
+    const loadProduct = async () => {
+      try {
+        setLoadingProduct(true); // ✅ Set loading to true
+        const result = await fetchProductById(productId);
+        
+        // Support both formats: { item: product } or product directly
+        const product = result?.item || result;
+        
+        setSelectedProduct(product);
+        setQuantity(1);
+      } catch (err) {
+        toast.error(err.message || "Failed to load product");
+        setSelectedProduct(null);
+        // Don't navigate away - let ProductDetail show error
+      } finally {
+        setLoadingProduct(false); // ✅ Set loading to false
+      }
+    };
+
+    loadProduct();
+  }, [isProductDetailRoute, params.id]);
 
   /** =========================
    * Cart persistence
@@ -110,7 +151,6 @@ function Shop() {
 
   useEffect(() => {
     localStorage.setItem("wyvadot_cart", JSON.stringify(cart));
-    // ✅ keep navbar/cart router in sync
     window.dispatchEvent(new Event("wyvadot_cart_updated"));
   }, [cart]);
 
@@ -157,21 +197,17 @@ function Shop() {
   };
 
   /** =========================
-   * Open product detail
+   * Navigate to product detail
    * ========================= */
-  const onProductClick = async (productOrId) => {
-    try {
-      const id = typeof productOrId === "string" ? productOrId : getId(productOrId);
-      if (!id) return;
+  const onProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
 
-      const product = await fetchProductById(id);
-
-      setSelectedProduct(product);
-      setQuantity(1);
-      setCurrentView("product");
-    } catch (err) {
-      toast.error(err.message || "Failed to open product");
-    }
+  /** =========================
+   * Navigate to cart
+   * ========================= */
+  const onOpenCart = () => {
+    navigate("/cart");
   };
 
   const relatedProducts = useMemo(() => {
@@ -217,98 +253,7 @@ function Shop() {
     }
 
     toast.success("Added to cart");
-    setCurrentView("cart");
-  };
-
-  /** =========================
-   * Update quantity (enforce stock)
-   * ========================= */
-  const updateQuantity = (id, newQty) => {
-    const desired = Number(newQty || 0);
-    if (desired < 1) return;
-
-    setCart((prev) =>
-      prev.map((item) => {
-        const itemId = getId(item) || item.__cartId;
-        if (itemId !== id) return item;
-
-        const qty = getStockQty(item);
-        if (qty && desired > qty) {
-          toast.error(`Only ${qty} left in stock`);
-          return { ...item, quantity: qty };
-        }
-
-        return { ...item, quantity: desired };
-      }),
-    );
-  };
-
-  const removeFromCart = (id) => {
-    setCart(cart.filter((item) => (getId(item) || item.__cartId) !== id));
-    toast.success("Removed from cart");
-  };
-
-  const subtotal = useMemo(
-    () =>
-      cart.reduce(
-        (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
-        0,
-      ),
-    [cart],
-  );
-
-  // ✅ FIX: remove constant 2000
-  // If you want shippingFee to multiply by quantity, use:
-  // sum + Number(item.shippingFee||0) * Number(item.quantity||0)
-  const shipping = useMemo(
-    () => cart.reduce((sum, item) => sum + Number(item.shippingFee || 0), 0),
-    [cart],
-  );
-
-  const total = subtotal + shipping;
-
-  const handleCompleteOrder = async ({ contact, address, paymentMethod }) => {
-    try {
-      const payload = {
-        customer: {
-          fullName: `${contact.firstName} ${contact.lastName}`.trim(),
-          email: contact.email,
-          phone: contact.phone,
-        },
-        shippingAddress: {
-          street: address.street,
-          country: address.country,
-          city: address.city,
-          state: address.state,
-          zip: address.zip,
-        },
-        items: cart.map((i) => ({
-          productId: i._id || i.id || i.__cartId,
-          name: i.name,
-          price: Number(i.price || 0),
-          quantity: Number(i.quantity || 1),
-          image: i.image || i?.images?.[0]?.url || "",
-          category: i.category || "Uncategorized",
-          shippingFee: Number(i.shippingFee || 0), // ✅ include
-        })),
-        totals: { subtotal, shipping, total, currency: "NGN" },
-        paymentMethod,
-      };
-
-      const res = await createPublicOrder(payload);
-      const created = res.data || res;
-
-      const init = await initPaystackGuest({
-        orderId: created.orderId,
-        paymentMethod,
-        email: contact.email,
-      });
-
-      if (!init?.authorization_url) throw new Error("Paystack authorization URL missing");
-      window.location.href = init.authorization_url;
-    } catch (err) {
-      toast.error(err.message || "Failed to start payment");
-    }
+    navigate("/cart");
   };
 
   /** =========================
@@ -323,29 +268,21 @@ function Shop() {
   const setPage = (page) => setFilters((f) => ({ ...f, page }));
 
   /** =========================
-   * Views
+   * Render correct view based on route
    * ========================= */
-  if (currentView === "listing") {
-    return (
-      <ShopListing
-        products={products}
-        onProductClick={onProductClick}
-        cartCount={cartCount}
-        onOpenCart={() => setCurrentView("cart")}
-        onAddToCartFromListing={addToCartFromListing}
-        filters={filters}
-        meta={meta}
-        onChangeCategory={setCategory}
-        onChangeSearch={setSearch}
-        onChangePriceRange={setPriceRange}
-        onChangeInStock={setInStock}
-        onChangeSort={setSort}
-        onChangePage={setPage}
-      />
-    );
-  }
+  if (isProductDetailRoute) {
+    // ✅ FIXED: Show loading state while fetching product
+    if (loadingProduct) {
+      return (
+        <div className="min-h-screen bg-white">
+          <div className="max-w-7xl mx-auto px-6 py-10 text-center text-gray-600">
+            Loading product...
+          </div>
+        </div>
+      );
+    }
 
-  if (currentView === "product") {
+    // ✅ FIXED: Only render ProductDetail when we have the product
     return (
       <ProductDetail
         product={selectedProduct}
@@ -357,34 +294,24 @@ function Shop() {
     );
   }
 
-  if (currentView === "cart") {
-    return (
-      <CartView
-        cart={cart}
-        updateQuantity={(id, qty) => updateQuantity(id, qty)}
-        removeFromCart={(id) => removeFromCart(id)}
-        subtotal={subtotal}
-        shipping={shipping}
-        total={total}
-        onProceedToCheckout={() => setCurrentView("checkout")}
-      />
-    );
-  }
-
-  if (currentView === "checkout") {
-    return (
-      <CheckoutView
-        cart={cart}
-        subtotal={subtotal}
-        shipping={shipping}
-        total={total}
-        updateQuantity={updateQuantity}
-        onCompleteOrder={handleCompleteOrder}
-      />
-    );
-  }
-
-  return null;
+  // Default: Shop Listing
+  return (
+    <ShopListing
+      products={products}
+      onProductClick={onProductClick}
+      cartCount={cartCount}
+      onOpenCart={onOpenCart}
+      onAddToCartFromListing={addToCartFromListing}
+      filters={filters}
+      meta={meta}
+      onChangeCategory={setCategory}
+      onChangeSearch={setSearch}
+      onChangePriceRange={setPriceRange}
+      onChangeInStock={setInStock}
+      onChangeSort={setSort}
+      onChangePage={setPage}
+    />
+  );
 }
 
-export default Shop;
+export default GuestShop;

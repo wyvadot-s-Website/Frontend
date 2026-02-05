@@ -60,6 +60,13 @@ function PublicNavbar() {
               >
                 Projects
               </Link>
+
+               <Link 
+                to="/shop" 
+                className={`font-medium transition-colors ${isActive('/shop') ? 'bg-[#FF8D28] text-black px-5 py-2 rounded-full' : 'text-gray-700 hover:text-orange-500'}`}
+              >
+                Shop
+              </Link>
               <Link 
                 to="/contact" 
                 className={`font-medium transition-colors ${isActive('/contact') ? 'bg-[#FF8D28] text-black px-5 py-2 rounded-full' : 'text-gray-700 hover:text-orange-500'}`}
@@ -132,6 +139,14 @@ function PublicNavbar() {
                 >
                   Our Services
                 </Link>
+                <Link 
+                  to="/shop" 
+                  onClick={handleLinkClick}
+                  className={`font-medium transition-colors px-2 py-2 rounded ${isActive('/shop') ? 'text-orange-500 bg-orange-50' : 'text-gray-600 hover:text-orange-500 hover:bg-gray-50'}`}
+                >
+                  Shop
+                </Link>
+                
                 <Link 
                   to="/contact" 
                   onClick={handleLinkClick}
