@@ -1,8 +1,5 @@
-// src/pages/AuthModal.jsx
-// ✅ UPDATED: Properly handles post-login redirects
-
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png";
 
@@ -39,16 +36,10 @@ const initialFormState = {
   confirmNewPassword: "",
 };
 
-function AuthModal({ 
-  isOpen, 
-  onClose, 
-  initialView = "signup",
-  redirectAfterLogin = null // ✅ NEW: Optional redirect path after login
-}) {
+function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   const [view, setView] = useState(initialView);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -143,18 +134,7 @@ function AuthModal({
       toast.success("Login successful");
 
       onClose();
-
-      // ✅ Smart redirect after login
-      if (redirectAfterLogin) {
-        // If a specific redirect was provided (e.g., from Shop component)
-        navigate(redirectAfterLogin);
-      } else if (location.pathname === "/" || location.pathname.startsWith("/shop")) {
-        // If on home page or shop, go to shop
-        navigate("/shop");
-      } else {
-        // Otherwise go to dashboard
-        navigate("/home");
-      }
+      navigate("/home"); // dashboard
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -173,15 +153,7 @@ function AuthModal({
       toast.success("Authenticated with Google");
       resetForm();
       onClose();
-
-      // ✅ Smart redirect after Google auth
-      if (redirectAfterLogin) {
-        navigate(redirectAfterLogin);
-      } else if (location.pathname === "/" || location.pathname.startsWith("/shop")) {
-        navigate("/shop");
-      } else {
-        navigate("/home");
-      }
+      navigate("/home");
     } catch (err) {
       toast.error(err.message);
     }
@@ -276,21 +248,21 @@ function AuthModal({
     );
 
   if (view === "login")
-    return (
-      <LoginView
-        isOpen={isOpen}
-        onClose={onClose}
-        formData={formData}
-        handleChange={handleChange}
-        showPassword={showPassword}           
-        setShowPassword={setShowPassword}     
-        handleLogin={handleLogin}
-        goToSignup={() => setView("signup")}
-        goToForgot={() => setView("forgot")}
-        onGoogleAuth={handleGoogleAuth}
-        loading={loading}
-      />
-    );
+  return (
+    <LoginView
+      isOpen={isOpen}
+      onClose={onClose}
+      formData={formData}
+      handleChange={handleChange}
+      showPassword={showPassword}           
+      setShowPassword={setShowPassword}     
+      handleLogin={handleLogin}
+      goToSignup={() => setView("signup")}
+      goToForgot={() => setView("forgot")}
+      onGoogleAuth={handleGoogleAuth}
+      loading={loading}
+    />
+  );
 
   if (view === "forgot")
     return (
