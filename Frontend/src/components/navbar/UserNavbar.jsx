@@ -15,6 +15,116 @@ import { fetchMyServiceRequests } from "@/services/userServiceRequestService";
 import UserOrderDetailModal from "@/components/user/UserOrderDetailModal";
 import ServiceRequestDetailModal from "@/components/user/ServiceRequestDetailModal";
 
+// ✅ Updated Mobile Notification Content Component with better debugging
+function MobileNotificationContent({ token, onUnreadChange, onClose }) {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    const loadNotifications = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchUserNotifications(token, 1, 20);
+       
+        
+        const notifs = data.notifications || [];
+        setNotifications(notifs);
+        
+        if (onUnreadChange) {
+          onUnreadChange(data.unread || 0);
+        }
+      } catch (err) {
+        console.error("Failed to load notifications:", err);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNotifications();
+  }, [token, onUnreadChange]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+        Loading notifications...
+      </div>
+    );
+  }
+
+  if (!token) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        Please login to view notifications
+      </div>
+    );
+  }
+
+
+
+  if (!notifications || notifications.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Bell size={48} className="mx-auto text-gray-300 mb-4" />
+        <p className="text-gray-500">No notifications yet</p>
+        <p className="text-xs text-gray-400 mt-2">
+         
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-gray-500 mb-2">
+        Showing {notifications.length} notification(s)
+      </p>
+      
+      {notifications.map((notif, index) => {
+        console.log(`Rendering notification ${index}:`, notif); // Debug each notification
+        
+        return (
+          <div
+            key={notif._id || index}
+            className={`rounded-lg p-4 border ${
+              notif.read ? "bg-white border-gray-200" : "bg-blue-50 border-blue-200"
+            }`}
+          >
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-sm mb-1">
+                  {notif.title || notif.type || "Notification"}
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  {notif.message || notif.body || "No message"}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {notif.createdAt ? new Date(notif.createdAt).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }) : "No date"}
+                </p>
+              </div>
+              {!notif.read && (
+                <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1" />
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+// ✅ NOW your UserNavbar function starts
 function UserNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -701,11 +811,13 @@ function UserNavbar() {
           </div>
         </div>
         {/* Mobile Menu Dropdown */}
+{/* Mobile Menu Dropdown */}
 {mobileMenuOpen && (
-  <div className="lg:hidden absolute top-full left-0 right-0 bg-[#212121] mt-2 mx-3 sm:mx-4 rounded-2xl shadow-lg overflow-hidden z-50">
+  <div className="lg:hidden absolute top-full left-0 right-0 bg-[#212121] mt-2 mx-3 sm:mx-4 rounded-2xl shadow-lg z-50">
+    {/* ✅ REMOVED overflow-hidden from parent */}
     <div className="px-4 py-3">
       {/* Search */}
-      <div className="mb-4">
+      <div className="mb-4 relative">
         <input
           type="text"
           placeholder="Search..."
@@ -713,7 +825,204 @@ function UserNavbar() {
           onChange={(e) => setNavSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-600 bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
-        <Search className="absolute left-7 top-5 h-4 w-4 text-gray-400" />
+        <Search 
+          className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
+          onClick={() => {
+            onEnterFallback();
+            setMobileMenuOpen(false);
+          }}
+        />
+
+        {/* Mobile search results dropdown */}
+        {searchOpen && navSearch.trim() && (
+          <div className="absolute left-0 right-0 mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-[100] max-h-[70vh] overflow-y-auto">
+            <div className="px-4 py-3 border-b border-gray-700">
+              <p className="text-xs text-gray-400">
+                Searching for:{" "}
+                <span className="font-semibold text-white">
+                  {navSearch.trim()}
+                </span>
+              </p>
+            </div>
+
+            {searchLoading ? (
+              <div className="px-4 py-6 text-sm text-gray-400">
+                Loading results...
+              </div>
+            ) : searchErr ? (
+              <div className="px-4 py-6 text-sm text-red-400">
+                {searchErr}
+              </div>
+            ) : (
+              <div>
+                {/* Products */}
+                <div className="px-4 py-2">
+                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                    Products
+                  </p>
+
+                  {searchData.products.length === 0 ? (
+                    <p className="text-sm text-gray-500 py-2">
+                      No products found.
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      {searchData.products.map((p) => (
+                        <button
+                          key={p._id}
+                          onClick={() => {
+                            openProductFromSearch(p);
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-700 text-left"
+                        >
+                          <div className="w-10 h-10 rounded-md bg-gray-700 overflow-hidden flex items-center justify-center flex-shrink-0">
+                            {p?.images?.[0]?.url ? (
+                              <img
+                                src={p.images[0].url}
+                                alt={p.name}
+                                className="w-full h-full object-contain p-1"
+                              />
+                            ) : (
+                              <span className="text-[10px] text-gray-500">
+                                No img
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {p.name || "—"}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                              {p.category || "Uncategorized"}
+                            </p>
+                          </div>
+
+                          <span className="text-xs text-orange-500 font-semibold flex-shrink-0">
+                            Open
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-700" />
+
+                {/* Orders */}
+                <div className="px-4 py-2">
+                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                    My Orders
+                  </p>
+
+                  {!token ? (
+                    <p className="text-sm text-gray-500 py-2">
+                      Login to search orders.
+                    </p>
+                  ) : searchData.orders.length === 0 ? (
+                    <p className="text-sm text-gray-500 py-2">
+                      No matching orders.
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      {searchData.orders.map((o) => (
+                        <button
+                          key={o._id}
+                          onClick={() => {
+                            openOrderFromSearch(o);
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between gap-3 px-2 py-2 rounded-lg hover:bg-gray-700 text-left"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {o.orderId || "Order"}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                              Status: {o.status || "—"}
+                            </p>
+                          </div>
+
+                          <span className="text-xs text-orange-500 font-semibold flex-shrink-0">
+                            View
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-700" />
+
+                {/* Services */}
+                <div className="px-4 py-2">
+                  <p className="text-xs font-semibold text-gray-400 mb-2">
+                    My Services
+                  </p>
+
+                  {!token ? (
+                    <p className="text-sm text-gray-500 py-2">
+                      Login to search services.
+                    </p>
+                  ) : searchData.services.length === 0 ? (
+                    <p className="text-sm text-gray-500 py-2">
+                      No matching services.
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      {searchData.services.map((r) => (
+                        <button
+                          key={r._id}
+                          onClick={() => {
+                            openServiceFromSearch(r);
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between gap-3 px-2 py-2 rounded-lg hover:bg-gray-700 text-left"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-white truncate">
+                              {r.title || r.serviceName || "Service"}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                              {r.projectId || "—"} • {r.stage || "—"}
+                            </p>
+                          </div>
+
+                          <span className="text-xs text-orange-500 font-semibold flex-shrink-0">
+                            View
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="px-4 py-3 border-t border-gray-700 flex justify-between items-center sticky bottom-0 bg-gray-800">
+              <button
+                onClick={() => {
+                  setSearchOpen(false);
+                  setNavSearch("");
+                }}
+                className="text-xs text-gray-400 hover:text-white"
+              >
+                Close
+              </button>
+
+              <button
+                onClick={() => {
+                  onEnterFallback();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-xs font-semibold text-orange-500 hover:text-orange-400"
+              >
+                View shop results
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation Links */}
@@ -743,66 +1052,68 @@ function UserNavbar() {
       </div>
 
       {/* Mobile Actions */}
-      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            navigate("/wishlist");
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <Heart size={18} />
-          <span className="text-sm">Wishlist</span>
-          {wishlistCount > 0 && (
-            <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
-              {wishlistCount}
-            </span>
-          )}
-        </button>
+<div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
+  <button
+    onClick={() => {
+      setMobileMenuOpen(false);
+      navigate("/wishlist");
+    }}
+    className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+  >
+    <Heart size={18} />
+    <span className="text-sm">Wishlist</span>
+    {wishlistCount > 0 && (
+      <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
+        {wishlistCount}
+      </span>
+    )}
+  </button>
 
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            navigate("/cart");
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <ShoppingCart size={18} color='black'/>
-          <span className="text-sm">Cart</span>
-          {cartCount > 0 && (
-            <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
-              {cartCount}
-            </span>
-          )}
-        </button>
+  <button
+    onClick={() => {
+      setMobileMenuOpen(false);
+      navigate("/cart");
+    }}
+    className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+  >
+    <ShoppingCart size={18} />
+    <span className="text-sm">Cart</span>
+    {cartCount > 0 && (
+      <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
+        {cartCount}
+      </span>
+    )}
+  </button>
 
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setNotifOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <Bell size={18} />
-          <span className="text-sm">Notifications</span>
-          {unreadCount > 0 && (
-            <span className="bg-red-500 text-white text-xs px-1.5 rounded-full">
-              {unreadCount}
-            </span>
-          )}
-        </button>
+  {/* ✅ FIXED: Don't navigate, open modal instead */}
+  <button
+    onClick={() => {
+      setNotifOpen(true);
+      // Keep mobile menu open or close it - your choice
+      // setMobileMenuOpen(false);
+    }}
+    className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+  >
+    <Bell size={18} />
+    <span className="text-sm">Notifications</span>
+    {unreadCount > 0 && (
+      <span className="bg-red-500 text-white text-xs px-1.5 rounded-full">
+        {unreadCount}
+      </span>
+    )}
+  </button>
 
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            navigate("/account");
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <User size={18} />
-          <span className="text-sm">Account</span>
-        </button>
-      </div>
+  <button
+    onClick={() => {
+      setMobileMenuOpen(false);
+      navigate("/account");
+    }}
+    className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+  >
+    <User size={18} />
+    <span className="text-sm">Account</span>
+  </button>
+</div>
 
       {/* Logout */}
       <button
@@ -818,7 +1129,46 @@ function UserNavbar() {
     </div>
   </div>
 )}
-      </nav>
+
+{/* ✅ Mobile Notifications Modal */}
+{notifOpen && (
+  <div 
+    className="lg:hidden fixed inset-0 z-[999] bg-black/50 flex items-end"
+    onClick={() => setNotifOpen(false)}
+  >
+    <div 
+      className="w-full bg-white rounded-t-3xl max-h-[85vh] flex flex-col"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="sticky top-0 bg-white border-b px-5 py-4 flex justify-between items-center rounded-t-3xl z-10">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Bell size={20} />
+          Notifications
+        </h3>
+        <button
+          onClick={() => setNotifOpen(false)}
+          className="text-gray-500 hover:text-gray-900 p-1"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      {/* Notification Content */}
+      <div className="overflow-y-auto flex-1 p-4">
+        <MobileNotificationContent 
+          token={token}
+          onUnreadChange={(n) => setUnreadCount(Number(n || 0))}
+          onClose={() => setNotifOpen(false)}
+        />
+      </div>
+    </div>
+  </div>
+)}
+
+      </nav>  {/* ✅ NOW this properly closes the nav */}
 
       {/* Order Detail Modal (opened from navbar search) */}
       <UserOrderDetailModal

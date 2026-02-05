@@ -27,7 +27,7 @@ function CartView({
               <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
                 <Check size={16} />
               </div>
-              <span className="font-semibold">Shopping Cart</span>
+              <span className="font-semibold text-sm">Shopping Cart</span>
             </div>
 
             <div className="flex-1 h-0.5 bg-gray-300 mx-4"></div>
@@ -36,7 +36,7 @@ function CartView({
               <div className="w-8 h-8 rounded-full bg-gray-300 text-white flex items-center justify-center">
                 2
               </div>
-              <span className="text-gray-500">Checkout Detail</span>
+              <span className="text-gray-500 text-sm">Checkout Detail</span>
             </div>
 
             <div className="flex-1 h-0.5 bg-gray-300 mx-4"></div>
@@ -45,7 +45,7 @@ function CartView({
               <div className="w-8 h-8 rounded-full bg-gray-300 text-white flex items-center justify-center">
                 3
               </div>
-              <span className="text-gray-500">Order Complete</span>
+              <span className="text-gray-500 text-sm">Order Complete</span>
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ function CartView({
           <div className="md:col-span-2 space-y-4">
             {cart.length === 0 ? (
               <div className="bg-white rounded-lg p-10 text-center text-gray-600">
-                <img src="../../../public/Frame 2147224274.svg" alt="Your cart is empty" className='flex place-self-center p-5' />
+                <img src="../../../public/Frame 2147224274.png" alt="Your cart is empty" className='flex place-self-center p-5' />
               </div>
             ) : (
               cart.map((item) => {
