@@ -28,6 +28,7 @@ import PaymentCallback from "./pages/PaymentCallback.jsx";
 import OrderComplete from "./pages/OrderCompletePage.jsx";
 import Wishlist from "./pages/user/Wishlist.jsx";
 import UserAccount from "./pages/user/UserAccount.jsx";
+import FloatingWhatsApp from './components/FloatingWhatsApp.jsx';
 
 function UserLayout({ children }) {
   return (
@@ -43,6 +44,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" richColors />
+      <FloatingWhatsApp />
       <Router>
         <Routes>
           <Route
@@ -93,6 +95,8 @@ function App() {
               </UserLayout>
             }
           />
+          
+          {/* ✅ SHOP ROUTES - Now properly separated */}
           <Route
             path="/shop"
             element={
@@ -102,6 +106,16 @@ function App() {
             }
           />
           <Route
+            path="/product/:id"
+            element={
+              <UserLayout>
+                <ShopRouter />
+              </UserLayout>
+            }
+          />
+          
+          {/* ✅ CART & CHECKOUT ROUTES */}
+          <Route
             path="/cart"
             element={
               <UserLayout>
@@ -110,6 +124,16 @@ function App() {
             }
           />
           <Route
+            path="/checkout"
+            element={
+              <UserLayout>
+                <CartRouter />
+              </UserLayout>
+            }
+          />
+          
+          {/* ✅ PAYMENT & ORDER ROUTES */}
+          <Route
             path="/payment/callback"
             element={
               <UserLayout>
@@ -117,7 +141,6 @@ function App() {
               </UserLayout>
             }
           />
-
           <Route
             path="/order-complete"
             element={
@@ -126,6 +149,7 @@ function App() {
               </UserLayout>
             }
           />
+          
           <Route
             path="/theboss/account"
             element={
@@ -161,11 +185,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <UserLayout>
-                  <Wishlist
-                    onAddToCart={(p) => {
-                      addToCart(p);
-                    }}
-                  />
+                  <Wishlist />
                 </UserLayout>
               </ProtectedRoute>
             }

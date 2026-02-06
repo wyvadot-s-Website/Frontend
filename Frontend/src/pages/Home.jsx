@@ -8,6 +8,11 @@ import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchHomeContent } from "../services/homeService";
 import { fetchAboutContent } from "../services/aboutService.js";
+import image1 from "../../public/6ce65edd3fe199d15a1a3b3cec6faeec5ba9e8ce.png"
+import image2 from "../../public/733a1fa5964692a927dc20b6a0b74974823367a8.png"
+import image3 from "../../public/21ac43fe069af5d46cccba0f640e45e8116eff60.png"
+
+
 
 function Home() {
   const navigate = useNavigate();
@@ -66,31 +71,68 @@ function Home() {
   return (
     <div className="bg-white font-SF">
       <div className="bg-white pt-16 px-4">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="relative w-full h-[90vh] rounded-2xl overflow-hidden mb-10">
-            {/* Background Image */}
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
-              style={
-                currentBgUrl
-                  ? { backgroundImage: `url(${currentBgUrl})` }
-                  : { backgroundColor: "#1a1a1a" }
-              }
-            >
-              {/* Dark Overlay for better text readability */}
-              <div className="absolute inset-0 bg-black/50"></div>
-            </div>
+         {/* Background Slider - Enhanced */}
+<div className="absolute inset-0">
+  {bgImages.map((img, idx) => (
+    <div
+      key={idx}
+      className={`absolute inset-0 transition-opacity duration-1000 ${
+        idx === activeBg ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className="w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${img.url})` }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
+      </div>
+    </div>
+  ))}
+  
+  {/* Fallback */}
+  {bgImages.length === 0 && (
+    <div className="absolute inset-0 bg-[#1a1a1a]">
+      <div className="absolute inset-0 bg-black/50"></div>
+    </div>
+  )}
+</div>
+
+
+
+{/* Pagination Dots */}
+{bgImages.length > 1 && (
+  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+    {bgImages.map((_, idx) => (
+      <button
+        key={idx}
+        onClick={() => setActiveBg(idx)}
+        className={`h-2 rounded-full transition-all ${
+          idx === activeBg ? 'bg-white w-8' : 'bg-white/50 w-2 hover:bg-white/70'
+        }`}
+        aria-label={`Go to slide ${idx + 1}`}
+      />
+    ))}
+  </div>
+)}
 
             {/* Content Container */}
             <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 gap-5">
               {/* Badge */}
               <div className="mb-6 bg-white backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 shadow-lg border border-white/30">
                 <div className="flex -space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-orange-400 border-2 border-white"></div>
-                  <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
-                  <div className="w-6 h-6 rounded-full bg-pink-400 border-2 border-white"></div>
+                  <div className="w-10 h-10 rounded-full border-2 border-white">
+                    <img src={image1} alt="" srcset="" className='w-full h-full object-cover rounded-full'/>
+                  </div>
+                  <div className="w-10 h-10 rounded-full border-2 border-white">
+                    <img src={image3} alt="" srcset="" className='w-full h-full object-cover rounded-full'/>
+                  </div>
+                  <div className="w-10 h-10 rounded-full  border-2 border-white">
+                    <img src={image2} alt="" srcset="" className='w-full h-full object-cover rounded-full'/>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-lg font-medium text-gray-800">
                   500+ Happy Customers
                 </span>
               </div>
@@ -159,46 +201,45 @@ function Home() {
       />
       <ServiceComponent />
 
+
+
+
       <div className="flex flex-col gap-3 max-w-6xl mx-auto mb-20 mt-10 px-4 sm:px-6">
-        <div className="flex justify-center lg:justify-start items-center gap-1 mb-2">
-          <div className="flex w-5 h-1.5 bg-black rounded-lg place-self-center" />
-          <p className="flex text-gray-600 text-sm sm:text-md font-medium place-self-center">
-            Our Company History
+  <div className="flex justify-center lg:justify-start items-center gap-1 mb-2">
+    <div className="flex w-5 h-1.5 bg-black rounded-lg place-self-center" />
+    <p className="flex text-gray-600 text-sm sm:text-md font-medium place-self-center">
+      Our Company History
+    </p>
+  </div>
+  
+  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 text-center lg:text-left">
+    Why Choose Us
+  </h2>
+  
+  <div className="flex w-full justify-center items-center">
+    <div className="flex flex-wrap lg:flex-nowrap w-full justify-center lg:justify-between gap-4 sm:gap-5">
+      {home?.whyChooseUs?.map((item, index) => (
+        <div
+          key={item._id}
+          className={`bg-[#FAFAFA] rounded-lg p-4 sm:p-5 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] border border-[#F1F5F966] flex flex-col gap-3 sm:gap-4 ${
+            index === 0 && home?.whyChooseUs?.length === 1 ? 'lg:max-w-[400px]' : ''
+          }`}
+        >
+          <p className="text-xl sm:text-2xl font-semibold">{item.title}</p>
+          <p className="text-gray-600 font-normal text-sm leading-relaxed">
+            {item.description}
           </p>
         </div>
-
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 text-center lg:text-left">
-          Why Choose Us
-        </h2>
-
-        <div className="flex w-full justify-center items-center">
-          <div className="flex flex-wrap lg:flex-nowrap w-full justify-center lg:justify-between gap-4 sm:gap-5">
-            {home?.whyChooseUs?.map((item, index) => (
-              <div
-                key={item._id}
-                className={`bg-[#FAFAFA] rounded-lg p-4 sm:p-5 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] border border-[#F1F5F966] flex flex-col gap-3 sm:gap-4 ${
-                  index === 0 && home?.whyChooseUs?.length === 1
-                    ? "lg:max-w-[400px]"
-                    : ""
-                }`}
-              >
-                <p className="text-xl sm:text-2xl font-semibold">
-                  {item.title}
-                </p>
-                <p className="text-gray-600 font-normal text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <img
-          src={ChooseImage}
-          alt="A collage of construction workers and equipment"
-          className="w-full h-auto object-cover rounded-lg mt-4 sm:mt-6"
-        />
-      </div>
+      ))}
+    </div>
+  </div>
+  
+  <img
+    src={ChooseImage}
+    alt="A collage of construction workers and equipment"
+    className="w-full h-auto object-cover rounded-lg mt-4 sm:mt-6"
+  />
+</div>
 
       <Shop />
       <ContactForm />

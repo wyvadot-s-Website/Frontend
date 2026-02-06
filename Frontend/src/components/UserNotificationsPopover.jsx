@@ -98,7 +98,11 @@ export default function UserNotificationsPopover({ open, onClose, token, onUnrea
         {loading ? (
           <div className="p-4 text-sm text-gray-600">Loading…</div>
         ) : items.length === 0 ? (
-          <div className="p-4 text-sm text-gray-600">No notifications yet.</div>
+          <div className="p-4 text-sm text-gray-600">
+            
+            <img src="../../public/Frame 2147224292.svg" alt="No notifications yet" className='flex place-self-center p-5' />
+            <p className='flex place-self-center p-5'>No notifications yet.</p>
+            </div>
         ) : (
           <div className="divide-y">
             {items.map((n) => (

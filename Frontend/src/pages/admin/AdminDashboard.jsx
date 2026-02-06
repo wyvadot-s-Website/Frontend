@@ -592,12 +592,12 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
                     {submittedDate} {submittedTime}
                   </td>
                   <td className="py-3">
-                    <button
-                      onClick={() => navigate(`/theboss/projects/${r._id}`)}
-                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
-                    >
-                      Details
-                    </button>
+                    <Button
+  onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
+  className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+>
+  Details
+</Button>
                   </td>
                 </tr>
               );
@@ -647,12 +647,12 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
               <p className="text-xs text-gray-500 mb-2">
                 {submittedDate} {submittedTime}
               </p>
-              <button
-                onClick={() => navigate(`/theboss/projects/${r._id}`)}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
-              >
-                Details
-              </button>
+              <Button
+  onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
+  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+>
+  Details
+</Button>
             </div>
           );
         })

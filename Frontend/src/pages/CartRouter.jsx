@@ -1,8 +1,8 @@
 // src/pages/CartRouter.jsx
-// ✅ Replace constant shipping=2000 with per-product shipping fee calculation
+// ✅ UPDATED: Route-based navigation instead of state management
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import CartView from "./CartView";
 import CheckoutView from "./CheckoutView";
@@ -20,13 +20,15 @@ const getId = (i) => i?._id || i?.id || i?.__cartId;
 
 function CartRouter() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const token = localStorage.getItem("token");
   const isLoggedIn = !!token;
 
-  const [view, setView] = useState("cart"); // "cart" | "checkout" | "completed"
+  // ✅ Determine view based on route instead of state
+  const isCheckout = location.pathname === "/checkout";
+
   const [cart, setCart] = useState([]);
-  const [lastOrder, setLastOrder] = useState(null);
 
   useEffect(() => {
     const read = () => {
@@ -99,14 +101,20 @@ function CartRouter() {
   );
 
   // ✅ per-product shipping: sum of each item's shippingFee
-  // If you want shippingFee to multiply by quantity, change to:
-  // sum + Number(item.shippingFee||0) * Number(item.quantity||0)
   const shipping = useMemo(
     () => cart.reduce((sum, item) => sum + Number(item.shippingFee || 0), 0),
     [cart],
   );
 
   const total = subtotal + shipping;
+
+  // ✅ Navigate to checkout instead of setting state
+  const onProceedToCheckout = () => {
+    if (!cart.length) {
+      return toast.error("Your cart is empty");
+    }
+    navigate("/checkout");
+  };
 
   const handleCompleteOrder = async ({ contact, address, paymentMethod }) => {
     try {
@@ -130,7 +138,7 @@ function CartRouter() {
           quantity: Number(i.quantity || 1),
           image: i.image || i?.images?.[0]?.url || "",
           category: i.category || "Uncategorized",
-          shippingFee: Number(i.shippingFee || 0), // ✅ include per item
+          shippingFee: Number(i.shippingFee || 0),
         })),
         totals: { subtotal, shipping, total, currency: "NGN" },
         paymentMethod,
@@ -162,21 +170,8 @@ function CartRouter() {
     }
   };
 
-  if (view === "cart") {
-    return (
-      <CartView
-        cart={cart}
-        updateQuantity={updateQuantity}
-        removeFromCart={removeFromCart}
-        subtotal={subtotal}
-        shipping={shipping}
-        total={total}
-        onProceedToCheckout={() => setView("checkout")}
-      />
-    );
-  }
-
-  if (view === "checkout") {
+  // ✅ Render based on route instead of state
+  if (isCheckout) {
     return (
       <CheckoutView
         cart={cart}
@@ -189,7 +184,18 @@ function CartRouter() {
     );
   }
 
-  return null;
+  // Default: Cart View
+  return (
+    <CartView
+      cart={cart}
+      updateQuantity={updateQuantity}
+      removeFromCart={removeFromCart}
+      subtotal={subtotal}
+      shipping={shipping}
+      total={total}
+      onProceedToCheckout={onProceedToCheckout}
+    />
+  );
 }
 
 export default CartRouter;
