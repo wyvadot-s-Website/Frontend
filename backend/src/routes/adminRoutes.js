@@ -18,24 +18,31 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 // ==============================
 router.post("/signup", async (req, res) => {
   try {
+    console.log("📨 Signup request received:", req.body);
+    
     const { name, email, password, role } = req.body;
 
     if (!name || !email || !password || !role) {
+      console.log("❌ Missing fields");
       return res.status(400).json({ message: "All fields are required" });
     }
 
     if (!ADMIN_ROLES.includes(role)) {
+      console.log("❌ Invalid role:", role);
       return res.status(400).json({ message: "Invalid admin role" });
     }
 
     const adminExists = await Admin.findOne({ email });
-    if (adminExists) return res.status(400).json({ message: "Admin already exists" });
+    if (adminExists) {
+      console.log("❌ Admin already exists");
+      return res.status(400).json({ message: "Admin already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const otp = generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 10);
 
+    console.log("✅ Creating admin...");
     await Admin.create({
       name,
       email,
@@ -46,7 +53,7 @@ router.post("/signup", async (req, res) => {
       verificationTokenExpires: Date.now() + 10 * 60 * 1000,
     });
 
-    // ✅ Send OTP to CONTROL EMAIL with role + details
+    console.log("📧 Sending email with OTP:", otp);
     await sendAdminVerificationEmail({
       code: otp,
       requestedName: name,
@@ -54,9 +61,11 @@ router.post("/signup", async (req, res) => {
       requestedRole: role,
     });
 
-    res.status(201).json({ message: "Verification code sent for admin approval" });
+    console.log("✅ Signup successful");
+    return res.status(201).json({ message: "Verification code sent for admin approval" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Signup error:", error);
+    return res.status(500).json({ message: error.message });
   }
 });
 
