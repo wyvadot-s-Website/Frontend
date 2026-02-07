@@ -71,11 +71,21 @@ export const acceptServiceRequestAdmin = async (token, id) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  const result = await res.json();
-  if (!res.ok || result.success === false) throw new Error(result.message || "Failed to accept service request");
-  return result;
-};
+  // Try parse JSON safely
+  let result = null;
+  try {
+    result = await res.json();
+  } catch {
+    result = null;
+  }
 
+  // If backend responded OK, we accept it as success
+  if (!res.ok) {
+    throw new Error(result?.message || "Failed to assign");
+  }
+
+  return result || { success: true };
+};
 /**
  * ADMIN: UPDATE REQUEST
  * Can update: status, stage, assignedAdmin, adminNotes

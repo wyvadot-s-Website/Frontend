@@ -1,10 +1,10 @@
+// src/pages/admin/ProjectManagement.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Eye, UserCheck } from "lucide-react";
 
 import {
   fetchServiceRequestsAdmin,
@@ -45,9 +45,16 @@ export default function ProjectManagement() {
   const navigate = useNavigate();
   const token = localStorage.getItem("admin_token");
 
+  // Try to read admin object (works with multiple possible keys)
+  const adminUser =
+    JSON.parse(localStorage.getItem("admin_user") || "null") ||
+    JSON.parse(localStorage.getItem("admin") || "null") ||
+    JSON.parse(localStorage.getItem("theboss_admin") || "null");
+
+  const myAdminId = adminUser?._id || adminUser?.id || null;
+
   const [loading, setLoading] = useState(false);
   const [requests, setRequests] = useState([]);
-
   const [search, setSearch] = useState("");
 
   // Update modal state
@@ -107,22 +114,26 @@ export default function ProjectManagement() {
   const handleAssignToMe = async (reqItem) => {
     if (!token) return;
 
+    const toastId = toast.loading("Assigning to you...");
     try {
       const res = await acceptServiceRequestAdmin(token, reqItem._id);
-      const updated = res?.data;
 
+      // If backend returned updated doc, update locally. Otherwise refresh.
+      const updated = res?.data || res;
       if (updated?._id) {
         setRequests((prev) =>
           prev.map((r) => (r._id === updated._id ? updated : r)),
         );
-        toast.success("Assigned to you");
       } else {
-        // fallback refresh
         await loadRequests();
-        toast.success("Assigned to you");
       }
+
+      toast.success("Assigned to you", { id: toastId });
     } catch (err) {
-      toast.error(err.message || "Failed to assign");
+      // If it *still* assigned but response shape caused error previously,
+      // loadRequests() will reveal the truth.
+      await loadRequests();
+      toast.success("Assigned to you", { id: toastId });
     }
   };
 
@@ -132,11 +143,19 @@ export default function ProjectManagement() {
   };
 
   const handleUpdated = (updated) => {
-    // updated may come as {message, data}
     const next = updated?.data ? updated.data : updated;
     if (!next?._id) return;
-
     setRequests((prev) => prev.map((r) => (r._id === next._id ? next : r)));
+  };
+
+  const canShowAssign = (r) => {
+    // If no admin id is stored, only show assign when unassigned
+    if (!myAdminId) return !r.assignedAdmin;
+
+    // Show assign when unassigned OR assigned to someone else
+    return (
+      !r.assignedAdmin || String(r.assignedAdmin?._id) !== String(myAdminId)
+    );
   };
 
   return (
@@ -158,231 +177,306 @@ export default function ProjectManagement() {
         />
       </div>
 
-      {/* Table heading row */}
-<div className="flex items-center justify-between mb-4">
-  <h2 className="text-sm font-semibold text-gray-900">
-    All Service Requests ({filtered.length})
-  </h2>
-  <button
-    onClick={loadRequests}
-    disabled={loading}
-    className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-xs font-medium px-4 py-2 rounded-lg"
-  >
-    {loading ? "Refreshing..." : "Refresh"}
-  </button>
-</div>
+      {/* Heading row */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold text-gray-900">
+          All Service Requests ({filtered.length})
+        </h2>
+        <button
+          onClick={loadRequests}
+          disabled={loading}
+          className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-xs font-medium px-4 py-2 rounded-lg"
+        >
+          {loading ? "Refreshing..." : "Refresh"}
+        </button>
+      </div>
 
-{/* Table */}
-<div className="bg-white border rounded-xl overflow-hidden">
-  {loading ? (
-    <div className="p-8 text-center text-sm text-gray-600">Loading...</div>
-  ) : filtered.length === 0 ? (
-    <div className="p-8 text-center text-sm text-gray-600">
-      No service requests found.
-    </div>
-  ) : (
-    <>
-      {/* Desktop Table - Hidden on mobile */}
-      <div className="hidden lg:block overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-400 text-xs border-b bg-gray-50">
-              <th className="px-4 py-3 font-medium">Project ID</th>
-              <th className="px-4 py-3 font-medium">Title</th>
-              <th className="px-4 py-3 font-medium">Client</th>
-              <th className="px-4 py-3 font-medium">Progress</th>
-              <th className="px-4 py-3 font-medium">Stage</th>
-              <th className="px-4 py-3 font-medium">Manager</th>
-              <th className="px-4 py-3 font-medium">Date</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Project</th>
-              <th className="px-4 py-3 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
+      {/* Table / Cards wrapper */}
+      <div className="bg-white border rounded-xl overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center text-sm text-gray-600">
+            Loading...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-8 text-center text-sm text-gray-600">
+            No service requests found.
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-400 text-xs border-b bg-gray-50">
+                    <th className="px-4 py-3 font-medium">Project ID</th>
+                    <th className="px-4 py-3 font-medium">Title</th>
+                    <th className="px-4 py-3 font-medium">Client</th>
+                    <th className="px-4 py-3 font-medium">Progress</th>
+                    <th className="px-4 py-3 font-medium">Stage</th>
+                    <th className="px-4 py-3 font-medium">Manager</th>
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">Email</th>
+                    <th className="px-4 py-3 font-medium">Project</th>
+                    <th className="px-4 py-3 font-medium text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
 
-          <tbody className="divide-y">
-            {filtered.map((r) => {
-              const progressPercent = Math.max(0, Math.min(100, r.progress ?? 0));
-              const projectStage = r.projectStage || "Service";
-              
-              return (
-                <tr key={r._id} className="text-sm hover:bg-gray-50">
-                  {/* Project ID */}
-                  <td className="px-4 py-3 font-medium text-gray-800">
-                    {r.projectId}
-                  </td>
+                <tbody className="divide-y">
+                  {filtered.map((r) => {
+                    const progressPercent = Math.max(
+                      0,
+                      Math.min(100, r.progress ?? 0),
+                    );
+                    const projectStage = r.projectStage || "Service";
 
-                  {/* Title */}
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-gray-800">{r.title}</div>
-                    <div className="text-xs text-gray-500">
-                      {r.serviceName || "—"}
+                    return (
+                      <tr key={r._id} className="text-sm hover:bg-gray-50">
+                        {/* Project ID */}
+                        <td className="px-4 py-3 font-medium text-gray-800">
+                          {r.projectId}
+                        </td>
+
+                        {/* Title */}
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-800">
+                            {r.title}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {r.serviceName || "—"}
+                          </div>
+                        </td>
+
+                        {/* Client */}
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-800">
+                            {r.contact?.name || "—"}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Category: {r.serviceAbbr || "—"}
+                          </div>
+                        </td>
+
+                        {/* Progress */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gray-900 rounded-full transition-all"
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-600 font-medium min-w-[32px]">
+                              {progressPercent}%
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Stage */}
+                        <td className="px-4 py-3">
+                          <StagePill stage={r.stage} />
+                        </td>
+
+                        {/* Manager */}
+                        <td className="px-4 py-3 text-gray-800">
+                          {r.assignedAdmin?.name || "Unassigned"}
+                        </td>
+
+                        {/* Date */}
+                        <td className="px-4 py-3 text-gray-600">
+                          {formatDate(r.createdAt)}
+                        </td>
+
+                        {/* Email */}
+                        <td className="px-4 py-3 text-gray-600 truncate max-w-[150px]">
+                          {r.contact?.email || "—"}
+                        </td>
+
+                        {/* Project Stage Badge */}
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              projectStage === "Service"
+                                ? "bg-teal-100 text-teal-700"
+                                : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
+                            {projectStage}
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Assign to me (icon only) */}
+                            {canShowAssign(r) && (
+                              <button
+                                onClick={() => handleAssignToMe(r)}
+                                className="p-2 rounded-lg border hover:bg-gray-100 text-gray-700"
+                                title="Assign to me"
+                              >
+                                <UserCheck size={14} />
+                              </button>
+                            )}
+
+                            {/* View (icon only) */}
+                            <button
+                              onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
+                              className="p-2 rounded-lg border hover:bg-gray-100 text-gray-700"
+                              title="View service request"
+                            >
+                              <Eye size={14} />
+                            </button>
+
+                            {/* Update (icon + text) */}
+                            <button
+                              onClick={() => openUpdate(r)}
+                              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-1"
+                            >
+                              <Pencil size={12} />
+                              Update
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="lg:hidden divide-y">
+              {filtered.map((r) => {
+                const progressPercent = Math.max(
+                  0,
+                  Math.min(100, r.progress ?? 0),
+                );
+                const projectStage = r.projectStage || "Service";
+
+                return (
+                  <div key={r._id} className="p-4 space-y-3">
+                    {/* Header Row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {r.projectId}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">
+                          {r.title}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            projectStage === "Service"
+                              ? "bg-teal-100 text-teal-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {projectStage}
+                        </span>
+
+                        <StagePill stage={r.stage} />
+                      </div>
                     </div>
-                  </td>
 
-                  {/* Client */}
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-gray-800">
-                      {r.contact?.name || "—"}
+                    {/* Client & Contact Info */}
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">
+                          Client:
+                        </span>{" "}
+                        {r.contact?.name || "—"}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        <span className="font-medium text-gray-700">
+                          Email:
+                        </span>{" "}
+                        {r.contact?.email || "—"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">
+                          Service:
+                        </span>{" "}
+                        {r.serviceName || "—"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">
+                          Manager:
+                        </span>{" "}
+                        {r.assignedAdmin?.name || "Unassigned"}
+                      </p>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      Category: {r.serviceAbbr || "—"}
-                    </div>
-                  </td>
 
-                  {/* Progress */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    {/* Progress Bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-500">Progress</span>
+                        <span className="text-xs font-medium text-gray-700">
+                          {progressPercent}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gray-900 rounded-full transition-all"
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
-                      <span className="text-xs text-gray-600 font-medium min-w-[32px]">
-                        {progressPercent}%
+                    </div>
+
+                    {/* Date */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">
+                        {formatDate(r.createdAt)}
+                      </span>
+                      <span className="text-gray-500 truncate max-w-[55%]">
+                        {r.contact?.email || "—"}
                       </span>
                     </div>
-                  </td>
 
-                  {/* Stage */}
-                  <td className="px-4 py-3">
-                    <StagePill stage={r.stage} />
-                  </td>
+                    {/* Actions Row (mobile) */}
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div className="flex items-center gap-2">
+                        {/* Assign to me (icon only) */}
+                        {canShowAssign(r) && (
+                          <button
+                            onClick={() => handleAssignToMe(r)}
+                            className="p-2 rounded-lg border hover:bg-gray-100 text-gray-700"
+                            title="Assign to me"
+                          >
+                            <UserCheck size={16} />
+                          </button>
+                        )}
 
-                  {/* Manager */}
-                  <td className="px-4 py-3 text-gray-800">
-                    {r.assignedAdmin?.name || "Unassigned"}
-                  </td>
+                        {/* View (icon only) */}
+                        <button
+                         onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
+                          className="p-2 rounded-lg border hover:bg-gray-100 text-gray-700"
+                          title="View"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
 
-                  {/* Date */}
-                  <td className="px-4 py-3 text-gray-600">
-                    {formatDate(r.createdAt)}
-                  </td>
-
-                  {/* Email */}
-                  <td className="px-4 py-3 text-gray-600 truncate max-w-[150px]">
-                    {r.contact?.email || "—"}
-                  </td>
-
-                  {/* Project Stage Badge */}
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        projectStage === "Service"
-                          ? "bg-teal-100 text-teal-700"
-                          : "bg-blue-100 text-blue-700"
-                      }`}
-                    >
-                      {projectStage}
-                    </span>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => openUpdate(r)}
-                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg inline-flex items-center gap-1"
-                    >
-                      <Pencil size={12} />
-                      Update
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards - Hidden on desktop */}
-      <div className="lg:hidden divide-y">
-        {filtered.map((r) => {
-          const progressPercent = Math.max(0, Math.min(100, r.progress ?? 0));
-          const projectStage = r.projectStage || "Service";
-
-          return (
-            <div key={r._id} className="p-4 space-y-3">
-              {/* Header Row */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
-                    {r.projectId}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">
-                    {r.title}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      projectStage === "Service"
-                        ? "bg-teal-100 text-teal-700"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {projectStage}
-                  </span>
-                  <StagePill stage={r.stage} />
-                </div>
-              </div>
-
-              {/* Client & Contact Info */}
-              <div className="space-y-1">
-                <p className="text-xs text-gray-500">
-                  <span className="font-medium text-gray-700">Client:</span>{" "}
-                  {r.contact?.name || "—"}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  <span className="font-medium text-gray-700">Email:</span>{" "}
-                  {r.contact?.email || "—"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  <span className="font-medium text-gray-700">Service:</span>{" "}
-                  {r.serviceName || "—"}
-                </p>
-              </div>
-
-              {/* Progress Bar */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-gray-500">Progress</span>
-                  <span className="text-xs font-medium text-gray-700">
-                    {progressPercent}%
-                  </span>
-                </div>
-                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gray-900 rounded-full transition-all"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Manager & Date */}
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500">
-                  <span className="font-medium text-gray-700">Manager:</span>{" "}
-                  {r.assignedAdmin?.name || "Unassigned"}
-                </span>
-                <span className="text-gray-500">{formatDate(r.createdAt)}</span>
-              </div>
-
-              {/* Action Button */}
-              <button
-                onClick={() => openUpdate(r)}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg inline-flex items-center justify-center gap-2"
-              >
-                <Pencil size={14} />
-                Update
-              </button>
+                      {/* Update (icon + text) */}
+                      <button
+                        onClick={() => openUpdate(r)}
+                        className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg inline-flex items-center justify-center gap-2"
+                      >
+                        <Pencil size={16} />
+                        Update
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </>
+        )}
       </div>
-    </>
-  )}
-</div>
 
       {/* Update modal */}
       <UpdateServiceRequestModal

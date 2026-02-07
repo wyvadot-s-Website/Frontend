@@ -41,7 +41,7 @@ async function applyInventoryDeduction(order) {
 
     const result = await Product.updateOne(
       { _id: it.productId, stockQuantity: { $gte: qty } },
-      { $inc: { stockQuantity: -qty, soldCount: qty } },
+      { $inc: { stockQuantity: -qty, soldCount: qty } }
     );
 
     if (result.modifiedCount !== 1) {
@@ -53,7 +53,9 @@ async function applyInventoryDeduction(order) {
     }
 
     // ensure status reflects stock after decrement.
-    const p = await Product.findById(it.productId).select("stockQuantity status");
+    const p = await Product.findById(it.productId).select(
+      "stockQuantity status"
+    );
     if (p) {
       if ((p.stockQuantity ?? 0) <= 0 && p.status === "active") {
         p.status = "out_of_stock";
@@ -84,7 +86,8 @@ export const initPaystackPayment = async (req, res) => {
         .json({ success: false, message: "orderId is required" });
     }
 
-    const method = normalizeMethod(paymentMethod);
+    // keep the user's preference (optional) but DO NOT restrict Paystack channels
+    const preferredMethod = normalizeMethod(paymentMethod);
 
     let order = null;
 
@@ -118,7 +121,11 @@ export const initPaystackPayment = async (req, res) => {
 
     // Reference must be unique
     const reference = `${order.orderId}_${Date.now()}`;
-    const channels = method === "bank_transfer" ? ["bank_transfer"] : ["card"];
+
+    // ✅ SHOW BOTH options on Paystack checkout
+    const channels = ["card", "bank_transfer"];
+
+
 
     const payload = {
       email: order.customer.email,
@@ -126,12 +133,13 @@ export const initPaystackPayment = async (req, res) => {
       reference,
       channels,
       callback_url: `${FRONTEND_URL}/payment/callback?orderId=${encodeURIComponent(
-        order.orderId,
+        order.orderId
       )}`,
       metadata: {
         orderId: order.orderId, // ✅ critical for verify safety
         userId: String(order.userId || ""),
         guestEmail: order.customer.email,
+        preferredMethod, // optional (not source of truth)
       },
     };
 
@@ -154,7 +162,10 @@ export const initPaystackPayment = async (req, res) => {
     }
 
     order.payment.reference = reference;
-    order.payment.method = channels[0];
+
+    // ✅ store preference for now; we will overwrite with REAL channel on verify/webhook
+    order.payment.method = preferredMethod; // "card" | "bank_transfer"
+
     order.payment.status = "pending";
     await order.save();
 
@@ -183,7 +194,7 @@ export const verifyPaystackPayment = async (req, res) => {
       `${PAYSTACK_BASE_URL}/transaction/verify/${reference}`,
       {
         headers: { Authorization: `Bearer ${SECRET}` },
-      },
+      }
     );
 
     const data = await psRes.json();
@@ -235,6 +246,10 @@ export const verifyPaystackPayment = async (req, res) => {
       if (order.payment.status !== "paid") {
         order.payment.status = "paid";
         order.payment.reference = reference;
+
+        // ✅ REAL method used on Paystack
+        order.payment.method = normalizeMethod(tx?.channel);
+
         order.status = "processing";
         order.updates.unshift({
           status: "processing",
@@ -247,6 +262,7 @@ export const verifyPaystackPayment = async (req, res) => {
           ? order.items.reduce((sum, it) => sum + Number(it.quantity || 0), 0)
           : 0;
 
+        // You can keep these awaited or move to background later if you want faster verify response
         await sendPaidOrderNotificationToShopAdmins({
           orderId: order.orderId,
           total: order?.totals?.total,
@@ -319,67 +335,80 @@ export const paystackWebhook = async (req, res) => {
 
     const event = req.body;
 
+    // We always ACK quickly (Paystack retries if not 200)
     if (event?.event !== "charge.success") {
       return res.sendStatus(200);
     }
 
-    const reference = event?.data?.reference;
-    if (!reference) return res.sendStatus(200);
+    // ✅ Respond immediately to avoid webhook timeout, then process async
+    res.sendStatus(200);
 
-    const order = await Order.findOne({ "payment.reference": reference });
-    if (!order) return res.sendStatus(200);
+    (async () => {
+      try {
+        const reference = event?.data?.reference;
+        if (!reference) return;
 
-    // ✅ extra safety: validate amount from webhook too
-    const expectedAmount = Math.round(Number(order?.totals?.total || 0) * 100);
-    const webhookAmount = Number(event?.data?.amount || 0);
-    if (webhookAmount !== expectedAmount) {
-      order.updates.unshift({
-        status: order.status || "processing",
-        note: `Webhook amount mismatch: expected ${expectedAmount}, got ${webhookAmount}`,
-        updatedBy: null,
-      });
-      await order.save();
-      return res.sendStatus(200);
-    }
+        const order = await Order.findOne({ "payment.reference": reference });
+        if (!order) return;
 
-    if (order.payment.status !== "paid") {
-      order.payment.status = "paid";
-      order.status = "processing";
-      order.updates.unshift({
-        status: "processing",
-        note: "Payment confirmed via webhook",
-        updatedBy: null,
-      });
-      await order.save();
+        // ✅ validate amount from webhook too
+        const expectedAmount = Math.round(Number(order?.totals?.total || 0) * 100);
+        const webhookAmount = Number(event?.data?.amount || 0);
+        if (webhookAmount !== expectedAmount) {
+          order.updates.unshift({
+            status: order.status || "processing",
+            note: `Webhook amount mismatch: expected ${expectedAmount}, got ${webhookAmount}`,
+            updatedBy: null,
+          });
+          await order.save();
+          return;
+        }
 
-      const itemsCount = Array.isArray(order.items)
-        ? order.items.reduce((sum, it) => sum + Number(it.quantity || 0), 0)
-        : 0;
+        if (order.payment.status !== "paid") {
+          order.payment.status = "paid";
 
-      await sendPaidOrderNotificationToShopAdmins({
-        orderId: order.orderId,
-        total: order?.totals?.total,
-        customerName: order?.customer?.fullName,
-        customerEmail: order?.customer?.email,
-        itemsCount,
-        paymentMethod: order?.payment?.method,
-        createdAt: order?.createdAt,
-      });
-    }
+          // ✅ REAL method used (card or bank_transfer)
+          order.payment.method = normalizeMethod(event?.data?.channel);
 
-    const inv = await applyInventoryDeduction(order);
-    if (!inv.ok) {
-      order.updates.unshift({
-        status: "processing",
-        note: `Webhook paid but inventory deduction failed: ${
-          inv.reason || "unknown"
-        }`,
-        updatedBy: null,
-      });
-      await order.save();
-    }
+          order.status = "processing";
+          order.updates.unshift({
+            status: "processing",
+            note: "Payment confirmed via webhook",
+            updatedBy: null,
+          });
+          await order.save();
 
-    return res.sendStatus(200);
+          const itemsCount = Array.isArray(order.items)
+            ? order.items.reduce((sum, it) => sum + Number(it.quantity || 0), 0)
+            : 0;
+
+          // (optional) you can also make these fire-and-forget later
+          await sendPaidOrderNotificationToShopAdmins({
+            orderId: order.orderId,
+            total: order?.totals?.total,
+            customerName: order?.customer?.fullName,
+            customerEmail: order?.customer?.email,
+            itemsCount,
+            paymentMethod: order?.payment?.method,
+            createdAt: order?.createdAt,
+          });
+        }
+
+        const inv = await applyInventoryDeduction(order);
+        if (!inv.ok) {
+          order.updates.unshift({
+            status: "processing",
+            note: `Webhook paid but inventory deduction failed: ${
+              inv.reason || "unknown"
+            }`,
+            updatedBy: null,
+          });
+          await order.save();
+        }
+      } catch (e) {
+        console.error("paystackWebhook async error:", e?.message || e);
+      }
+    })();
   } catch (err) {
     return res.status(500).send(err.message);
   }

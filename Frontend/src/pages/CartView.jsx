@@ -30,7 +30,7 @@ function CartView({
               <span className="font-semibold text-sm">Shopping Cart</span>
             </div>
 
-            <div className="flex-1 h-0.5 bg-gray-300 mx-4"></div>
+            <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
 
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 text-white flex items-center justify-center">
@@ -39,7 +39,7 @@ function CartView({
               <span className="text-gray-500 text-sm">Checkout Detail</span>
             </div>
 
-            <div className="flex-1 h-0.5 bg-gray-300 mx-4"></div>
+            <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
 
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 text-white flex items-center justify-center">

@@ -1,12 +1,4 @@
 // src/pages/user/UserShop.jsx
-<<<<<<< HEAD
-import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { toast } from "sonner";
-
-import ShopListing from "../ShopListing";
-import ProductDetail from "../ProductDetail";
-import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
-=======
 // ✅ FIXED: Properly handles loading state when navigating to product detail
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
@@ -15,7 +7,6 @@ import { useNavigate, useParams, useSearchParams, useLocation } from "react-rout
 
 import ShopListing from "../ShopListing";
 import ProductDetail from "../ProductDetail";
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
 
 import { fetchProducts, fetchProductById } from "../../services/shopService";
 
@@ -49,19 +40,6 @@ const normalizeCartItem = (p, qty = 1) => {
   };
 };
 
-<<<<<<< HEAD
-function UserShop() {
-  const [currentView, setCurrentView] = useState("listing");
-  const [quantity, setQuantity] = useState(1);
-
-  const [cart, setCart] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-=======
 function UserShop({ isProductDetailRoute }) {
   const navigate = useNavigate();
   const params = useParams();
@@ -73,7 +51,6 @@ function UserShop({ isProductDetailRoute }) {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(false); // ✅ NEW: Track product loading
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
 
   // ✅ server-driven filters + pagination
   const [filters, setFilters] = useState({
@@ -82,19 +59,11 @@ function UserShop({ isProductDetailRoute }) {
     minPrice: "",
     maxPrice: "",
     sort: "newest",
-<<<<<<< HEAD
-    inStock: "", // "true" or ""
-=======
     inStock: "",
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
     page: 1,
     limit: 12,
   });
 
-<<<<<<< HEAD
-  // ✅ meta returned from backend
-=======
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
   const [meta, setMeta] = useState({
     page: 1,
     totalPages: 1,
@@ -122,28 +91,6 @@ function UserShop({ isProductDetailRoute }) {
     }
   }, [filters]);
 
-<<<<<<< HEAD
-  /** =========================
-   * Open product detail
-   * ========================= */
-  const onProductClick = useCallback(async (productOrId) => {
-    try {
-      const id =
-        typeof productOrId === "string" ? productOrId : getId(productOrId);
-      if (!id) return;
-
-      const product = await fetchProductById(id);
-
-      setSelectedProduct(product);
-      setQuantity(1);
-      setCurrentView("product");
-    } catch (err) {
-      toast.error(err.message || "Failed to open product");
-    }
-  }, []);
-
-  /** ✅ NEW: open product when coming from navbar search */
-=======
   // ✅ Load products for listing page
   useEffect(() => {
     if (!isProductDetailRoute) {
@@ -189,25 +136,14 @@ function UserShop({ isProductDetailRoute }) {
   }, [isProductDetailRoute, params.id]);
 
   /** ✅ Handle navbar search - open product directly */
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
   useEffect(() => {
     const openId = location?.state?.openProductId;
     if (!openId) return;
 
-<<<<<<< HEAD
-    onProductClick(openId);
-
-    // clear state so refresh/back doesn't reopen
-    navigate("/shop", { replace: true, state: {} });
-  }, [location?.state, navigate, onProductClick]);
-
-  /** ✅ sync "search" filter with URL query param */
-=======
     navigate(`/product/${openId}`, { replace: true, state: {} });
   }, [location?.state, navigate]);
 
   /** ✅ Sync "search" filter with URL query param */
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
   useEffect(() => {
     const q = (searchParams.get("search") || "").trim();
 
@@ -217,14 +153,6 @@ function UserShop({ isProductDetailRoute }) {
     });
   }, [searchParams]);
 
-<<<<<<< HEAD
-  /** ✅ reload whenever filters change (while on listing) */
-  useEffect(() => {
-    if (currentView === "listing") loadProducts();
-  }, [currentView, loadProducts]);
-
-=======
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
   /** =========================
    * Cart persistence
    * ========================= */
@@ -290,8 +218,6 @@ function UserShop({ isProductDetailRoute }) {
     toast.success("Added to cart");
   };
 
-<<<<<<< HEAD
-=======
   /** =========================
    * Navigate to product detail
    * ========================= */
@@ -299,7 +225,6 @@ function UserShop({ isProductDetailRoute }) {
     navigate(`/product/${productId}`);
   };
 
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
   const relatedProducts = useMemo(() => {
     if (!selectedProduct?._id) return [];
     return products.filter((p) => p._id !== selectedProduct._id).slice(0, 4);
@@ -348,10 +273,7 @@ function UserShop({ isProductDetailRoute }) {
     }
 
     toast.success("Added to cart");
-<<<<<<< HEAD
-=======
     navigate("/cart");
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
   };
 
   /** =========================
@@ -378,31 +300,6 @@ function UserShop({ isProductDetailRoute }) {
   const setPage = (page) => setFilters((f) => ({ ...f, page }));
 
   /** =========================
-<<<<<<< HEAD
-   * Views
-   * ========================= */
-  if (currentView === "listing") {
-    return (
-      <ShopListing
-        products={products}
-        onProductClick={onProductClick}
-        cartCount={cartCount}
-        onAddToCartFromListing={addToCartFromListing}
-        showFloatingCart={false}
-        filters={filters}
-        meta={meta}
-        onChangeCategory={setCategory}
-        onChangeSearch={setSearch}
-        onChangePriceRange={setPriceRange}
-        onChangeInStock={setInStock}
-        onChangeSort={setSort}
-        onChangePage={setPage}
-      />
-    );
-  }
-
-  if (currentView === "product") {
-=======
    * Render correct view based on route
    * ========================= */
   if (isProductDetailRoute) {
@@ -418,7 +315,6 @@ function UserShop({ isProductDetailRoute }) {
     }
 
     // ✅ FIXED: Only render ProductDetail when we have the product
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
     return (
       <ProductDetail
         product={selectedProduct}
@@ -430,9 +326,6 @@ function UserShop({ isProductDetailRoute }) {
     );
   }
 
-<<<<<<< HEAD
-  return null;
-=======
   // Default: Shop Listing
   return (
     <ShopListing
@@ -451,7 +344,6 @@ function UserShop({ isProductDetailRoute }) {
       onChangePage={setPage}
     />
   );
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
 }
 
 export default UserShop;

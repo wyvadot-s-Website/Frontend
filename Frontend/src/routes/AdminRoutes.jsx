@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import { Navigate } from "react-router-dom";
-import { getAdminToken } from "../utils/adminAuth";
-
-const AdminRoutes = ({ children }) => {
-  const token = getAdminToken();
-
-  return token ? children : <Navigate to="/theboss/login" replace />;
-};
-
-export default AdminRoutes;
-=======
 import { Navigate, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getAdminToken } from "../utils/adminAuth";
@@ -51,4 +39,3 @@ const AdminRoutes = ({ children }) => {
 };
 
 export default AdminRoutes;
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86

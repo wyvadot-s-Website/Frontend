@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import { Navigate } from "react-router-dom";
-
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-=======
 import { Navigate, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { isTokenExpired, setupTokenExpirationCheck } from "../utils/TokenUtils";
@@ -39,15 +31,10 @@ function ProtectedRoute({ children }) {
   // Initial check
   if (!token || isTokenExpired(token)) {
     localStorage.removeItem("token");
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
     return <Navigate to="/" replace />;
   }
 
   return children;
 }
 
-<<<<<<< HEAD
 export default ProtectedRoute;
-=======
-export default ProtectedRoute;
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86

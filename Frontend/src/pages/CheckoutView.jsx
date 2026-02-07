@@ -7,8 +7,6 @@ const formatMoney = (amount) =>
     currency: "NGN",
   });
 
-
-
 function CheckoutView({
   cart = [],
   subtotal = 0,
@@ -38,7 +36,7 @@ function CheckoutView({
     differentBilling: false,
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("card"); // "card" | "bank"
+  const paymentMethod = "card"; // for now, we only have one method, but this can be extended easily
   const [coupon, setCoupon] = useState("");
 
   // If you later want coupon logic: apply discount here (server-validated)
@@ -60,7 +58,12 @@ function CheckoutView({
 
   const handlePlaceOrder = () => {
     // Minimal validation
-    if (!contact.firstName || !contact.lastName || !contact.phone || !contact.email) {
+    if (
+      !contact.firstName ||
+      !contact.lastName ||
+      !contact.phone ||
+      !contact.email
+    ) {
       return alert("Please fill your contact information.");
     }
     if (!address.street || !address.city || !address.state) {
@@ -84,7 +87,7 @@ function CheckoutView({
         <div className="max-w-5xl mx-auto px-6 py-6">
           <h1 className="text-2xl font-bold text-center mb-4">Check Out</h1>
 
-          <div className="flex items-center justify-center gap-8 text-sm">
+          <div className="flex items-center justify-center sm:gap-8 gap-1 text-sm">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs">
                 1
@@ -124,40 +127,56 @@ function CheckoutView({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">FIRST NAME</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    FIRST NAME
+                  </label>
                   <input
                     value={contact.firstName}
-                    onChange={(e) => setContact((p) => ({ ...p, firstName: e.target.value }))}
+                    onChange={(e) =>
+                      setContact((p) => ({ ...p, firstName: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm"
                     placeholder="First name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">LAST NAME</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    LAST NAME
+                  </label>
                   <input
                     value={contact.lastName}
-                    onChange={(e) => setContact((p) => ({ ...p, lastName: e.target.value }))}
+                    onChange={(e) =>
+                      setContact((p) => ({ ...p, lastName: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm"
                     placeholder="Last name"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs text-gray-600 mb-1">PHONE NUMBER</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    PHONE NUMBER
+                  </label>
                   <input
                     value={contact.phone}
-                    onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))}
+                    onChange={(e) =>
+                      setContact((p) => ({ ...p, phone: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm"
                     placeholder="Phone number"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs text-gray-600 mb-1">EMAIL ADDRESS</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    EMAIL ADDRESS
+                  </label>
                   <input
                     value={contact.email}
-                    onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))}
+                    onChange={(e) =>
+                      setContact((p) => ({ ...p, email: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm"
                     placeholder="Your Email"
                     type="email"
@@ -172,20 +191,28 @@ function CheckoutView({
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">STREET ADDRESS</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    STREET ADDRESS
+                  </label>
                   <input
                     value={address.street}
-                    onChange={(e) => setAddress((p) => ({ ...p, street: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((p) => ({ ...p, street: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm"
                     placeholder="Street Address"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">COUNTRY</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    COUNTRY
+                  </label>
                   <select
                     value={address.country}
-                    onChange={(e) => setAddress((p) => ({ ...p, country: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((p) => ({ ...p, country: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm bg-white"
                   >
                     <option>Nigeria</option>
@@ -196,10 +223,14 @@ function CheckoutView({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">TOWN / CITY</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    TOWN / CITY
+                  </label>
                   <input
                     value={address.city}
-                    onChange={(e) => setAddress((p) => ({ ...p, city: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((p) => ({ ...p, city: e.target.value }))
+                    }
                     className="w-full border rounded px-3 py-2 text-sm"
                     placeholder="Town / City"
                   />
@@ -207,20 +238,28 @@ function CheckoutView({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">STATE</label>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      STATE
+                    </label>
                     <input
                       value={address.state}
-                      onChange={(e) => setAddress((p) => ({ ...p, state: e.target.value }))}
+                      onChange={(e) =>
+                        setAddress((p) => ({ ...p, state: e.target.value }))
+                      }
                       className="w-full border rounded px-3 py-2 text-sm"
                       placeholder="State"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">ZIP CODE</label>
+                    <label className="block text-xs text-gray-600 mb-1">
+                      ZIP CODE
+                    </label>
                     <input
                       value={address.zip}
-                      onChange={(e) => setAddress((p) => ({ ...p, zip: e.target.value }))}
+                      onChange={(e) =>
+                        setAddress((p) => ({ ...p, zip: e.target.value }))
+                      }
                       className="w-full border rounded px-3 py-2 text-sm"
                       placeholder="Zip Code"
                     />
@@ -232,7 +271,10 @@ function CheckoutView({
                     type="checkbox"
                     checked={address.differentBilling}
                     onChange={(e) =>
-                      setAddress((p) => ({ ...p, differentBilling: e.target.checked }))
+                      setAddress((p) => ({
+                        ...p,
+                        differentBilling: e.target.checked,
+                      }))
                     }
                   />
                   Use a different billing address (optional)
@@ -241,39 +283,18 @@ function CheckoutView({
             </div>
 
             {/* Payment method */}
-            
+
             <div className="bg-white border rounded-lg p-6">
               <h2 className="font-semibold mb-4">Payment method</h2>
 
-              <div className="space-y-3">
-                <label className="flex items-center justify-between gap-3 p-3 border rounded cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="pay"
-                      checked={paymentMethod === "card"}
-                      onChange={() => setPaymentMethod("card")}
-                    />
-                    <span className="text-sm">Pay by Card (Credit)</span>
-                  </div>
-                  <span className="text-gray-400 text-xs">CARD</span>
-                </label>
-
-                <label className="flex items-center justify-between gap-3 p-3 border rounded cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="pay"
-                      checked={paymentMethod === "bank"}
-                      onChange={() => setPaymentMethod("bank")}
-                    />
-                    <span className="text-sm">Pay with Bank Transfer</span>
-                  </div>
-                  <span className="text-gray-400 text-xs">BANK</span>
-                </label>
+              <div className="p-3 border rounded">
+                <p className="text-sm font-medium">Paystack Checkout</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  You can pay with <b>Card</b> or <b>Bank Transfer</b> on the
+                  next screen.
+                </p>
               </div>
             </div>
-            
 
             {/* Place Order button (like screenshot bottom-left) */}
             <button
@@ -308,14 +329,22 @@ function CheckoutView({
                   <div key={id} className="flex gap-3">
                     <div className="w-14 h-14 border rounded flex items-center justify-center bg-gray-50">
                       {img ? (
-                        <img src={img} alt={item.name} className="w-full h-full object-contain p-1" />
+                        <img
+                          src={img}
+                          alt={item.name}
+                          className="w-full h-full object-contain p-1"
+                        />
                       ) : (
-                        <div className="text-[10px] text-gray-400">No image</div>
+                        <div className="text-[10px] text-gray-400">
+                          No image
+                        </div>
                       )}
                     </div>
 
                     <div className="flex-1">
-                      <p className="text-sm font-semibold leading-4">{item.name}</p>
+                      <p className="text-sm font-semibold leading-4">
+                        {item.name}
+                      </p>
 
                       <div className="mt-2 inline-flex items-center border rounded overflow-hidden">
                         <button
@@ -327,7 +356,9 @@ function CheckoutView({
                           <Minus size={14} />
                         </button>
 
-                        <span className="px-3 py-1 text-sm border-x">{qty}</span>
+                        <span className="px-3 py-1 text-sm border-x">
+                          {qty}
+                        </span>
 
                         <button
                           type="button"
@@ -370,13 +401,17 @@ function CheckoutView({
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="font-semibold">
-                  {computedShipping <= 0 ? "Free" : formatMoney(computedShipping)}
+                  {computedShipping <= 0
+                    ? "Free"
+                    : formatMoney(computedShipping)}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-semibold">{formatMoney(computedSubtotal)}</span>
+                <span className="font-semibold">
+                  {formatMoney(computedSubtotal)}
+                </span>
               </div>
 
               <div className="border-t pt-3 flex justify-between text-base">

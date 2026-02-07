@@ -15,8 +15,6 @@ import { fetchMyServiceRequests } from "@/services/userServiceRequestService";
 import UserOrderDetailModal from "@/components/user/UserOrderDetailModal";
 import ServiceRequestDetailModal from "@/components/user/ServiceRequestDetailModal";
 
-<<<<<<< HEAD
-=======
 // ✅ Updated Mobile Notification Content Component with better debugging
 function MobileNotificationContent({ token, onUnreadChange, onClose }) {
   const [notifications, setNotifications] = useState([]);
@@ -127,7 +125,6 @@ function MobileNotificationContent({ token, onUnreadChange, onClose }) {
   );
 }
 // ✅ NOW your UserNavbar function starts
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
 function UserNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -492,11 +489,7 @@ function UserNavbar() {
     onClick={() => navigate("/cart")}
     className="relative text-white p-1"
   >
-<<<<<<< HEAD
-    <ShoppingCart size={22} />
-=======
     <ShoppingCart size={22} color='black'/>
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
     {cartCount > 0 && (
       <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
         {cartCount}
@@ -818,13 +811,6 @@ function UserNavbar() {
           </div>
         </div>
         {/* Mobile Menu Dropdown */}
-<<<<<<< HEAD
-{mobileMenuOpen && (
-  <div className="lg:hidden absolute top-full left-0 right-0 bg-[#212121] mt-2 mx-3 sm:mx-4 rounded-2xl shadow-lg overflow-hidden z-50">
-    <div className="px-4 py-3">
-      {/* Search */}
-      <div className="mb-4">
-=======
 {/* Mobile Menu Dropdown */}
 {mobileMenuOpen && (
   <div className="lg:hidden absolute top-full left-0 right-0 bg-[#212121] mt-2 mx-3 sm:mx-4 rounded-2xl shadow-lg z-50">
@@ -832,17 +818,13 @@ function UserNavbar() {
     <div className="px-4 py-3">
       {/* Search */}
       <div className="mb-4 relative">
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
         <input
           type="text"
           placeholder="Search..."
           value={navSearch}
           onChange={(e) => setNavSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-600 bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
-<<<<<<< HEAD
-        <Search className="absolute left-7 top-5 h-4 w-4 text-gray-400" />
-=======
         <Search 
           className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
           onClick={() => {
@@ -1041,7 +1023,6 @@ function UserNavbar() {
             </div>
           </div>
         )}
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
       </div>
 
       {/* Navigation Links */}
@@ -1071,68 +1052,6 @@ function UserNavbar() {
       </div>
 
       {/* Mobile Actions */}
-<<<<<<< HEAD
-      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            navigate("/wishlist");
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <Heart size={18} />
-          <span className="text-sm">Wishlist</span>
-          {wishlistCount > 0 && (
-            <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
-              {wishlistCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            navigate("/cart");
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <ShoppingCart size={18} />
-          <span className="text-sm">Cart</span>
-          {cartCount > 0 && (
-            <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
-              {cartCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setNotifOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <Bell size={18} />
-          <span className="text-sm">Notifications</span>
-          {unreadCount > 0 && (
-            <span className="bg-red-500 text-white text-xs px-1.5 rounded-full">
-              {unreadCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            navigate("/account");
-          }}
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-        >
-          <User size={18} />
-          <span className="text-sm">Account</span>
-        </button>
-      </div>
-=======
 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
   <button
     onClick={() => {
@@ -1195,7 +1114,6 @@ function UserNavbar() {
     <span className="text-sm">Account</span>
   </button>
 </div>
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
 
       {/* Logout */}
       <button
@@ -1211,9 +1129,6 @@ function UserNavbar() {
     </div>
   </div>
 )}
-<<<<<<< HEAD
-      </nav>
-=======
 
 {/* ✅ Mobile Notifications Modal */}
 {notifOpen && (
@@ -1254,7 +1169,6 @@ function UserNavbar() {
 )}
 
       </nav>  {/* ✅ NOW this properly closes the nav */}
->>>>>>> b8a47e3376525587c83abb68aff0ce7e2b23cc86
 
       {/* Order Detail Modal (opened from navbar search) */}
       <UserOrderDetailModal
