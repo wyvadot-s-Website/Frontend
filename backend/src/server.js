@@ -38,13 +38,14 @@ dotenv.config();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Vite
-      "http://localhost:3000", // if needed
-      "https://wyvadotpr.vercel.app", 
-    ],
-    credentials: true,
-  })
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://wyvadotpr.vercel.app",
+    "https://wyvadotpr.onrender.com", // Add this
+  ],
+  credentials: true,
+})
 );
 
 await connectDB();
