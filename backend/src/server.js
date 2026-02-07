@@ -30,22 +30,21 @@ import userWishlistRoutes from "./routes/user.wishlist.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 
-
-
-
-
-dotenv.config();
+// Only load .env in development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 app.use(
   cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://wyvadotpr.vercel.app",
-    "https://wyvadotpr.onrender.com", // Add this
-  ],
-  credentials: true,
-})
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://wyvadotpr.vercel.app",
+      "https://wyvadotpr.onrender.com",
+    ],
+    credentials: true,
+  })
 );
 
 await connectDB();
@@ -78,15 +77,8 @@ app.use("/api/user", userWishlistRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api", reviewRoutes);
 
-
-
-
-
-
-
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);  // ✅ FIXED!
 });
