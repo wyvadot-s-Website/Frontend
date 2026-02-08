@@ -29,6 +29,7 @@ import OrderComplete from "./pages/OrderCompletePage.jsx";
 import Wishlist from "./pages/user/Wishlist.jsx";
 import UserAccount from "./pages/user/UserAccount.jsx";
 import FloatingWhatsApp from './components/FloatingWhatsApp.jsx';
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 function UserLayout({ children }) {
   return (
@@ -45,7 +46,9 @@ function App() {
     <>
       <Toaster position="top-right" richColors />
       <FloatingWhatsApp />
+      
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route
             path="/"
