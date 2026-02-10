@@ -90,6 +90,7 @@ export const acceptServiceRequestAdmin = async (token, id) => {
  * ADMIN: UPDATE REQUEST
  * Can update: status, stage, assignedAdmin, adminNotes
  */
+// ADMIN: UPDATE REQUEST
 export const updateServiceRequestAdmin = async (id, updates, token) => {
   const res = await fetch(`${BASE_URL}/api/admin/service-requests/${id}`, {
     method: "PATCH",
@@ -100,11 +101,18 @@ export const updateServiceRequestAdmin = async (id, updates, token) => {
     body: JSON.stringify(updates),
   });
 
-  const result = await res.json();
-
-  if (!res.ok || result.success === false) {
-    throw new Error(result.message || "Failed to update service request");
+  // Safe JSON parse (prevents false "failed" when backend returns no JSON)
+  let result = null;
+  try {
+    result = await res.json();
+  } catch {
+    result = null;
   }
 
-  return result;
+  // Treat HTTP 2xx as success
+  if (!res.ok) {
+    throw new Error(result?.message || "Failed to update service request");
+  }
+
+  return result || { success: true };
 };
