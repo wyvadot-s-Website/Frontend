@@ -8,7 +8,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendVerificationEmail = async (toEmail, code) => {
   try {
-    await resend.emails.send({
+    console.log('📤 Attempting to send email via Resend to:', toEmail);
+    console.log('🔑 Using Resend API key:', process.env.RESEND_API_KEY ? 'KEY EXISTS' : 'KEY MISSING');
+    
+    const result = await resend.emails.send({
       from: 'Wyvadot PR <onboarding@resend.dev>',
       to: toEmail,
       subject: 'Verify your email',
@@ -19,9 +22,12 @@ export const sendVerificationEmail = async (toEmail, code) => {
         <p>This code expires in 10 minutes.</p>
       `,
     });
+    
+    console.log('✅ Resend API response:', result);
     console.log('✅ Verification email sent to:', toEmail);
   } catch (error) {
-    console.error('❌ Failed to send verification email:', error);
+    console.error('❌ Resend API error:', error);
+    console.error('❌ Error details:', JSON.stringify(error, null, 2));
     throw error;
   }
 };

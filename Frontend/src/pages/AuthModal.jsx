@@ -21,13 +21,14 @@ import {
   resetPassword,
 } from "@/services/userService";
 
+// In initialFormState in AuthModal.jsx
 const initialFormState = {
   firstName: "",
   middleName: "",
   lastName: "",
   phoneNumber: "",
   country: "",
-  countryCode: "",
+  countryCode: "+234",  // ✅ Set default value!
   address: "",
   email: "",
   password: "",
@@ -84,20 +85,54 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   };
 
   // ===============================
-  // SIGN UP
-  // ===============================
-  const handleSignUp = async () => {
-    try {
-      setLoading(true);
-      await signupUser(formData);
-      toast.success("Verification code sent to your email");
-      setView("verify");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+// SIGN UP
+// ===============================
+const handleSignUp = async () => {
+  // Validation
+  if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    toast.error("Please fill in all required fields");
+    return;
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    toast.error("Passwords do not match");
+    return;
+  }
+
+  if (!formData.countryCode) {
+    toast.error("Please enter country code");
+    return;
+  }
+
+  if (!formData.phoneNumber) {
+    toast.error("Please enter phone number");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // Prepare data matching backend User schema
+    const signupData = {
+      firstName: formData.firstName,
+      middleName: formData.middleName || "", // Optional field
+      lastName: formData.lastName,
+      email: formData.email,
+      countryCode: formData.countryCode, // Send separately
+      phoneNumber: formData.phoneNumber,  // Send separately
+      country: formData.country || "",    // Optional field
+      password: formData.password,
+    };
+
+    await signupUser(signupData);
+    toast.success("Verification code sent to your email");
+    setView("verify");
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleVerifySignup = async () => {
     try {
