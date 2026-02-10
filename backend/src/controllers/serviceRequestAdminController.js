@@ -105,7 +105,7 @@ export const updateServiceRequestAdmin = async (req, res) => {
     if (doc?.user) {
       await notifyUser({
         userId: doc.user?._id || doc.user,
-        scope: "service",
+        scope: "project",
         title: "Service Updated",
         message: `${doc.projectId} has been updated. Stage: ${doc.stage} • Progress: ${doc.progress}%`,
         link: `/home`, // replace with your tracking page if you have one

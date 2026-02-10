@@ -28,7 +28,7 @@ import PaymentCallback from "./pages/PaymentCallback.jsx";
 import OrderComplete from "./pages/OrderCompletePage.jsx";
 import Wishlist from "./pages/user/Wishlist.jsx";
 import UserAccount from "./pages/user/UserAccount.jsx";
-import FloatingWhatsApp from './components/FloatingWhatsApp.jsx';
+import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 
 function UserLayout({ children }) {
@@ -46,7 +46,7 @@ function App() {
     <>
       <Toaster position="top-right" richColors />
       <FloatingWhatsApp />
-      
+
       <Router>
         <ScrollToTop />
         <Routes>
@@ -98,7 +98,7 @@ function App() {
               </UserLayout>
             }
           />
-          
+
           {/* ✅ SHOP ROUTES - Now properly separated */}
           <Route
             path="/shop"
@@ -116,7 +116,7 @@ function App() {
               </UserLayout>
             }
           />
-          
+
           {/* ✅ CART & CHECKOUT ROUTES */}
           <Route
             path="/cart"
@@ -134,7 +134,7 @@ function App() {
               </UserLayout>
             }
           />
-          
+
           {/* ✅ PAYMENT & ORDER ROUTES */}
           <Route
             path="/payment/callback"
@@ -150,15 +150,6 @@ function App() {
               <UserLayout>
                 <OrderComplete />
               </UserLayout>
-            }
-          />
-          
-          <Route
-            path="/theboss/account"
-            element={
-              <AdminRoutes>
-                <AdminAccount />
-              </AdminRoutes>
             }
           />
 
@@ -215,6 +206,7 @@ function App() {
             <Route path="content" element={<AdminContent />} />
             <Route path="services" element={<AdminShop />} />
             <Route path="projects" element={<AdminProjects />} />
+            <Route path="account" element={<AdminAccount />} />
 
             <Route
               path="service-requests/:id"
