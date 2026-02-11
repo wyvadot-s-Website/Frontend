@@ -27,6 +27,8 @@ import CartRouter from "./pages/CartRouter.jsx";
 import PaymentCallback from "./pages/PaymentCallback.jsx";
 import OrderComplete from "./pages/OrderCompletePage.jsx";
 import Wishlist from "./pages/user/Wishlist.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import TermsAndConditions from "./pages/TermsAndConditions.jsx";
 import UserAccount from "./pages/user/UserAccount.jsx";
 import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
@@ -195,6 +197,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 
           {/* ADMIN ROUTES */}
           <Route path="/theboss" element={<AdminAuthLayout />}>

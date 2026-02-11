@@ -1,8 +1,9 @@
 // Footer Component
 import React,{ useEffect, useState }from 'react'
-import { Link } from 'react-router-dom'
+import { Link,useNavigate } from 'react-router-dom'
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 import logo from '../../public/af586a3ee0894e6b9fdd44a1f9c63d062d814420.png'
+
 import fb from "../assets/icons/facebook.png"
 import x from "../assets/icons/twitter.png"
 import Ig from "../assets/icons/instagram.png"
@@ -12,6 +13,7 @@ import { fetchFooter } from "@/services/footerService";
 
 function Footer() {
   const [footer, setFooter] = useState(null);
+  const Navigate = useNavigate();
 
   useEffect(() => {
     loadFooter();
@@ -40,7 +42,7 @@ function Footer() {
           {/* Contact Us Section */}
           <div className='col-span-2 flex justify-between flex-col'>
            <div>
-             <h3 className="font-bold text-gray-900 mb-4 text-base">Contact Us</h3>
+             <Link to="/contact" className="font-bold text-gray-900 mb-4 text-base">Contact Us</Link>
             <p className="text-gray-600 text-md leading-relaxed mb-6 font-semibold">Our promise as a company is to always ensure we proliferate quality craftsmanship, integrity, innovation, customer-centric approach, continuous improvement, sustainability, and a drive for excellence in all that we do.
             </p>
            </div>
@@ -71,10 +73,10 @@ function Footer() {
             <h3 className="font-bold text-gray-900 mb-4 text-base">Legal</h3>
             <ul className="space-y-2 text-gray-600 text-sm">
               <li>
-                <a href="/privacy-policy" className="hover:text-orange-500 transition-colors text-md font-semibold">Privacy Policies</a>
+                <Link to="/privacy-policy" className="hover:text-orange-500 transition-colors text-md font-semibold">Privacy Policies</Link>
               </li>
               <li>
-                <a href="/terms" className="hover:text-orange-500 transition-colors text-md font-semibold">Terms and Conditions</a>
+                <Link to="/terms-and-conditions" className="hover:text-orange-500 transition-colors text-md font-semibold">Terms and Conditions</Link>
               </li>
             </ul>
           </div>
@@ -83,10 +85,10 @@ function Footer() {
           <div>
             <h3 className="font-bold text-gray-900 mb-4 text-base">Quick Links</h3>
             <ul className="space-y-2 text-gray-600 text-sm">
-              <li><a href="/" className="hover:text-orange-500 transition-colors text-md font-semibold">Home</a></li>
-              <li><a href="/about" className="hover:text-orange-500 transition-colors text-md font-semibold">About Us</a></li>
-              <li><a href="/services" className="hover:text-orange-500 transition-colors text-md font-semibold">Our Services</a></li>
-              <li><a href="/projects" className="hover:text-orange-500 transition-colors text-md font-semibold">Projects</a></li>
+              <li><Link to="/" className="hover:text-orange-500 transition-colors text-md font-semibold">Home</Link></li>
+              <li><Link to="/about" className="hover:text-orange-500 transition-colors text-md font-semibold">About Us</Link></li>
+              <li><Link to="/services" className="hover:text-orange-500 transition-colors text-md font-semibold">Our Services</Link></li>
+              <li><Link to="/projects" className="hover:text-orange-500 transition-colors text-md font-semibold">Projects</Link></li>
             </ul>
           </div>
           

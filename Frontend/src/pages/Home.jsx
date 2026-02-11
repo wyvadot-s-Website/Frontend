@@ -3,6 +3,7 @@ import ContactForm from "../components/ContactForm";
 import ServiceComponent from "../components/service";
 import ChooseImage from "../../public/Union.png";
 import SecondHero from "../components/SecondHero";
+import Testimonial from "../components/Testimonial";
 import Shop from "../components/Shop";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -241,7 +242,10 @@ function Home() {
   />
 </div>
 
+      
+
       <Shop />
+      <Testimonial />
       <ContactForm />
     </div>
   );
