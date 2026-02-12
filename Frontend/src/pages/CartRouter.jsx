@@ -102,11 +102,18 @@ function CartRouter() {
 
   // ✅ per-product shipping: sum of each item's shippingFee
   const shipping = useMemo(
-    () => cart.reduce((sum, item) => sum + Number(item.shippingFee || 0), 0),
+    () =>
+      cart.reduce(
+        (max, item) => Math.max(max, Number(item.shippingFee || 0)),
+        0,
+      ),
     [cart],
   );
 
-  const total = subtotal + shipping;
+  const VAT_RATE = 0.075;
+  const vat = useMemo(() => subtotal * VAT_RATE, [subtotal]);
+
+  const total = subtotal + shipping + vat;
 
   // ✅ Navigate to checkout instead of setting state
   const onProceedToCheckout = () => {
@@ -177,6 +184,7 @@ function CartRouter() {
         cart={cart}
         subtotal={subtotal}
         shipping={shipping}
+        vat={vat}
         total={total}
         updateQuantity={updateQuantity}
         onCompleteOrder={handleCompleteOrder}
@@ -192,6 +200,7 @@ function CartRouter() {
       removeFromCart={removeFromCart}
       subtotal={subtotal}
       shipping={shipping}
+      vat={vat}
       total={total}
       onProceedToCheckout={onProceedToCheckout}
     />

@@ -2,56 +2,69 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner"; // ✅ ADD THIS
 import BASE_URL from "../utils/api"; // adjust path if needed
 
 function LoginForm({ onNavigateToSignup }) {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async () => {
-  if (!formData.email || !formData.password) return;
-  
-  try {
-    setLoading(true);
-    const res = await fetch(`${BASE_URL}/api/admin/login`, {  // ✅ Fixed
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-    
-    const data = await res.json();
-    
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed");
+    if (loading) return;
+
+    if (!formData.email || !formData.password) {
+      return toast.error("Email and password are required.");
     }
-    
-    // store token
-    localStorage.setItem("admin_token", data.token);
-    localStorage.setItem("admin_data", JSON.stringify(data.admin));
-    
-    navigate("/theboss/dashboard");
-  } catch (error) {
-    console.error("Admin login error:", error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    const toastId = toast.loading("Signing in..."); // ✅ user feedback
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${BASE_URL}/api/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: String(formData.email).trim(),
+          password: formData.password,
+        }),
+      });
+
+      // ✅ Safe JSON parse
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.message || `Login failed (${res.status})`);
+      }
+
+      if (!data?.token) {
+        throw new Error("Login succeeded but token is missing.");
+      }
+
+      localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_data", JSON.stringify(data.admin || {}));
+
+      toast.success("Login successful", { id: toastId });
+      navigate("/theboss/dashboard");
+    } catch (error) {
+      console.error("Admin login error:", error);
+      toast.error(error?.message || "Login failed", { id: toastId }); // ✅ SHOW ON UI
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-sm mx-auto bg-white/80 backdrop-blur-sm rounded-lg p-8">
@@ -59,7 +72,7 @@ function LoginForm({ onNavigateToSignup }) {
         Login
       </h2>
 
-      <div className="flex flex-col ">
+      <div className="flex flex-col">
         <div>
           <Input
             id="email"
@@ -85,7 +98,7 @@ function LoginForm({ onNavigateToSignup }) {
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((p) => !p)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

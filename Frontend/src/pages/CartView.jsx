@@ -14,6 +14,7 @@ function CartView({
   removeFromCart,
   subtotal,
   shipping,
+  vat,
   total,
   onProceedToCheckout,
 }) {
@@ -59,7 +60,11 @@ function CartView({
           <div className="md:col-span-2 space-y-4">
             {cart.length === 0 ? (
               <div className="bg-white rounded-lg p-10 text-center text-gray-600">
-                <img src="../../../public/Frame 2147224274.png" alt="Your cart is empty" className='flex place-self-center p-5' />
+                <img
+                  src="../../../public/Frame 2147224274.png"
+                  alt="Your cart is empty"
+                  className="flex place-self-center p-5"
+                />
               </div>
             ) : (
               cart.map((item) => {
@@ -68,7 +73,9 @@ function CartView({
 
                 // ✅ Prefer normalized image field, fallback to images array
                 const img =
-                  item?.image || item?.images?.[0]?.url || item?.images?.[0]?.secure_url;
+                  item?.image ||
+                  item?.images?.[0]?.url ||
+                  item?.images?.[0]?.secure_url;
 
                 const stockQty = Number(item?.stockQuantity ?? 0);
                 const isOut =
@@ -99,13 +106,16 @@ function CartView({
                       {/* Optional stock line */}
                       {stockQty ? (
                         <p className="text-xs text-gray-500 mb-2">
-                          Stock: <span className="font-semibold">{stockQty}</span>
+                          Stock:{" "}
+                          <span className="font-semibold">{stockQty}</span>
                         </p>
                       ) : null}
 
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(id, Number(item.quantity || 1) - 1)}
+                          onClick={() =>
+                            updateQuantity(id, Number(item.quantity || 1) - 1)
+                          }
                           className="p-1 border rounded"
                           disabled={Number(item.quantity || 1) <= 1}
                           title="Decrease"
@@ -116,9 +126,13 @@ function CartView({
                         <span className="px-3">{item.quantity}</span>
 
                         <button
-                          onClick={() => updateQuantity(id, Number(item.quantity || 1) + 1)}
+                          onClick={() =>
+                            updateQuantity(id, Number(item.quantity || 1) + 1)
+                          }
                           className="p-1 border rounded"
-                          disabled={!!stockQty && Number(item.quantity || 1) >= stockQty}
+                          disabled={
+                            !!stockQty && Number(item.quantity || 1) >= stockQty
+                          }
                           title="Increase"
                         >
                           <Plus size={14} />
@@ -134,7 +148,9 @@ function CartView({
 
                     <div className="text-right">
                       <p className="font-bold mb-2">
-                        {formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}
+                        {formatMoney(
+                          Number(item.price || 0) * Number(item.quantity || 0),
+                        )}
                       </p>
 
                       <button
@@ -164,6 +180,11 @@ function CartView({
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping:</span>
                 <span className="font-semibold">{formatMoney(shipping)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">VAT (7.5%):</span>
+                <span className="font-semibold">{formatMoney(vat)}</span>
               </div>
 
               <div className="border-t pt-3 flex justify-between text-lg">

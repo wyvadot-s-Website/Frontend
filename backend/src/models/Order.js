@@ -9,41 +9,55 @@ const orderUpdateSchema = new mongoose.Schema(
       required: true,
     },
     note: { type: String, default: "" },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
 
 const orderItemSchema = new mongoose.Schema(
   {
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      default: null,
+    },
 
     // snapshot fields (important: product might change later)
     name: { type: String, required: true },
-    category: { type: String, default: "Uncategorized" }, 
+    category: { type: String, default: "Uncategorized" },
     image: { type: String, default: "" },
     price: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
-    
   },
-  { _id: false }
+  { _id: false },
 );
 
 const orderDownloadSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     url: { type: String, required: true, trim: true },
-    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const orderSchema = new mongoose.Schema(
   {
     orderId: { type: String, unique: true, required: true }, // ORD-0001
 
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }, // null for guest
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    }, // null for guest
 
     customer: {
       email: { type: String, required: true, lowercase: true, trim: true },
@@ -64,33 +78,42 @@ const orderSchema = new mongoose.Schema(
     totals: {
       subtotal: { type: Number, required: true, min: 0 },
       shipping: { type: Number, required: true, min: 0 },
-      total: { type: Number, required: true, min: 0 }, // NGN
+
+      vatRate: { type: Number, default: 0.075 }, // ✅ add
+      vat: { type: Number, default: 0, min: 0 }, // ✅ add
+
+      total: { type: Number, required: true, min: 0 }, // subtotal + shipping + vat
     },
 
-   payment: {
-  provider: { type: String, default: "paystack" },
-  method: { type: String, enum: ["card", "bank_transfer"], default: "card" },
-  status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
-  reference: { type: String, default: "" },
-},
+    payment: {
+      provider: { type: String, default: "paystack" },
+      method: {
+        type: String,
+        enum: ["card", "bank_transfer"],
+        default: "card",
+      },
+      status: {
+        type: String,
+        enum: ["pending", "paid", "failed"],
+        default: "pending",
+      },
+      reference: { type: String, default: "" },
+    },
 
+    status: {
+      type: String,
+      enum: ["pending_payment", "processing", "shipped", "delivered"],
+      default: "pending_payment",
+    },
 
+    // ✅ prevents double-decrement if verify + webhook both run
+    inventoryUpdated: { type: Boolean, default: false },
+    inventoryUpdatedAt: { type: Date, default: null },
 
-status: {
-  type: String,
-  enum: ["pending_payment", "processing", "shipped", "delivered"],
-  default: "pending_payment",
-},
-
-// ✅ prevents double-decrement if verify + webhook both run
-inventoryUpdated: { type: Boolean, default: false },
-inventoryUpdatedAt: { type: Date, default: null },
-
-    updates: { type: [orderUpdateSchema], default: [] },// timeline/history
+    updates: { type: [orderUpdateSchema], default: [] }, // timeline/history
     downloads: { type: [orderDownloadSchema], default: [] },
-
-},
-  { timestamps: true }
+  },
+  { timestamps: true },
 );
 
 export default mongoose.model("Order", orderSchema);

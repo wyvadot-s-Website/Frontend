@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
-import { fetchAdminNotifications, markAdminNotificationsRead } from "@/services/notificationService";
+import {
+  fetchAdminNotifications,
+  markAdminNotificationsRead,
+} from "@/services/notificationService";
 import { useNavigate } from "react-router-dom";
 
 function timeAgo(dateStr) {
@@ -15,7 +18,12 @@ function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
-export default function AdminNotificationsPopover({ open, onClose, token, onUnreadChange }) {
+export default function AdminNotificationsPopover({
+  open,
+  onClose,
+  token,
+  onUnreadChange,
+}) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
@@ -23,7 +31,7 @@ export default function AdminNotificationsPopover({ open, onClose, token, onUnre
 
   const unreadIds = useMemo(
     () => items.filter((n) => !n.isRead).map((n) => n._id),
-    [items]
+    [items],
   );
 
   const load = async () => {
@@ -51,7 +59,11 @@ export default function AdminNotificationsPopover({ open, onClose, token, onUnre
     try {
       await markAdminNotificationsRead(token, { all: true });
       // update UI immediately
-      const next = items.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() }));
+      const next = items.map((n) => ({
+        ...n,
+        isRead: true,
+        readAt: new Date().toISOString(),
+      }));
       setItems(next);
       setUnread(0);
       onUnreadChange?.(0);
@@ -63,7 +75,9 @@ export default function AdminNotificationsPopover({ open, onClose, token, onUnre
     if (!n.isRead && token) {
       try {
         await markAdminNotificationsRead(token, { ids: [n._id] });
-        setItems((prev) => prev.map((x) => (x._id === n._id ? { ...x, isRead: true } : x)));
+        setItems((prev) =>
+          prev.map((x) => (x._id === n._id ? { ...x, isRead: true } : x)),
+        );
         setUnread((u) => Math.max(0, u - 1));
         onUnreadChange?.((u) => Math.max(0, u - 1));
       } catch {}
@@ -76,7 +90,9 @@ export default function AdminNotificationsPopover({ open, onClose, token, onUnre
   if (!open) return null;
 
   return (
-    <div className="absolute right-0 mt-2 w-[360px] bg-white border rounded-xl shadow-lg z-50 overflow-hidden">
+    <div
+      className="
+    fixed inset-x-3 top-[72px] sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 w-auto sm:w-[360px] bg-white border rounded-xl shadow-lg z-50 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <div>
           <p className="text-sm font-semibold">Notifications</p>
@@ -96,7 +112,10 @@ export default function AdminNotificationsPopover({ open, onClose, token, onUnre
             Mark all read
           </button>
 
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100">
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md hover:bg-gray-100"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -123,14 +142,22 @@ export default function AdminNotificationsPopover({ open, onClose, token, onUnre
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                      <p className="text-xs text-gray-500">{timeAgo(n.createdAt)}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {n.title}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {timeAgo(n.createdAt)}
+                      </p>
                     </div>
                     {n.message ? (
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">{n.message}</p>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        {n.message}
+                      </p>
                     ) : null}
                     {n.scope ? (
-                      <p className="text-[11px] text-gray-400 mt-1">Scope: {n.scope}</p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Scope: {n.scope}
+                      </p>
                     ) : null}
                   </div>
                 </div>

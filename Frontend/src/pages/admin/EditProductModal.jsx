@@ -25,7 +25,7 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
     category: "Uncategorized",
     stockQuantity: "",
     status: "active",
-    deliveryFee: "", // UI only (kept to match Add modal)
+    shippingFee: "", 
   });
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
       category: product?.category || "Uncategorized",
       stockQuantity: product?.stockQuantity ?? "",
       status: product?.status || "active",
-      deliveryFee: "", // not in backend schema currently
+      shippingFee: product?.shippingFee ?? "",
     });
   }, [open, product]);
 
@@ -162,11 +162,11 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
 
           <div>
             <label className="text-xs font-semibold">
-              DELIVERY FEE (UI only for now)
+              DELIVERY FEE 
             </label>
             <Input
-              value={form.deliveryFee}
-              onChange={(e) => setForm({ ...form, deliveryFee: e.target.value })}
+              value={form.shippingFee}
+              onChange={(e) => setForm({ ...form, shippingFee: e.target.value })}
               placeholder="Enter Amount"
               type="number"
             />

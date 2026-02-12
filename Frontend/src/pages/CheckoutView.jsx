@@ -11,6 +11,7 @@ function CheckoutView({
   cart = [],
   subtotal = 0,
   shipping = 0,
+  vat = 0,
   total = 0,
   onCompleteOrder,
 
@@ -411,6 +412,13 @@ function CheckoutView({
                 <span className="text-gray-600">Subtotal</span>
                 <span className="font-semibold">
                   {formatMoney(computedSubtotal)}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">VAT (7.5%)</span>
+                <span className="font-semibold">
+                  {formatMoney(computedVat)}
                 </span>
               </div>
 
