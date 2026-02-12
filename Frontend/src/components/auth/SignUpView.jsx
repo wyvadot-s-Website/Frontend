@@ -173,11 +173,12 @@ function SignUpView({
           </div>
 
           <Button
-            onClick={handleSignUp}
-            className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
-          >
-            Sign Up
-          </Button>
+  onClick={handleSignUp}
+  disabled={loading}  // ✅ Add this
+  className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white disabled:opacity-50"
+>
+  {loading ? "Creating account..." : "Sign Up"}  {/* ✅ Add this */}
+</Button>
 
           {/** Divider */}
           <div className="relative my-4">

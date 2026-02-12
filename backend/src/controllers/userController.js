@@ -9,6 +9,7 @@ import { OAuth2Client } from "google-auth-library";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // REGISTER USER
+// REGISTER USER
 export const registerUser = async (req, res) => {
   try {
     const {
@@ -21,6 +22,15 @@ export const registerUser = async (req, res) => {
       phoneNumber,
       password,
     } = req.body;
+
+    // ✅ ADD VALIDATION HERE - BEFORE creating user
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "Please fill in all required fields" });
+    }
+
+    if (!countryCode || !phoneNumber) {
+      return res.status(400).json({ message: "Phone number and country code are required" });
+    }
 
     // 1. Check if user exists
     const existingUser = await User.findOne({ email });
@@ -37,10 +47,10 @@ export const registerUser = async (req, res) => {
     // 4. Create user
     const user = await User.create({
       firstName,
-      middleName,
+      middleName: middleName || "",  // ✅ Handle optional fields
       lastName,
       email,
-      country,
+      country: country || "",  // ✅ Handle optional fields
       countryCode,
       phoneNumber,
       password: hashedPassword,
@@ -48,7 +58,7 @@ export const registerUser = async (req, res) => {
       emailVerificationExpires: Date.now() + 10 * 60 * 1000, // 10 mins
     });
     
-    // send email
+    // 5. Send email
     await sendVerificationEmail(email, verificationCode);
 
     res.status(201).json({
@@ -57,7 +67,7 @@ export const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Signup error:", error);
-    res.status(500).json({ message: "Signup failed" });
+    res.status(500).json({ message: error.message || "Signup failed" });  // ✅ Show actual error
   }
 };
 

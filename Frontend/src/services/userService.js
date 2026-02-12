@@ -6,7 +6,7 @@ import BASE_URL from "../utils/api";
 
 // SIGN UP USER
 export const signupUser = async (formData) => {
-  const res = await fetch(`${BASE_URL}/users/signup`, {
+  const res = await fetch(`${BASE_URL}/users/signup`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -22,7 +22,7 @@ export const signupUser = async (formData) => {
 
 // VERIFY EMAIL (SIGNUP)
 export const verifyUserEmail = async ({ email, code }) => {
-  const res = await fetch(`${BASE_URL}/users/verify-email`, {
+  const res = await fetch(`${BASE_URL}/users/verify-email`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +38,7 @@ export const verifyUserEmail = async ({ email, code }) => {
 
 // LOGIN USER
 export const loginUser = async ({ email, password }) => {
-  const res = await fetch(`${BASE_URL}/users/login`, {
+  const res = await fetch(`${BASE_URL}/users/login`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export const loginUser = async ({ email, password }) => {
 
 // GOOGLE AUTH
 export const googleAuthUser = async (idToken) => {
-  const res = await fetch(`${BASE_URL}/users/google`, {
+  const res = await fetch(`${BASE_URL}/users/google`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export const googleAuthUser = async (idToken) => {
 
 // FORGOT PASSWORD
 export const forgotPassword = async (email) => {
-  const res = await fetch(`${BASE_URL}/users/forgot-password`, {
+  const res = await fetch(`${BASE_URL}/users/forgot-password`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -90,7 +90,7 @@ export const forgotPassword = async (email) => {
 
 // VERIFY RESET CODE
 export const verifyResetCode = async ({ email, code }) => {
-  const res = await fetch(`${BASE_URL}/users/verify-reset-code`, {
+  const res = await fetch(`${BASE_URL}/users/verify-reset-code`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -106,7 +106,7 @@ export const verifyResetCode = async ({ email, code }) => {
 
 // RESET PASSWORD
 export const resetPassword = async ({ email, code, newPassword }) => {
-  const res = await fetch(`${BASE_URL}/users/reset-password`, {
+  const res = await fetch(`${BASE_URL}/users/reset-password`, {  // ✅ FIXED
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +126,7 @@ export const resetPassword = async ({ email, code, newPassword }) => {
 
 // GET CURRENT USER (TOKEN VALIDATION)
 export const getCurrentUser = async (token) => {
-  const res = await fetch(`${BASE_URL}/users/me`, {
+  const res = await fetch(`${BASE_URL}/users/me`, {  // ✅ FIXED
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
