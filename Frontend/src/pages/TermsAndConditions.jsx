@@ -205,9 +205,8 @@ export default function TermsAndConditions() {
             </h2>
             <div className="bg-gray-50 p-6 rounded-lg mt-4">
               <p className="font-semibold text-gray-900">Wyvadot Projects & Resources Ltd</p>
-              <p className="text-gray-700 mt-2">Address: No. 10 Example Road, Victoria Island, Lagos</p>
-              <p className="text-gray-700">Email: <a href="mailto:info@wyvadotpr.com" className="text-[#FF8D28] hover:underline">info@wyvadotpr.com</a></p>
-              <p className="text-gray-700">Phone: +234 000 000 0000</p>
+              <p className="text-gray-700">Email: <a href="mailto:wyvadotpr@gmail.com" className="text-[#FF8D28] hover:underline">wyvadotpr@gmail.com</a></p>
+              <p className="text-gray-700">Phone: +234 810 273 0544</p>
             </div>
           </section>
         </div>

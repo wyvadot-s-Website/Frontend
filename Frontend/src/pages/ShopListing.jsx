@@ -401,12 +401,21 @@ function ShopListing({
                         </div>
 
                         {/* Add to Cart Button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isOut) return;
-                            onAddToCartFromListing?.(product);
-                          }}
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    if (isOut) return;
+    
+    // ✅ Check if user is logged in
+    if (!token) {
+      toast.error("Please login to add items to cart");
+      setAuthModalView("login");
+      setShowAuthModal(true);
+      return;
+    }
+    
+    onAddToCartFromListing?.(product);
+  }}
                           disabled={isOut}
                           className={`w-full font-medium py-2.5 rounded-lg transition-colors text-sm ${
                             isOut
