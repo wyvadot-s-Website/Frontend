@@ -42,6 +42,8 @@ app.use(
       "http://localhost:3000",
       "https://wyvadotpr.vercel.app",
       "https://wyvadotpr.onrender.com",
+      "https://wyvadotpr.com",
+      "https://www.wyvadotpr.com"
     ],
     credentials: true,
   })
