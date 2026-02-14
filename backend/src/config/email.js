@@ -12,7 +12,7 @@ export const sendVerificationEmail = async (toEmail, code) => {
     console.log('🔑 Using Resend API key:', process.env.RESEND_API_KEY ? 'KEY EXISTS' : 'KEY MISSING');
     
     const result = await resend.emails.send({
-      from: 'Wyvadot PR <onboarding@resend.dev>',
+      from: 'Wyvadot PR <noreply@wyvadotpr.com>',
       to: toEmail,
       subject: 'Verify your email',
       html: `
@@ -44,7 +44,7 @@ export const sendAdminVerificationEmail = async ({
 
   try {
     await resend.emails.send({
-      from: 'Wyvadot PR <onboarding@resend.dev>',
+from: 'Wyvadot PR <noreply@wyvadotpr.com>',
       to: adminEmail,
       subject: 'New Admin Signup Verification',
       html: `
@@ -99,7 +99,7 @@ export const sendServiceRequestNotificationToAdmins = async ({
 
   try {
     await resend.emails.send({
-      from: 'Wyvadot PR <onboarding@resend.dev>',
+      from: 'Wyvadot PR <noreply@wyvadotpr.com>',
       to: adminEmails,
       subject: `New Service Request – ${projectId}`,
       html: `
@@ -171,7 +171,7 @@ export const sendPaidOrderNotificationToShopAdmins = async ({
 
   try {
     await resend.emails.send({
-      from: 'Wyvadot PR <onboarding@resend.dev>',
+      from: 'Wyvadot PR <noreply@wyvadotpr.com>',
       to: adminEmails,
       subject: `New Paid Order – ${orderId}`,
       html: `
