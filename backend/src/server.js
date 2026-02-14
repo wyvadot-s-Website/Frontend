@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 import app from "./app.js";
-import cors from "cors";
 import { connectDB } from "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminProfileRoutes from "./routes/admin.profile.routes.js";
@@ -35,19 +34,8 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://wyvadotpr.vercel.app",
-      "https://wyvadotpr.onrender.com",
-      "https://wyvadotpr.com",
-      "https://www.wyvadotpr.com"
-    ],
-    credentials: true,
-  })
-);
+// ❌ REMOVED - CORS is now in app.js where it belongs
+// app.use(cors({ ... }));
 
 await connectDB();
 
@@ -80,7 +68,6 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api", reviewRoutes);
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);  // ✅ FIXED!
+  console.log(`🚀 Server running on port ${PORT}`);  // ✅ FIXED the syntax error too
 });
