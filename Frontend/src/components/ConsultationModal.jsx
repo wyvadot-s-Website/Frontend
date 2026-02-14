@@ -36,124 +36,216 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
     agreed: false,
     // Service-specific fields will be added by child components
   });
+  const [errors, setErrors] = useState({});
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const validateForm = () => {
+  const newErrors = {};
+
+  // ===== CONTACT DETAILS (Required for all) =====
+  if (!formData.name?.trim()) {
+    newErrors.name = "Full name is required";
+  }
+  
+  if (!formData.email?.trim()) {
+    newErrors.email = "Email address is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    newErrors.email = "Please enter a valid email address";
+  }
+  
+  if (!formData.tel?.trim()) {
+    newErrors.tel = "Phone number is required";
+  }
+  
+  if (!formData.projectScope?.trim()) {
+    newErrors.projectScope = "Project scope description is required";
+  }
+
+  // ===== COMMON FIELDS (Required for all) =====
+  if (!formData.timeline) {
+    newErrors.timeline = "Project timeline is required";
+  }
+  
+  if (!formData.location) {
+    newErrors.location = "Project location is required";
+  }
+  
+  if (!formData.locationAddress?.trim()) {
+    newErrors.locationAddress = "Specific project address is required";
+  }
+
+  // ===== SERVICE-SPECIFIC VALIDATIONS =====
+  
+  // Project Management & Resourcing
+  if (serviceName === "Project Management & Resourcing") {
+    if (!formData.pm_service?.trim()) {
+      newErrors.pm_service = "Please specify the project management service you need";
+    }
+    if (!formData.pm_budget?.trim()) {
+      newErrors.pm_budget = "Budget estimate is required for planning purposes";
+    }
+    if (!formData.pm_financing) {
+      newErrors.pm_financing = "Please indicate if financing is secured";
+    }
+  }
+
+  // Core Engineering & Construction
+  if (serviceName === "Core Engineering & Construction") {
+    if (!formData.ce_description?.trim()) {
+      newErrors.ce_description = "Core discipline description is required";
+    }
+    if (!formData.ce_design?.trim()) {
+      newErrors.ce_design = "Design status information is required";
+    }
+    if (!formData.ce_cost?.trim()) {
+      newErrors.ce_cost = "Construction cost state is required";
+    }
+    if (!formData.ce_materials?.trim()) {
+      newErrors.ce_materials = "Material standards/preferences are required";
+    }
+  }
+
+  // Facilities Management & Maintenance
+  if (serviceName === "Facilities Management & Maintenance") {
+    if (!formData.fm_services?.trim()) {
+      newErrors.fm_services = "Please specify if this is one-time or long-term service";
+    }
+    if (!formData.fm_coverage?.trim()) {
+      newErrors.fm_coverage = "Facility size/square footage is required";
+    }
+    if (!formData.fm_maintenance?.trim()) {
+      newErrors.fm_maintenance = "Please list your top 3 critical maintenance needs";
+    }
+  }
+
+  // Energy & Process Services
+  if (serviceName === "Energy & Process Services") {
+    if (!formData.ep_inquiry?.trim()) {
+      newErrors.ep_inquiry = "Please specify the type of energy service you need";
+    }
+    if (!formData.ep_facility?.trim()) {
+      newErrors.ep_facility = "Facility/process type is required";
+    }
+  }
+
+  // Technology & E-commerce
+  if (serviceName === "Technology & E-commerce") {
+    if (!formData.tech_software?.trim()) {
+      newErrors.tech_software = "Please specify software development or technology implementation needs";
+    }
+    if (!formData.tech_platform) {
+      newErrors.tech_platform = "Platform selection is required";
+    }
+  }
+
+  // General Contracts
+  if (serviceName === "General Contracts") {
+    if (!formData.gc_region?.trim()) {
+      newErrors.gc_region = "Region/market information is required";
+    }
+    if (!formData.gc_location?.trim()) {
+      newErrors.gc_location = "Project location is required";
+    }
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Please login to submit a service request.");
-      return;
+  // ✅ Clear previous errors
+  setErrors({});
+  
+  // ✅ Validate form
+  if (!validateForm()) {
+    toast.error("Please fill in all required fields correctly");
+    // Scroll to first error
+    const firstError = document.querySelector('.border-red-500');
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
+  }
 
-    const toastId = toast.loading("Submitting request...");
+  const token = localStorage.getItem("token");
+  if (!token) {
+    toast.error("Please login to submit a service request.");
+    return;
+  }
 
-    try {
-      const payload = {
-        /* ================= COMMON ================= */
-        serviceName,
+  const toastId = toast.loading("Submitting request...");
 
-        name: formData.name,
-        email: formData.email,
-        countryCode: formData.countryCode,
-        tel: formData.tel,
-        companyName: formData.companyName,
-        projectScope: formData.projectScope,
-
-        timeline: formData.timeline,
-        location: formData.location,
-        locationAddress: formData.locationAddress,
-        agreed: formData.agreed,
-
-        /* ================= PMR ================= */
-        pm_service: formData.pm_service,
-        pm_budget: formData.pm_budget,
-        pm_resourcing: formData.pm_resourcing,
-        pm_financing: formData.pm_financing,
-
-        /* ================= CEC ================= */
-        ce_description: formData.ce_description,
-        ce_design: formData.ce_design,
-        ce_cost: formData.ce_cost,
-        ce_materials: formData.ce_materials,
-
-        /* ================= FMM ================= */
-        fm_services: formData.fm_services,
-        fm_coverage: formData.fm_coverage,
-        fm_maintenance: formData.fm_maintenance,
-        fm_availability: formData.fm_availability,
-
-        /* ================= EPS ================= */
-        ep_inquiry: formData.ep_inquiry,
-        ep_facility: formData.ep_facility,
-        ep_cmms: formData.ep_cmms,
-        ep_process: formData.ep_process,
-
-        /* ================= TEC ================= */
-        tech_software: formData.tech_software,
-        tech_platform: formData.tech_platform,
-        tech_cmms: formData.tech_cmms,
-        tech_ecommerce: formData.tech_ecommerce,
-
-        /* ================= GC ================= */
-        gc_region: formData.gc_region,
-        gc_location: formData.gc_location,
-      };
-
-      const result = await submitServiceRequest(payload, token);
-
-      toast.success(
-        `Submitted successfully. ID: ${result?.data?.projectId || ""}`,
-        { id: toastId }
-      );
-
-      onClose();
-    } catch (err) {
-      toast.error(err.message || "Submission failed", { id: toastId });
-    }
-  };
+  try {
+    // ... rest of your existing submit code
+  } catch (err) {
+    toast.error(err.message || "Submission failed", { id: toastId });
+  }
+};
 
   // Render the appropriate service form based on serviceName prop
   const renderServiceForm = () => {
-    switch (serviceName) {
-      case "Project Management & Resourcing":
-        return (
-          <ProjectManagementForm formData={formData} onChange={handleChange} />
-        );
-      case "Core Engineering & Construction":
-        return (
-          <CoreEngineeringForm formData={formData} onChange={handleChange} />
-        );
-      case "Facilities Management & Maintenance":
-        return (
-          <FacilitiesManagementForm
-            formData={formData}
-            onChange={handleChange}
-          />
-        );
-      case "Energy & Process Services":
-        return (
-          <EnergyProcessForm formData={formData} onChange={handleChange} />
-        );
-      case "Technology & E-commerce":
-        return (
-          <TechnologyEcommerceForm
-            formData={formData}
-            onChange={handleChange}
-          />
-        );
-      case "General Contracts":
-        return (
-          <GeneralContractsForm formData={formData} onChange={handleChange} />
-        );
-      default:
-        return (
-          <GeneralContractsForm formData={formData} onChange={handleChange} />
-        );
-    }
-  };
+  switch (serviceName) {
+    case "Project Management & Resourcing":
+      return (
+        <ProjectManagementForm 
+          formData={formData} 
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+    case "Core Engineering & Construction":
+      return (
+        <CoreEngineeringForm 
+          formData={formData} 
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+    case "Facilities Management & Maintenance":
+      return (
+        <FacilitiesManagementForm
+          formData={formData}
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+    case "Energy & Process Services":
+      return (
+        <EnergyProcessForm 
+          formData={formData} 
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+    case "Technology & E-commerce":
+      return (
+        <TechnologyEcommerceForm
+          formData={formData}
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+    case "General Contracts":
+      return (
+        <GeneralContractsForm 
+          formData={formData} 
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+    default:
+      return (
+        <GeneralContractsForm 
+          formData={formData} 
+          onChange={handleChange}
+          errors={errors}
+        />
+      );
+  }
+};
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -166,8 +258,12 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Contact Details Section - Shared across all forms */}
-          <ContactDetailsSection formData={formData} onChange={handleChange} />
+         {/* Contact Details Section - Shared across all forms */}
+<ContactDetailsSection 
+  formData={formData} 
+  onChange={handleChange}
+  errors={errors}
+/>
 
           {/* Service-Specific Form - Based on the service button clicked */}
           {renderServiceForm()}

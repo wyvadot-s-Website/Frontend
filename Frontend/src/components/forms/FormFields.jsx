@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/select'
 
 // Timeline selector component
-export function TimelineSelector({ value, onChange }) {
+export function TimelineSelector({ value, onChange, error }) {
   return (
     <div className="space-y-2">
       <Label>Project Timeline</Label>
       <Select value={value} onValueChange={(val) => onChange('timeline', val)}>
-        <SelectTrigger>
+        <SelectTrigger className={error ? 'border-red-500' : ''}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -29,12 +29,13 @@ export function TimelineSelector({ value, onChange }) {
           </SelectItem>
         </SelectContent>
       </Select>
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
 }
 
 // Location selector component
-export function LocationSelector({ locationValue, addressValue, onChange }) {
+export function LocationSelector({ locationValue, addressValue, onChange, error }) {
   const locations = ['Nigeria', 'US', 'UK', 'Canada']
 
   return (
@@ -48,7 +49,7 @@ export function LocationSelector({ locationValue, addressValue, onChange }) {
             variant={locationValue === loc ? 'default' : 'outline'}
             className={`flex-1 ${
               locationValue === loc ? 'bg-[#FF8D28] hover:bg-orange-600' : ''
-            }`}
+            } ${error ? 'border-red-500' : ''}`}
             onClick={() => onChange('location', loc)}
           >
             {loc}
@@ -59,14 +60,15 @@ export function LocationSelector({ locationValue, addressValue, onChange }) {
         placeholder="Enter location of your project"
         value={addressValue}
         onChange={(e) => onChange('locationAddress', e.target.value)}
-        className="mt-2"
+        className={`mt-2 ${error ? 'border-red-500' : ''}`}
       />
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
 }
 
 // Generic question field
-export function QuestionField({ id, label, placeholder, required, value, onChange }) {
+export function QuestionField({ id, label, placeholder, required, value, onChange, error }) {
   return (
     <div className="space-y-2">
       <Label htmlFor={id} className="text-sm">
@@ -80,14 +82,15 @@ export function QuestionField({ id, label, placeholder, required, value, onChang
         value={value || ''}
         onChange={(e) => onChange(id, e.target.value)}
         rows={3}
-        className="resize-none"
+        className={`resize-none ${error ? 'border-red-500 focus:border-red-500' : ''}`}
       />
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
 }
 
 // Radio button group for Yes/No questions
-export function RadioButtonGroup({ id, label, value, onChange, required }) {
+export function RadioButtonGroup({ id, label, value, onChange, required, error }) {
   return (
     <div className="space-y-2">
       <Label className="text-sm">
@@ -100,7 +103,7 @@ export function RadioButtonGroup({ id, label, value, onChange, required }) {
           variant={value === 'Yes' ? 'default' : 'outline'}
           className={`flex-1 ${
             value === 'Yes' ? 'bg-[#FF8D28] hover:bg-orange-600' : ''
-          }`}
+          } ${error ? 'border-red-500' : ''}`}
           onClick={() => onChange(id, 'Yes')}
         >
           Yes
@@ -110,18 +113,19 @@ export function RadioButtonGroup({ id, label, value, onChange, required }) {
           variant={value === 'No' ? 'default' : 'outline'}
           className={`flex-1 ${
             value === 'No' ? 'bg-gray-400 hover:bg-gray-500' : ''
-          }`}
+          } ${error ? 'border-red-500' : ''}`}
           onClick={() => onChange(id, 'No')}
         >
           No
         </Button>
       </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
 }
 
 // Platform selector for technology form
-export function PlatformSelector({ id, label, value, onChange, required }) {
+export function PlatformSelector({ id, label, value, onChange, required, error }) {
   const platforms = ['Web', 'iOS', 'Android', 'Desktop']
   
   return (
@@ -138,13 +142,14 @@ export function PlatformSelector({ id, label, value, onChange, required }) {
             variant={value === platform ? 'default' : 'outline'}
             className={`flex-1 ${
               value === platform ? 'bg-[#FF8D28] hover:bg-orange-600' : ''
-            }`}
+            } ${error ? 'border-red-500' : ''}`}
             onClick={() => onChange(id, platform)}
           >
             {platform}
           </Button>
         ))}
       </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
 }

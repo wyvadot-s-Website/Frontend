@@ -3,7 +3,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Minus, Heart, ArrowLeft } from "lucide-react";
-import AuthModal from "@/pages/AuthModal.jsx";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWishlist } from "@/context/WishlistContext";
@@ -35,8 +34,6 @@ function ProductDetail({
   const [ratingAvgLocal, setRatingAvgLocal] = useState(0);
   const [ratingCountLocal, setRatingCountLocal] = useState(0);
   const [tick, setTick] = useState(0);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalView, setAuthModalView] = useState("login");
 
   // ✅ Wishlist hook
   const { isWished, toggle } = useWishlist();
@@ -208,29 +205,19 @@ function ProductDetail({
     setQuantity(q + 1);
   };
 
- const handleAddToCart = () => {
-  if (isOut) return toast.error("This product is out of stock");
-  if (stockQty && Number(quantity || 1) > stockQty)
-    return toast.error(`Only ${stockQty} left in stock`);
-  
-  // ✅ Check if user is logged in
-  if (!token) {
-    toast.error("Please login to add items to cart");
-    setAuthModalView("login");
-    setShowAuthModal(true);
-    return;
-  }
-  
-  onAddToCart?.(product, Number(quantity || 1));
-};
+  const handleAddToCart = () => {
+    if (isOut) return toast.error("This product is out of stock");
+    if (stockQty && Number(quantity || 1) > stockQty)
+      return toast.error(`Only ${stockQty} left in stock`);
+    onAddToCart?.(product, Number(quantity || 1));
+  };
 
   const handleWishlist = async () => {
-  if (!token) {
-    toast.error("Please login to use Wishlist");
-    setAuthModalView("login");
-    setShowAuthModal(true);
-    return;
-  }
+    if (!token) {
+      toast.error("Please login to use Wishlist");
+      navigate("/login");
+      return;
+    }
 
     try {
       await toggle(product._id);
@@ -420,12 +407,6 @@ function ProductDetail({
           </div>
         </div>
       </div>
-      {/* ✅ Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-        initialView={authModalView}
-      />
     </div>
   );
 }

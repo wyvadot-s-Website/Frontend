@@ -13,55 +13,59 @@ function ContactForm() {
   const navigate = useNavigate();
   
   const faqs = [
-    {
-      question: "What services does Wyvadot Projects & Resources Ltd offer?",
-      answer: "We provide a complete range of consulting services in Oil and Gas, Maritime, Engineering, and Construction projects. We also recruit and deploy highly skilled workforce for Manpower outsourcing requirements in specific projects undertaken by companies. Our staff is composed of a team of well-rounded individuals who possess industry experience in Oil and Gas, Maritime, General and Civil Engineering."
-    },
-    {
-      question: "How do I book an oil rig or LNG Truck drivers? Are oil services available on demand?",
-      answer: "You can reach out via our 'Contact Us' section. Either send us an email or give us a call and we will have you onboard ASAP."
-    },
-    {
-      question: "What are your working hours?",
-      answer: "Weekdays: 8am-5pm / Weekends: 9am-5pm"
-    },
-    {
-      question: "What types of projects does Wyvadot PR offer?",
-      answer: "We provide a complete range of activities including: Recruitment outsourcing, manpower supply, contract labor recruitment, Oil and Gas Manpower Supply, Procurement Management, Exploration & Maintenance, Civil Works / Marine Works & Maintenance, Engineering / Contracting Works, Fabrications and Installations (i.e. Software as a Service, Logistics, EPS-piping, HSE, etc.)"
-    },
-    {
-      question: "What is a Civil/Upe planner?",
-      answer: "Comprehensive project planning services and asset improvement delivered."
-    },
-    {
-      question: "What made Wyvadot PR different?",
-      answer: "We aim to contain the highest standards of Ethics and Quality in all our activities ensuring reliability, and consistency of quality of our delivered services."
-    },
-    {
-      question: "Which is your commitment to quality?",
-      answer: "Quality is our standard."
-    },
-    {
-      question: "Can Wyvadot PR handle projects of any size or budget?",
-      answer: "Yes! We pride ourselves in delivering the vision in an efficient client application with cutting edge delivery and quality that is second to none!"
-    },
-    {
-      question: "Do you work long-on supported locations, or continental/Offshore as well?",
-      answer: "We are specialists in both onshore (mainland) and offshore (marine, offshore oil and gas drilling platforms, FPSO's, or other vessels or installations operating in marine waters as well as onsite drilling). We are experts in pipeline gas, oil, water, and sewers; road construction, water supply, drainage and land development works."
-    },
-    {
-      question: "What is your return on volume or partnex?",
-      answer: "We work with our clients across an agreed-upon commercial framework where timely and key deliveries do not feed based on profit loss from investments made."
-    },
-    {
-      question: "Do you have Client testimonials?",
-      answer: "Yes - Our clients play a pivotal role with continuous emphasis on equity, trust, and a promise we continuously uphold in bridging the gap for our diverse clientele base."
-    },
-    {
-      question: "Who to you cater to?",
-      answer: "We are not a crowd per se and although we flourish in the shipping, Oil and Gas and Engineering world, we have maintained relationships as well as we have nurtured and have competent partnerships across Nigeria (e.g. Port Harcourt, Lagos, Delta, etc.)"
-    }
-  ];
+  {
+    question: "What is Wyvadot PR?",
+    answer: "Wyvadot Projects & Resources Ltd is a fully Nigerian-owned company offering project management services, engineering, building/facility maintenance, consultancy and human resourcing for both technical and non-technical projects and operations."
+  },
+  {
+    question: "Where is Wyvadot PR located and how can I contact them?",
+    answer: "We operate country wide with stronger presence in Benin City, Port Harcourt, Warri, Asaba, Abuja and Lagos proudly serve clients within Nigeria and have competent stakeholders outside Nigeria in the US, UK, Canada. +234 810 273 0544 • wyvadotpr@gmail.com • projects@wyvadotpr.com"
+  },
+  {
+    question: "What are your working hours?",
+    answer: "Our working hours are Monday – Saturday: 8:00 AM – 6:00 PM, Sunday: Closed. However, our WhatsApp customer service is available 24/7, so you can always reach us anytime."
+  },
+  {
+    question: "What types of services does Wyvadot PR offer?",
+    answer: "We provide a complete range of solutions, including: Project management (planning, coordination & control), Engineering Management, Construction Management, Building and facilities Management & Maintenance, Consultancy and Human Resourcing, E-Commerce, New Technology Implementation (AI, Software as a Service, Upgrades, Retrofitting), Civil, Mechanical, electrical, instrumentation maintenance, Energy services (Oil & Gas), Smart home installations, cleaning, plumbing, painting, finishing & renovations, interior & exterior decoration."
+  },
+  {
+    question: "Who are your typical clients?",
+    answer: "Our Clients are people and Establishments who need experienced, dedicated and value oriented professionals."
+  },
+  {
+    question: "What makes Wyvadot PR different?",
+    answer: "We aim to ensure the highest standard of customer service and relationship, where we are committed to ensure achievement of mutual goals."
+  },
+  {
+    question: "What is your commitment to quality?",
+    answer: "We aim to: Deliver products & services that meet or exceed client expectations, Continuously improve our internal processes, Ensure compliance with industry standards while encouraging innovation."
+  },
+  {
+    question: "How can I engage Wyvadot PR for a project?",
+    answer: "You can book us directly online using the 'Book Us Now' button on our website. Simply fill out your project details, and our team will contact you to schedule a consultation and provide a tailored quote. Alternatively, you can purchase an already pre-packaged service from our e-commerce website. You can also contact us via our Instagram, Whatsapp, phone or email for personalized assistance."
+  },
+  {
+    question: "Can Wyvadot PR handle all phases of a project?",
+    answer: "Yes — we provide complete project management, covering concept, design, execution, and handover, so you don't have to coordinate multiple contractors."
+  },
+  {
+    question: "Do you work only on residential projects, or commercial/industrial too?",
+    answer: "We handle all sectors — residential, commercial, and industrial — including civil, mechanical, electrical, instrumentation & energy projects."
+  },
+  {
+    question: "How can I request a quote or proposal?",
+    answer: "Click the 'Book Us Now' button or email us at projects@wyvadotpr.com with your project details. We'll review your request and send a custom quote within 24–48 hours."
+  },
+  {
+    question: "Do you have client testimonials?",
+    answer: "Yes — our clients praise our project organization, attention to detail, and on-time delivery. You can read their feedback on our website."
+  },
+  {
+    question: "Where do you operate?",
+    answer: "We operate country wide with stronger presence in Benin City, Port Harcourt, Warri, Asaba, Abuja and Lagos proudly serve clients within Nigeria and have competent stakeholders outside Nigeria in the US, UK, Canada."
+  }
+];
 
   const clientLogos = [
     { name: "CAT", bg: "white", text: "black", logo: CAT },
