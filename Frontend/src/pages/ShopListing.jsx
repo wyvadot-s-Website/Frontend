@@ -305,10 +305,7 @@ function ShopListing({
                   const ratingAvg = Number(product?.ratingAverage || 0);
                   const stars = Math.round(ratingAvg);
                   const stockQty = Number(product?.stockQuantity || 0);
-                  const isOut =
-                    product?.status === "out_of_stock" ||
-                    product?.status === "archived" ||
-                    stockQty <= 0;
+                  const isOut = product?.status === "out_of_stock" || stockQty <= 0;
 
                   return (
                     <div

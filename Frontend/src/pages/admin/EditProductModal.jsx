@@ -25,7 +25,8 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
     category: "Uncategorized",
     stockQuantity: "",
     status: "active",
-    shippingFee: "", 
+    shippingFee: "",
+    vatRate: "",
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
       stockQuantity: product?.stockQuantity ?? "",
       status: product?.status || "active",
       shippingFee: product?.shippingFee ?? "",
+      vatRate: product?.vatRate ?? "",
     });
   }, [open, product]);
 
@@ -85,7 +87,9 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
             <label className="text-xs font-semibold">PRODUCT DESCRIPTION</label>
             <Input
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="Product Description"
             />
           </div>
@@ -101,7 +105,9 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">OLD PRICE (optional)</label>
+            <label className="text-xs font-semibold">
+              OLD PRICE (optional)
+            </label>
             <Input
               value={form.oldPrice}
               onChange={(e) => setForm({ ...form, oldPrice: e.target.value })}
@@ -111,7 +117,9 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">SALE ENDS AT (optional)</label>
+            <label className="text-xs font-semibold">
+              SALE ENDS AT (optional)
+            </label>
             <Input
               value={form.saleEndsAt}
               onChange={(e) => setForm({ ...form, saleEndsAt: e.target.value })}
@@ -161,13 +169,23 @@ const EditProductModal = ({ open, onClose, onSubmit, loading, product }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">
-              DELIVERY FEE 
-            </label>
+            <label className="text-xs font-semibold">DELIVERY FEE</label>
             <Input
               value={form.shippingFee}
-              onChange={(e) => setForm({ ...form, shippingFee: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, shippingFee: e.target.value })
+              }
               placeholder="Enter Amount"
+              type="number"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold">VAT RATE (%)</label>
+            <Input
+              value={form.vatRate}
+              onChange={(e) => setForm({ ...form, vatRate: e.target.value })}
+              placeholder="e.g. 7.5"
               type="number"
             />
           </div>

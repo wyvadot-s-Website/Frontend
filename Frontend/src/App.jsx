@@ -198,20 +198,29 @@ function App() {
             }
           />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route
+            path="/terms-and-conditions"
+            element={<TermsAndConditions />}
+          />
 
           {/* ADMIN ROUTES */}
           <Route path="/theboss" element={<AdminAuthLayout />}>
             <Route index element={<AdminAuth />} />
           </Route>
 
-          <Route path="/theboss" element={<AdminLayout />}>
+          <Route
+            path="/theboss"
+            element={
+              <AdminRoutes>
+                <AdminLayout />
+              </AdminRoutes>
+            }
+          >
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="content" element={<AdminContent />} />
             <Route path="services" element={<AdminShop />} />
             <Route path="projects" element={<AdminProjects />} />
             <Route path="account" element={<AdminAccount />} />
-
             <Route
               path="service-requests/:id"
               element={<ServiceRequestDetail />}

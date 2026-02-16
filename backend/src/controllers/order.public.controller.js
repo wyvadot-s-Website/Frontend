@@ -1,18 +1,51 @@
+// backend/controllers/order.public.controller.js
 import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import { generateOrderId } from "../utils/generateOrderId.js";
 
-const VAT_RATE = 0.075;
-
 // Helper: safe money rounding (NGN)
 const round2 = (n) => Math.round(Number(n || 0) * 100) / 100;
 
-// Create order (guest/user)
+/**
+ * ✅ Same sale pricing logic as product.controller.js
+ * Returns effectivePrice (what customer should pay) and originalPrice (strike-through) when sale active.
+ */
+function buildPricing(p) {
+  const now = Date.now();
+
+  const price = Number(p.price || 0);
+  const oldPrice =
+    p.oldPrice === null || p.oldPrice === undefined ? null : Number(p.oldPrice);
+
+  const saleEndsAt = p.saleEndsAt ? new Date(p.saleEndsAt).getTime() : null;
+
+  const isSaleActive =
+    !!oldPrice &&
+    oldPrice > 0 &&
+    saleEndsAt &&
+    !Number.isNaN(saleEndsAt) &&
+    saleEndsAt > now &&
+    price > 0 &&
+    price < oldPrice;
+
+  // If sale is active => use price (discounted) and show originalPrice
+  // If sale ended => revert to oldPrice as the effective price
+  const effectivePrice = isSaleActive ? price : oldPrice || price;
+  const originalPrice = isSaleActive ? oldPrice : null;
+
+  return { isOnSale: isSaleActive, effectivePrice, originalPrice };
+}
+
+// Create order (guest/user) — server computes totals (subtotal, shipping, vat, total)
+// VAT is per-product using Product.vatRate (%)
 export const createOrder = async (req, res) => {
   try {
     const { customer, shippingAddress, items, paymentMethod } = req.body;
 
+    // -----------------------------
+    // Validate basics
+    // -----------------------------
     if (!customer?.email || !customer?.phone || !customer?.fullName) {
       return res
         .status(400)
@@ -35,99 +68,138 @@ export const createOrder = async (req, res) => {
         .json({ success: false, message: "Order items missing" });
     }
 
-    // ✅ Build server-trusted items (category, price, shippingFee come from Product)
-    // Also compute totals on server (do NOT trust frontend totals)
+    // -----------------------------
+    // Build server-trusted items + totals
+    // -----------------------------
     let subtotal = 0;
-    let shipping = 0;
+    let shipping = 0; // order-level rule: max shippingFee among items
+    let vat = 0; // per-product VAT sum
 
     const normalizedItems = await Promise.all(
       items.map(async (it) => {
-        const rawProductId = it.productId;
+        const rawProductId = it?.productId;
 
         const canLookup =
           rawProductId && mongoose.Types.ObjectId.isValid(String(rawProductId));
-
         if (!canLookup) {
-          // If productId isn't valid, reject (safer)
-          throw new Error("Invalid productId in items");
+          // ✅ CHG #2: treat as client error
+          throw new Error("BAD_REQUEST: Invalid productId in items");
         }
 
-        const qty = Number(it.quantity || 1);
-        if (qty < 1) throw new Error("Invalid quantity in items");
+        const qty = Number(it?.quantity || 1);
+        if (qty < 1) {
+          // ✅ CHG #2
+          throw new Error("BAD_REQUEST: Invalid quantity in items");
+        }
 
-        // Pull trusted fields from DB
+        // ✅ CHG #3: also fetch oldPrice + saleEndsAt so we can compute effectivePrice
         const p = await Product.findById(rawProductId).select(
-          "name category price status stockQuantity shippingFee"
+          "name category price oldPrice saleEndsAt status stockQuantity shippingFee vatRate"
         );
 
-        if (!p) throw new Error(`Product not found: ${rawProductId}`);
+        if (!p) {
+          // ✅ CHG #2
+          throw new Error(`BAD_REQUEST: Product not found: ${rawProductId}`);
+        }
 
-        // Prevent ordering archived/draft/out_of_stock or insufficient stock
         const stockQty = Number(p.stockQuantity ?? 0);
-        const isOut =
+
+        // Block ordering inactive products
+        const blocked =
           p.status === "archived" ||
           p.status === "draft" ||
           p.status === "out_of_stock" ||
           stockQty <= 0;
 
-        if (isOut) throw new Error(`${p.name} is out of stock`);
-        if (stockQty && qty > stockQty)
-          throw new Error(`Only ${stockQty} left for ${p.name}`);
+        if (blocked) {
+          // ✅ CHG #2
+          throw new Error(`BAD_REQUEST: ${p.name} is out of stock`);
+        }
 
-        const price = Number(p.price || 0);
+        // Ensure enough stock
+        if (stockQty && qty > stockQty) {
+          // ✅ CHG #2
+          throw new Error(`BAD_REQUEST: Only ${stockQty} left for ${p.name}`);
+        }
+
+        // ✅ CHG #1: compute sale-aware effective price
+        const pricing = buildPricing(p);
+        const unitPrice = Number(pricing.effectivePrice || 0);
+
         const shippingFee = Number(p.shippingFee || 0);
 
-        // totals
-        subtotal += price * qty;
+        // Per-product VAT rate (percentage)
+        const vatRate = Number(p.vatRate || 0); // e.g. 7.5 means 7.5%
+        const itemNet = unitPrice * qty;
+        const itemVat = itemNet * (vatRate / 100);
 
-        // ✅ shipping rule (order-level): use max shipping fee among items
+        // Totals accumulation
+        subtotal += itemNet;
         shipping = Math.max(shipping, shippingFee);
+        vat += itemVat;
 
         return {
           productId: p._id,
-          name: it.name || p.name, // keep snapshot but fallback to db
+
+          // snapshot fields
+          name: it?.name || p.name,
           category: p.category || "Uncategorized",
-          image: it.image || "",
-          price,
+          image: it?.image || "",
+
+          // ✅ store effective unit price used for payment
+          price: unitPrice,
           quantity: qty,
 
-          // ✅ optional snapshot (useful later)
+          // optional snapshot fields (useful for invoice/admin)
           shippingFee,
+          vatRate,
+          vat: round2(itemVat),
+
+          // optional: keep sale info for receipt display
+          isOnSale: pricing.isOnSale,
+          originalPrice: pricing.originalPrice,
         };
       })
     );
 
     subtotal = round2(subtotal);
     shipping = round2(shipping);
+    vat = round2(vat);
 
-    // ✅ VAT on subtotal (standard simple rule)
-    const vat = round2(subtotal * VAT_RATE);
-
-    // ✅ final total
     const total = round2(subtotal + shipping + vat);
 
     const totals = {
       subtotal,
       shipping,
-      vatRate: VAT_RATE,
-      vat,
+      vat, // ✅ amount (sum of per-product VAT)
       total,
+      currency: "NGN",
     };
 
+    // -----------------------------
+    // Create order
+    // -----------------------------
     const orderId = await generateOrderId();
 
     const order = await Order.create({
       orderId,
 
+      // if route is protected for users, req.user will exist
       userId: req.user?._id || null,
 
       customer: {
         email: String(customer.email).toLowerCase().trim(),
-        phone: customer.phone,
-        fullName: customer.fullName,
+        phone: String(customer.phone).trim(),
+        fullName: String(customer.fullName).trim(),
       },
 
-      shippingAddress,
+      shippingAddress: {
+        street: shippingAddress.street,
+        country: shippingAddress.country || "Nigeria",
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        zip: shippingAddress.zip || "",
+      },
 
       items: normalizedItems,
       totals,
@@ -149,9 +221,19 @@ export const createOrder = async (req, res) => {
       ],
     });
 
-    res.status(201).json({ success: true, data: order });
+    return res.status(201).json({ success: true, data: order });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    // ✅ CHG #2: turn stock/validation errors into 400 instead of 500
+    const msg = String(err?.message || "Something went wrong");
+
+    if (msg.startsWith("BAD_REQUEST:")) {
+      return res.status(400).json({
+        success: false,
+        message: msg.replace("BAD_REQUEST:", "").trim(),
+      });
+    }
+
+    return res.status(500).json({ success: false, message: msg });
   }
 };
 
@@ -168,18 +250,18 @@ export const trackOrder = async (req, res) => {
     }
 
     const order = await Order.findOne({
-      orderId,
+      orderId: String(orderId).trim(),
       "customer.email": String(email).toLowerCase().trim(),
     });
 
-    if (!order)
+    if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
+    }
 
-    res.json({ success: true, data: order });
+    return res.json({ success: true, data: order });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
-

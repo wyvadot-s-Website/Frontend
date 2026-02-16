@@ -39,10 +39,10 @@ export const getValidUserToken = () => {
  * @returns {string|null} - The token if valid, null otherwise
  */
 export const getValidAdminToken = () => {
-  const token = localStorage.getItem("adminToken"); // Adjust based on your key
+  const token = localStorage.getItem("admin_token"); // Adjust based on your key
   
   if (!token || isTokenExpired(token)) {
-    localStorage.removeItem("adminToken");
+    localStorage.removeItem("admin_token");
     return null;
   }
   

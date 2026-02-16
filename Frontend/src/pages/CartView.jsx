@@ -183,7 +183,7 @@ function CartView({
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">VAT (7.5%):</span>
+                <span className="text-gray-600">VAT:</span>
                 <span className="font-semibold">{formatMoney(vat)}</span>
               </div>
 

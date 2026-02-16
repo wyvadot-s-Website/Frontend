@@ -12,11 +12,11 @@ const AdminRoutes = ({ children }) => {
     const cleanup = setupTokenExpirationCheck(() => {
       // This runs when admin token expires
       navigate("/theboss", { replace: true });
-    }, "adminToken"); // Make sure this matches your localStorage key
+    }, "admin_token"); // Make sure this matches your localStorage key
 
     // Listen for storage events (logout in another tab)
     const handleStorageChange = (e) => {
-      if (e.key === "adminToken" && !e.newValue) {
+      if (e.key === "admin_token" && !e.newValue) {
         navigate("/theboss", { replace: true });
       }
     };
@@ -31,7 +31,7 @@ const AdminRoutes = ({ children }) => {
 
   // Initial check
   if (!token || isTokenExpired(token)) {
-    localStorage.removeItem("adminToken"); // Make sure this matches your localStorage key
+    localStorage.removeItem("admin_token"); // Make sure this matches your localStorage key
     return <Navigate to="/theboss" replace />;
   }
 

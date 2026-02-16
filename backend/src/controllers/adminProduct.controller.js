@@ -1,4 +1,4 @@
-// backend/controllers/product.admin.controller.js 
+// backend/controllers/product.admin.controller.js
 
 import Product from "../models/Product.js";
 import cloudinary from "../config/cloudinary.js";
@@ -72,7 +72,8 @@ export const createProduct = async (req, res) => {
       category,
       stockQuantity,
       status,
-      shippingFee, // ✅ ADD
+      shippingFee,
+      vatRate, // ✅ ADD
     } = req.body;
 
     if (!name || !price) {
@@ -92,10 +93,16 @@ export const createProduct = async (req, res) => {
         (file) =>
           new Promise((resolve, reject) => {
             cloudinary.uploader
-              .upload_stream({ folder: "wyvadot/products" }, (error, result) => {
-                if (error) return reject(error);
-                resolve({ url: result.secure_url, public_id: result.public_id });
-              })
+              .upload_stream(
+                { folder: "wyvadot/products" },
+                (error, result) => {
+                  if (error) return reject(error);
+                  resolve({
+                    url: result.secure_url,
+                    public_id: result.public_id,
+                  });
+                },
+              )
               .end(file.buffer);
           }),
       ),
@@ -112,6 +119,7 @@ export const createProduct = async (req, res) => {
       status: status || "active",
       // ✅ ADD
       shippingFee: shippingFee ? Number(shippingFee) : 0,
+      vatRate: vatRate ? Number(vatRate) : 0,
       images: uploads,
       createdBy: req.admin?._id || null,
     });
@@ -134,7 +142,8 @@ export const updateProduct = async (req, res) => {
     "category",
     "stockQuantity",
     "status",
-    "shippingFee", // ✅ ADD
+    "shippingFee",
+    "vatRate", // ✅ ADD
   ];
 
   const update = {};
@@ -144,7 +153,8 @@ export const updateProduct = async (req, res) => {
 
   if (update.price !== undefined) update.price = Number(update.price);
   if (update.shippingFee !== undefined)
-    update.shippingFee = Number(update.shippingFee); // ✅ ADD
+    update.shippingFee = Number(update.shippingFee);
+  if (update.vatRate !== undefined) update.vatRate = Number(update.vatRate); // ✅ ADD
   if (update.oldPrice !== undefined)
     update.oldPrice = update.oldPrice ? Number(update.oldPrice) : null;
   if (update.stockQuantity !== undefined)

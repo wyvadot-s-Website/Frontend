@@ -109,24 +109,33 @@ function ProductDetail({
     setRatingCountLocal(Number(product?.ratingCount || 0));
   }, [product?._id, product?.ratingAverage, product?.ratingCount]);
 
-  // ✅ SALE LOGIC
   const saleMeta = useMemo(() => {
-    const price = Number(product?.price || 0);
-    const old = Number(product?.oldPrice || 0);
-    const end = product?.saleEndsAt
-      ? new Date(product.saleEndsAt).getTime()
+  const effectivePrice =
+    product?.effectivePrice !== undefined && product?.effectivePrice !== null
+      ? Number(product.effectivePrice)
+      : Number(product?.price || 0);
+
+  const originalPrice =
+    product?.originalPrice !== undefined && product?.originalPrice !== null
+      ? Number(product.originalPrice)
       : null;
-    const now = Date.now();
 
-    const hasDiscount = old > 0 && old > price;
-    const isInTimer = !!end && !Number.isNaN(end) && end > now;
-    const isOnSale = hasDiscount && isInTimer;
+  const isOnSale =
+    product?.isOnSale !== undefined && product?.isOnSale !== null
+      ? Boolean(product.isOnSale)
+      : false;
 
-    const displayPrice = hasDiscount && end && end <= now ? old : price;
-    const strikePrice = isOnSale ? old : null;
+  // keep end if you still want countdown UI
+  const end = product?.saleEndsAt ? new Date(product.saleEndsAt).getTime() : null;
 
-    return { isOnSale, displayPrice, strikePrice, end };
-  }, [product]);
+  return {
+    isOnSale,
+    displayPrice: effectivePrice,
+    strikePrice: originalPrice, // only set when sale is active on backend
+    end,
+  };
+}, [product]);
+
 
   // ✅ Live ticking countdown
   useEffect(() => {
@@ -190,10 +199,8 @@ function ProductDetail({
   const mainImage = images[activeImg]?.url || images[0]?.url;
   const wished = isWished(product?._id);
 
-  const isOut =
-    product?.status === "out_of_stock" ||
-    product?.status === "archived" ||
-    Number(product?.stockQuantity || 0) <= 0;
+  const isOut = product?.status === "out_of_stock" || stockQty <= 0;
+
 
   const stockQty = Number(product?.stockQuantity || 0);
 

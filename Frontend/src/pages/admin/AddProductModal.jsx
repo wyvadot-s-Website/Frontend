@@ -28,7 +28,8 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
     category: "Uncategorized",
     stockQuantity: "",
     status: "active",
-    shippingFee: "", // ✅ rename from deliveryFee
+    shippingFee: "",
+    vatRate: "", // ✅ VAT rate (%)
   });
 
   const [images, setImages] = useState([]);
@@ -44,6 +45,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
       stockQuantity: "",
       status: "active",
       shippingFee: "", // ✅
+      vatRate: "",
     });
     setImages([]);
   };
@@ -104,7 +106,9 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">OLD PRICE (optional)</label>
+            <label className="text-xs font-semibold">
+              OLD PRICE (optional)
+            </label>
             <Input
               value={form.oldPrice}
               onChange={(e) => setForm({ ...form, oldPrice: e.target.value })}
@@ -161,6 +165,19 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
               placeholder="Enter Amount"
               type="number"
             />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold">VAT RATE (%)</label>
+            <Input
+              value={form.vatRate}
+              onChange={(e) => setForm({ ...form, vatRate: e.target.value })}
+              placeholder="e.g. 7.5"
+              type="number"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Set to 0 for no VAT on this product.
+            </p>
           </div>
 
           <div>

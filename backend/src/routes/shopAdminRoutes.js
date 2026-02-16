@@ -1,3 +1,4 @@
+// src/routes/shopAdminRoutes.js
 import express from "express";
 import protectAdmin from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";

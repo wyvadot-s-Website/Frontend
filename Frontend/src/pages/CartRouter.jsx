@@ -110,8 +110,14 @@ function CartRouter() {
     [cart],
   );
 
-  const VAT_RATE = 0.075;
-  const vat = useMemo(() => subtotal * VAT_RATE, [subtotal]);
+  const vat = useMemo(() => {
+  return cart.reduce((sum, item) => {
+    const rate = Number(item?.vatRate || 0); // percent
+    const line = Number(item.price || 0) * Number(item.quantity || 0);
+    return sum + (line * rate) / 100;
+  }, 0);
+}, [cart]);
+
 
   const total = subtotal + shipping + vat;
 
