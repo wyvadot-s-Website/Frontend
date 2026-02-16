@@ -77,59 +77,91 @@ export const sendServiceRequestNotificationToAdmins = async ({
   contactEmail,
   contactTel,
   projectScope,
+  details,
+  timeline,
+  location,
+  locationAddress,
 }) => {
-  const PROJECT_ALLOWED_ROLES = [
-    "super_admin",
-    "project_admin",
-    "content_project_admin",
-    "shop_project_admin",
-  ];
-
-  const admins = await Admin.find({
-    isVerified: true,
-    role: { $in: PROJECT_ALLOWED_ROLES },
-  }).select("email name role");
-
-  if (!admins.length) {
-    console.warn("No verified project-enabled admins found to notify");
-    return;
-  }
-
-  const adminEmails = admins.map((a) => a.email);
-
   try {
-    await resend.emails.send({
-      from: 'Wyvadot PR <noreply@wyvadotpr.com>',
-      to: adminEmails,
-      subject: `New Service Request – ${projectId}`,
-      html: `
-        <h2>New Service Request Submitted</h2>
+    // Build service-specific details section
+    let detailsHtml = '';
+    if (details && Object.keys(details).length > 0) {
+      detailsHtml = '<h3>Service-Specific Details:</h3><ul>';
+      for (const [key, value] of Object.entries(details)) {
+        if (value) {
+          // Format the key nicely (e.g., pm_service -> PM Service)
+          const label = key
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          detailsHtml += `<li><strong>${label}:</strong> ${value}</li>`;
+        }
+      }
+      detailsHtml += '</ul>';
+    }
 
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #FF8D28;">New Service Request Submitted</h2>
         <p><strong>Service:</strong> ${serviceName}</p>
         <p><strong>Project ID:</strong> ${projectId}</p>
-
-        <hr />
-
+        
         <h3>Contact Details</h3>
         <p><strong>Name:</strong> ${contactName}</p>
         <p><strong>Email:</strong> ${contactEmail}</p>
         <p><strong>Phone:</strong> ${contactTel}</p>
-
+        
         <h3>Project Scope</h3>
         <p>${projectScope}</p>
 
-        <hr />
+        ${detailsHtml}
 
-        <p>Log in to your dashboard to review this request in Project Management.</p>
-      `,
+        <h3>Additional Information</h3>
+        <p><strong>Timeline:</strong> ${timeline || 'Not specified'}</p>
+        <p><strong>Location:</strong> ${location || 'Not specified'}</p>
+        <p><strong>Address:</strong> ${locationAddress || 'Not specified'}</p>
+        
+        <hr />
+        
+        <p style="margin-top: 20px;">Log in to your dashboard to review this request in Project Management.</p>
+      </div>
+    `;
+
+    // Get admins who should receive notifications
+    const PROJECT_ALLOWED_ROLES = [
+      'super_admin',
+      'project_admin',
+      'content_project_admin',
+      'shop_project_admin',
+    ];
+
+    const admins = await Admin.find({ 
+      isVerified: true,
+      role: { $in: PROJECT_ALLOWED_ROLES } 
+    }).select('email name role');
+
+    if (!admins || admins.length === 0) {
+      console.warn('⚠️ No verified project-enabled admins found to notify');
+      return;
+    }
+
+    const adminEmails = admins.map(admin => admin.email);
+
+    // Send email using Resend (like your other email functions)
+    await resend.emails.send({
+      from: 'Wyvadot PR <noreply@wyvadotpr.com>',
+      to: adminEmails,
+      subject: `New Service Request: ${projectId} - ${serviceName}`,
+      html: emailHtml,
     });
-    console.log('✅ Service request notification sent to admins');
+    
+    console.log(`✅ Service request notification sent to ${admins.length} admin(s)`);
   } catch (error) {
     console.error('❌ Failed to send service request notification:', error);
-    throw error;
+    // Don't throw - let the service request still be created even if email fails
+    console.log('⚠️ Service request was created but email notification failed');
   }
 };
-
 export const sendPaidOrderNotificationToShopAdmins = async ({
   orderId,
   total,

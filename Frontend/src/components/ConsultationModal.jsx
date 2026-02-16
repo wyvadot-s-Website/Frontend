@@ -323,12 +323,14 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
           </div>
 
           {/* Submit Button */}
-          <Button
-            onClick={handleSubmit}
-            className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
-          >
-            Request Consultation
-          </Button>
+          <div className="pt-4 border-t">
+    <Button
+      onClick={handleSubmit}
+      className="w-full bg-[#FF8D28] hover:bg-orange-600 text-white"
+    >
+      Request Consultation
+    </Button>
+  </div>
         </div>
       </DialogContent>
     </Dialog>

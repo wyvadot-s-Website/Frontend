@@ -240,13 +240,17 @@ export const createServiceRequest = async (req, res) => {
     });
 
     await sendServiceRequestNotificationToAdmins({
-      projectId: doc.projectId,
-      serviceName: doc.serviceName,
-      contactName: doc.contact.name,
-      contactEmail: doc.contact.email,
-      contactTel: `${doc.contact.countryCode}${doc.contact.tel}`,
-      projectScope: doc.projectScope,
-    });
+  projectId: doc.projectId,
+  serviceName: doc.serviceName,
+  contactName: doc.contact.name,
+  contactEmail: doc.contact.email,
+  contactTel: `${doc.contact.countryCode}${doc.contact.tel}`,
+  projectScope: doc.projectScope,
+  details: doc.details, // ✅ ADD THIS
+  timeline: doc.timeline, // ✅ ADD THIS
+  location: doc.location, // ✅ ADD THIS
+  locationAddress: doc.locationAddress, // ✅ ADD THIS
+});
 
     // after sendServiceRequestNotificationToAdmins(...)
     await notifyAdminsByRoles({
