@@ -156,13 +156,10 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
 };
 
   const handleSubmit = async () => {
-  // ✅ Clear previous errors
   setErrors({});
   
-  // ✅ Validate form
   if (!validateForm()) {
     toast.error("Please fill in all required fields correctly");
-    // Scroll to first error
     const firstError = document.querySelector('.border-red-500');
     if (firstError) {
       firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -178,38 +175,48 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
 
   const toastId = toast.loading("Submitting request...");
 
-  try {
-  await submitServiceRequest(
-    {
-      serviceName,
-      ...formData,
-    },
-    token
-  );
+  // ✅ ADD THIS LOGGING
+  const payload = {
+    serviceName,
+    ...formData,
+  };
+  console.log("=== SUBMITTING SERVICE REQUEST ===");
+  console.log("Service Name:", serviceName);
+  console.log("Payload:", payload);
+  console.log("Token exists:", !!token);
+  console.log("==================================");
 
-  toast.success("Service request submitted successfully!", { id: toastId });
-  
-  // Reset form
-  setFormData({
-    name: "",
-    email: "",
-    countryCode: "+234",
-    tel: "",
-    companyName: "",
-    projectScope: "",
-    timeline: "Immediately (Emergency)",
-    location: "Nigeria",
-    locationAddress: "",
-    agreed: false,
-  });
-  
-  // Close modal
-  onClose();
-  
-} catch (err) {
-  console.error("Submission error:", err);
-  toast.error(err.message || "Submission failed", { id: toastId });
-}
+  try {
+    const result = await submitServiceRequest(payload, token);
+    
+    console.log("=== SUBMISSION SUCCESS ===");
+    console.log("Result:", result);
+    console.log("==========================");
+
+    toast.success("Service request submitted successfully!", { id: toastId });
+    
+    // Reset form
+    setFormData({
+      name: "",
+      email: "",
+      countryCode: "+234",
+      tel: "",
+      companyName: "",
+      projectScope: "",
+      timeline: "Immediately (Emergency)",
+      location: "Nigeria",
+      locationAddress: "",
+      agreed: false,
+    });
+    
+    onClose();
+    
+  } catch (err) {
+    console.error("=== SUBMISSION ERROR ===");
+    console.error("Error:", err);
+    console.error("========================");
+    toast.error(err.message || "Submission failed", { id: toastId });
+  }
 };
 
   // Render the appropriate service form based on serviceName prop

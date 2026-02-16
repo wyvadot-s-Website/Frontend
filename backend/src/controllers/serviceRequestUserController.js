@@ -17,6 +17,11 @@ const PROJECT_ALLOWED_ROLES = [
 
 export const createServiceRequest = async (req, res) => {
   try {
+     // ✅ ADD THIS LOGGING
+    console.log("=== SERVICE REQUEST RECEIVED ===");
+    console.log("Body:", req.body);
+    console.log("User:", req.user);
+    console.log("================================");
     const {
       serviceName,
 
@@ -249,9 +254,14 @@ export const createServiceRequest = async (req, res) => {
       scope: "project",
       title: "New Service Request",
       message: `${doc.projectId} • ${doc.serviceName} submitted by ${doc.contact.name}`,
-      link: `/theboss/projects`, // or wherever you show service requests
+      link: `/theboss/projects`,
       meta: { projectId: doc.projectId, serviceRequestId: String(doc._id) },
     });
+
+    // ✅ ADD THIS LOGGING
+    console.log("=== SERVICE REQUEST CREATED ===");
+    console.log("Project ID:", doc.projectId);
+    console.log("================================");
 
     return res.status(201).json({
       message: "Service request submitted",

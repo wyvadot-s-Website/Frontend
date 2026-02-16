@@ -6,22 +6,37 @@ import BASE_URL from "../utils/api";
  * serviceName + formData fields (JSON)
  */
 export const submitServiceRequest = async (payload, token) => {
-  const res = await fetch(`${BASE_URL}/api/service-requests`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/api/service-requests`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-  const result = await res.json();
+    // Get response text first to handle empty responses
+    const text = await res.text();
+    
+    // Try to parse as JSON
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      // If parsing fails, create error object
+      result = { message: text || "Server returned invalid response" };
+    }
 
-  if (!res.ok || result.success === false) {
-    throw new Error(result.message || "Failed to submit service request");
+    if (!res.ok) {
+      throw new Error(result.message || `Server error: ${res.status}`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Submit service request error:", error);
+    throw error;
   }
-
-  return result;
 };
 
 /**
