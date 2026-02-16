@@ -1,23 +1,27 @@
 import React from 'react'
 import { QuestionField, PlatformSelector, TimelineSelector, LocationSelector } from './FormFields'
 
-function TechnologyEcommerceForm({ formData, onChange }) {
+function TechnologyEcommerceForm({ formData, onChange, errors = {} }) {
   return (
     <div className="space-y-4">
       <QuestionField
-        id="tech_software"
-        label="Are you primarily seeking Software Development (e.g., building a new app) or New Technology Implementation (e.g., AI/Automation into existing processes)? (Multiple choice)"
-        placeholder="Are you primarily seeking Software Development"
-        value={formData.tech_software}
-        onChange={onChange}
-      />
+  id="tech_software"
+  label="Are you primarily seeking Software Development..."
+  placeholder="Are you primarily seeking Software Development"
+  value={formData.tech_software}
+  onChange={onChange}
+  error={errors.tech_software}
+  required
+/>
 
       <PlatformSelector
-        id="tech_platform"
-        label="What platform or operating system is the new software/application intended for (e.g., Web, iOS, Android, Desktop)?"
-        value={formData.tech_platform}
-        onChange={onChange}
-      />
+  id="tech_platform"
+  label="What platform or operating system..."
+  value={formData.tech_platform}
+  onChange={onChange}
+  error={errors.tech_platform}
+  required
+/>
 
       <QuestionField
         id="tech_cmms"
@@ -35,13 +39,18 @@ function TechnologyEcommerceForm({ formData, onChange }) {
         onChange={onChange}
       />
 
-      <TimelineSelector value={formData.timeline} onChange={onChange} />
+      <TimelineSelector 
+  value={formData.timeline} 
+  onChange={onChange}
+  error={errors.timeline}
+/>
 
       <LocationSelector
-        locationValue={formData.location}
-        addressValue={formData.locationAddress}
-        onChange={onChange}
-      />
+  locationValue={formData.location}
+  addressValue={formData.locationAddress}
+  onChange={onChange}
+  error={errors.location || errors.locationAddress}
+/>
     </div>
   )
 }

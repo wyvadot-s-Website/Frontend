@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-function ContactDetailsSection({ formData, onChange }) {
+function ContactDetailsSection({ formData, onChange, errors = {} }) {
   const handleInputChange = (e) => {
     onChange(e.target.name, e.target.value);
   };
@@ -15,24 +15,28 @@ function ContactDetailsSection({ formData, onChange }) {
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          placeholder="Your Full Name"
-        />
+  id="name"
+  name="name"
+  value={formData.name}
+  onChange={handleInputChange}
+  placeholder="Your Full Name"
+  className={errors.name ? 'border-red-500' : ''}
+/>
+{errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
-          id="email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          placeholder="Enter Email"
-        />
+  id="email"
+  name="email"
+  type="email"
+  value={formData.email}
+  onChange={handleInputChange}
+  placeholder="Enter Email"
+  className={errors.email ? 'border-red-500' : ''}
+/>
+{errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
       </div>
 
       <div className="space-y-2">
@@ -54,14 +58,15 @@ function ContactDetailsSection({ formData, onChange }) {
 
           {/* Phone number */}
           <Input
-            id="tel"
-            name="tel"
-            type="tel"
-            value={formData.tel}
-            onChange={handleInputChange}
-            placeholder="Enter Phone Number"
-            className="flex-1"
-          />
+  id="tel"
+  name="tel"
+  type="tel"
+  value={formData.tel}
+  onChange={handleInputChange}
+  placeholder="Enter Phone Number"
+  className={`flex-1 ${errors.tel ? 'border-red-500' : ''}`}
+/>
+{errors.tel && <p className="text-sm text-red-500">{errors.tel}</p>}
         </div>
 
         {/* Optional: show full phone preview */}
@@ -85,13 +90,15 @@ function ContactDetailsSection({ formData, onChange }) {
       <div className="space-y-2">
         <Label htmlFor="projectScope">Project Scope</Label>
         <Textarea
-          id="projectScope"
-          name="projectScope"
-          value={formData.projectScope}
-          onChange={handleInputChange}
-          placeholder="Describe your project"
-          rows={3}
-        />
+  id="projectScope"
+  name="projectScope"
+  value={formData.projectScope}
+  onChange={handleInputChange}
+  placeholder="Describe your project"
+  rows={3}
+  className={errors.projectScope ? 'border-red-500' : ''}
+/>
+{errors.projectScope && <p className="text-sm text-red-500">{errors.projectScope}</p>}
       </div>
     </div>
   );

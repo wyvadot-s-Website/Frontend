@@ -179,10 +179,37 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
   const toastId = toast.loading("Submitting request...");
 
   try {
-    // ... rest of your existing submit code
-  } catch (err) {
-    toast.error(err.message || "Submission failed", { id: toastId });
-  }
+  await submitServiceRequest(
+    {
+      serviceName,
+      ...formData,
+    },
+    token
+  );
+
+  toast.success("Service request submitted successfully!", { id: toastId });
+  
+  // Reset form
+  setFormData({
+    name: "",
+    email: "",
+    countryCode: "+234",
+    tel: "",
+    companyName: "",
+    projectScope: "",
+    timeline: "Immediately (Emergency)",
+    location: "Nigeria",
+    locationAddress: "",
+    agreed: false,
+  });
+  
+  // Close modal
+  onClose();
+  
+} catch (err) {
+  console.error("Submission error:", err);
+  toast.error(err.message || "Submission failed", { id: toastId });
+}
 };
 
   // Render the appropriate service form based on serviceName prop

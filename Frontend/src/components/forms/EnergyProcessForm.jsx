@@ -1,24 +1,28 @@
 import React from 'react'
 import { QuestionField, TimelineSelector, LocationSelector } from './FormFields'
 
-function EnergyProcessForm({ formData, onChange }) {
+function EnergyProcessForm({ formData, onChange, errors = {} }) {
   return (
     <div className="space-y-4">
-      <QuestionField
-        id="ep_inquiry"
-        label="Are you inquiring about facility operations/expansion or engineering or energy support/management services (e.g., Own Plant/Power Management or Reliability/Utilities)?"
-        placeholder=""
-        value={formData.ep_inquiry}
-        onChange={onChange}
-      />
+     <QuestionField
+  id="ep_inquiry"
+  label="Are you inquiring about facility operations..."
+  placeholder=""
+  value={formData.ep_inquiry}
+  onChange={onChange}
+  error={errors.ep_inquiry}
+  required
+/>
 
       <QuestionField
-        id="ep_facility"
-        label="What type of facility or process are you seeking (e.g., Oil & Gas, Power Plant, Industries)?"
-        placeholder=""
-        value={formData.ep_facility}
-        onChange={onChange}
-      />
+  id="ep_facility"
+  label="What type of facility or process..."
+  placeholder=""
+  value={formData.ep_facility}
+  onChange={onChange}
+  error={errors.ep_facility}
+  required
+/>
 
       <QuestionField
         id="ep_cmms"
@@ -36,13 +40,18 @@ function EnergyProcessForm({ formData, onChange }) {
         onChange={onChange}
       />
 
-      <TimelineSelector value={formData.timeline} onChange={onChange} />
+      <TimelineSelector 
+  value={formData.timeline} 
+  onChange={onChange}
+  error={errors.timeline}
+/>
 
       <LocationSelector
-        locationValue={formData.location}
-        addressValue={formData.locationAddress}
-        onChange={onChange}
-      />
+  locationValue={formData.location}
+  addressValue={formData.locationAddress}
+  onChange={onChange}
+  error={errors.location || errors.locationAddress}
+/>
     </div>
   )
 }

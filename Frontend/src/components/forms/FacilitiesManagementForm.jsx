@@ -1,32 +1,38 @@
 import React from 'react'
 import { QuestionField, TimelineSelector, LocationSelector } from './FormFields'
 
-function FacilitiesManagementForm({ formData, onChange }) {
+function FacilitiesManagementForm({ formData, onChange, errors = {} }) {
   return (
     <div className="space-y-4">
       <QuestionField
-        id="fm_services"
-        label="Is this a one-time service inquiry (e.g., renovation, installation) or are you seeking a long-term maintenance contract (e.g., Operations/Maintenance, general Building/Facility Management)?"
-        placeholder=""
-        value={formData.fm_services}
-        onChange={onChange}
-      />
+  id="fm_services"
+  label="Is this a one-time service inquiry..."
+  placeholder=""
+  value={formData.fm_services}
+  onChange={onChange}
+  error={errors.fm_services}
+  required
+/>
 
       <QuestionField
-        id="fm_coverage"
-        label="What is the total square footage or estimated size of the facilities requiring maintenance?"
-        placeholder=""
-        value={formData.fm_coverage}
-        onChange={onChange}
-      />
+  id="fm_coverage"
+  label="What is the total square footage..."
+  placeholder=""
+  value={formData.fm_coverage}
+  onChange={onChange}
+  error={errors.fm_coverage}
+  required
+/>
 
       <QuestionField
-        id="fm_maintenance"
-        label="Please list the top three critical maintenance issues or services you require immediately (e.g., HVAC/Elev, plumbing/elec, exterior renovation)"
-        placeholder=""
-        value={formData.fm_maintenance}
-        onChange={onChange}
-      />
+  id="fm_maintenance"
+  label="Please list the top three critical..."
+  placeholder=""
+  value={formData.fm_maintenance}
+  onChange={onChange}
+  error={errors.fm_maintenance}
+  required
+/>
 
       <QuestionField
         id="fm_availability"
@@ -36,13 +42,18 @@ function FacilitiesManagementForm({ formData, onChange }) {
         onChange={onChange}
       />
 
-      <TimelineSelector value={formData.timeline} onChange={onChange} />
+      <TimelineSelector 
+  value={formData.timeline} 
+  onChange={onChange}
+  error={errors.timeline}
+/>
 
       <LocationSelector
-        locationValue={formData.location}
-        addressValue={formData.locationAddress}
-        onChange={onChange}
-      />
+  locationValue={formData.location}
+  addressValue={formData.locationAddress}
+  onChange={onChange}
+  error={errors.location || errors.locationAddress}
+/>
     </div>
   )
 }
