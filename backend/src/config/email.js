@@ -120,7 +120,7 @@ export const sendServiceRequestNotificationToAdmins = async ({
 
         <hr />
 
-        <p>Log in to the admin dashboard to review this request in Project Management.</p>
+        <p>Log in to your dashboard to review this request in Project Management.</p>
       `,
     });
     console.log('✅ Service request notification sent to admins');
@@ -191,7 +191,7 @@ export const sendPaidOrderNotificationToShopAdmins = async ({
 
         <hr />
 
-        <p>Log in to the admin dashboard and check Shop Management to process this order.</p>
+        <p>Log in to your dashboard and check Shop Management to process this order.</p>
       `,
     });
     console.log('✅ Order notification sent to shop admins');

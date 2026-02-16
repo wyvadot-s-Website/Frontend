@@ -79,7 +79,6 @@ const orderSchema = new mongoose.Schema(
       subtotal: { type: Number, required: true, min: 0 },
       shipping: { type: Number, required: true, min: 0 },
 
-      vatRate: { type: Number, default: 0.075 }, // ✅ add
       vat: { type: Number, default: 0, min: 0 }, // ✅ add
 
       total: { type: Number, required: true, min: 0 }, // subtotal + shipping + vat

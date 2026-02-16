@@ -46,17 +46,17 @@ function CheckoutView({
   const computedSubtotal = useMemo(() => Number(subtotal || 0), [subtotal]);
 const computedShipping = useMemo(() => Number(shipping || 0), [shipping]);
 
-// ✅ ADD THIS - Calculate 7.5% VAT
-const computedVat = useMemo(() => {
-  return computedSubtotal * 0.075; // 7.5% of subtotal
-}, [computedSubtotal]);
+// ✅ VAT is now provided (per-product VAT calculated elsewhere)
+const computedVat = useMemo(() => Number(vat || 0), [vat]);
 
+// ✅ Total is also provided (already includes VAT)
 const computedTotal = useMemo(() => {
-  // prefer parent total if it's correct; otherwise compute
   const t = Number(total || 0);
-  const calc = computedSubtotal + computedShipping + computedVat - discount; // ✅ Add VAT
+  // fallback only (no VAT math here)
+  const calc = computedSubtotal + computedShipping - discount;
   return t > 0 ? t : calc;
-}, [total, computedSubtotal, computedShipping, computedVat, discount]); // ✅ Add computedVat to deps
+}, [total, computedSubtotal, computedShipping, discount]);
+
 
   const handleApplyCoupon = () => {
     // UI only for now. Real coupon must be validated on backend.
@@ -422,7 +422,7 @@ const computedTotal = useMemo(() => {
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">VAT (7.5%)</span>
+                <span className="text-gray-600">VAT</span>
                 <span className="font-semibold">
                   {formatMoney(computedVat)}
                 </span>

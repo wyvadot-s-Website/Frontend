@@ -40,12 +40,14 @@ export const getProducts = async (req, res) => {
       limit = 12,
     } = req.query;
 
-    // ✅ keep your rules: public listing only shows active + in-stock
-    // ✅ but filter prices using EFFECTIVE PRICE (reverted if sale ended)
     const q = {
-      status: "active",
-      stockQuantity: { $gt: 0 },
+      status: { $in: ["active", "out_of_stock"] }, // show both
     };
+
+    if (inStock === "true") {
+      q.status = "active";
+      q.stockQuantity = { $gt: 0 };
+    }
 
     if (category && category !== "All") q.category = category;
     if (search) q.name = { $regex: search, $options: "i" };
@@ -76,8 +78,10 @@ export const getProducts = async (req, res) => {
     });
 
     // ✅ Apply min/max filtering against effectivePrice (not p.price)
-    const hasMin = minPrice !== undefined && minPrice !== null && minPrice !== "";
-    const hasMax = maxPrice !== undefined && maxPrice !== null && maxPrice !== "";
+    const hasMin =
+      minPrice !== undefined && minPrice !== null && minPrice !== "";
+    const hasMax =
+      maxPrice !== undefined && maxPrice !== null && maxPrice !== "";
     if (hasMin || hasMax) {
       const min = hasMin ? Number(minPrice) : null;
       const max = hasMax ? Number(maxPrice) : null;
@@ -110,11 +114,16 @@ export const getProductById = async (req, res) => {
       status: { $ne: "archived" },
     });
 
-    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+    if (!product)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
 
     // hide draft products from public
     if (product.status === "draft") {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     const pricing = buildPricing(product);
