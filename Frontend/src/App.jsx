@@ -192,9 +192,8 @@ function App() {
             path="/account"
             element={
               <ProtectedRoute>
-                <UserLayout>
-                  <UserAccount />
-                </UserLayout>
+                <Navbar />
+                <UserAccount />
               </ProtectedRoute>
             }
           />

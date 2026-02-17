@@ -26,9 +26,14 @@ export default function UserAccount() {
     confirmNewPassword: "",
   });
 
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
   const avatar = useMemo(() => initialsOf(user), [user]);
 
   useEffect(() => {
+    if (!token) return;
+
     (async () => {
       try {
         const data = await getCurrentUser(token);
@@ -48,7 +53,11 @@ export default function UserAccount() {
   }, [token]);
 
   const updateProfile = async () => {
+    if (!token) return toast.error("Please login again.");
+
     try {
+      setSavingProfile(true);
+
       const res = await fetch(`${BASE_URL}/users/profile`, {
         method: "PUT",
         headers: {
@@ -66,18 +75,26 @@ export default function UserAccount() {
 
       toast.success("Account updated");
       setUser(data.user);
+
+      // refresh navbar initials/name
       window.dispatchEvent(new Event("wyvadot_auth_updated"));
     } catch (e) {
       toast.error(e.message);
+    } finally {
+      setSavingProfile(false);
     }
   };
 
   const changePassword = async () => {
+    if (!token) return toast.error("Please login again.");
+
     try {
       if (pw.newPassword !== pw.confirmNewPassword) {
         toast.error("New passwords do not match");
         return;
       }
+
+      setSavingPassword(true);
 
       const res = await fetch(`${BASE_URL}/users/change-password`, {
         method: "PUT",
@@ -98,33 +115,51 @@ export default function UserAccount() {
       setPw({ oldPassword: "", newPassword: "", confirmNewPassword: "" });
     } catch (e) {
       toast.error(e.message);
+    } finally {
+      setSavingPassword(false);
     }
   };
 
-  return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <h1 className="text-center text-3xl font-semibold mb-10">My Account</h1>
+  const logout = () => {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("wyvadot_auth_updated"));
+    window.location.href = "/";
+  };
 
-      <div className="grid grid-cols-12 gap-8">
-        {/* Left card */}
-        <div className="col-span-12 md:col-span-3">
-          <div className="border rounded-lg p-4">
-            <div className="flex flex-col items-center gap-3 py-4">
-              <div className="w-16 h-16 rounded bg-gray-200 flex items-center justify-center text-xl font-semibold">
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+          My Account
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Manage your profile and password.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6 lg:gap-8">
+        {/* Left: profile card */}
+        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+          <div className="border rounded-2xl bg-white p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center text-lg font-semibold">
                 {avatar}
               </div>
-              <div className="text-sm font-medium">{form.displayName || "User"}</div>
+
+              <div className="min-w-0">
+                <p className="font-semibold text-gray-900 truncate">
+                  {form.displayName || "User"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {form.email || ""}
+                </p>
+              </div>
             </div>
 
-            <div className="border-t pt-3">
-              <div className="text-sm font-medium py-2">Account</div>
+            <div className="mt-5 pt-4 border-t space-y-2">
               <button
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  window.dispatchEvent(new Event("wyvadot_auth_updated"));
-                  window.location.href = "/";
-                }}
-                className="text-sm text-gray-600 hover:text-red-600 py-2"
+                onClick={logout}
+                className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-red-50 text-red-600"
               >
                 Log Out
               </button>
@@ -132,84 +167,145 @@ export default function UserAccount() {
           </div>
         </div>
 
-        {/* Right content */}
-        <div className="col-span-12 md:col-span-9">
-          <div className="mb-10">
-            <h2 className="text-lg font-semibold mb-4">Account Details</h2>
-
-            <div className="space-y-3">
-              <input
-                className="w-full border rounded px-3 py-2"
-                placeholder="First name"
-                value={form.firstName}
-                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-              />
-              <input
-                className="w-full border rounded px-3 py-2"
-                placeholder="Last name"
-                value={form.lastName}
-                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-              />
-              <input
-                className="w-full border rounded px-3 py-2 bg-gray-50"
-                placeholder="Display name"
-                value={form.displayName}
-                disabled
-              />
-              <p className="text-xs text-gray-500">
-                This will be how your name will be displayed in the account section.
-              </p>
-              <input
-                className="w-full border rounded px-3 py-2 bg-gray-50"
-                placeholder="Email"
-                value={form.email}
-                disabled
-              />
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Password</h2>
-
-            <div className="space-y-3">
-              <input
-                className="w-full border rounded px-3 py-2"
-                type="password"
-                placeholder="Old password"
-                value={pw.oldPassword}
-                onChange={(e) => setPw((p) => ({ ...p, oldPassword: e.target.value }))}
-              />
-              <input
-                className="w-full border rounded px-3 py-2"
-                type="password"
-                placeholder="New password"
-                value={pw.newPassword}
-                onChange={(e) => setPw((p) => ({ ...p, newPassword: e.target.value }))}
-              />
-              <input
-                className="w-full border rounded px-3 py-2"
-                type="password"
-                placeholder="Repeat new password"
-                value={pw.confirmNewPassword}
-                onChange={(e) =>
-                  setPw((p) => ({ ...p, confirmNewPassword: e.target.value }))
-                }
-              />
+        {/* Right: forms */}
+        <div className="col-span-12 md:col-span-8 lg:col-span-9 space-y-6">
+          {/* Account details */}
+          <div className="border rounded-2xl bg-white p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                  Account Details
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Update your name. Your email can’t be changed here.
+                </p>
+              </div>
 
               <button
                 onClick={updateProfile}
-                className="mt-4 bg-[#FF8D28] hover:bg-orange-600 text-white px-6 py-2 rounded"
+                disabled={savingProfile}
+                className="bg-[#FF8D28] hover:bg-orange-600 disabled:bg-orange-300 text-white text-sm font-medium px-4 py-2 rounded-xl"
               >
-                Save changes
+                {savingProfile ? "Saving..." : "Save"}
               </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-600">First name</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  placeholder="First name"
+                  value={form.firstName}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, firstName: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600">Last name</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  placeholder="Last name"
+                  value={form.lastName}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, lastName: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs text-gray-600">Display name</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 bg-gray-50 text-gray-700"
+                  placeholder="Display name"
+                  value={form.displayName}
+                  disabled
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  This is how your name shows in your account section.
+                </p>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs text-gray-600">Email</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 bg-gray-50 text-gray-700"
+                  placeholder="Email"
+                  value={form.email}
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Password */}
+          <div className="border rounded-2xl bg-white p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                  Password
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Change your password securely.
+                </p>
+              </div>
 
               <button
                 onClick={changePassword}
-                className="ml-3 mt-4 bg-black hover:bg-gray-900 text-white px-6 py-2 rounded"
+                disabled={savingPassword}
+                className="bg-black hover:bg-gray-900 disabled:bg-gray-500 text-white text-sm font-medium px-4 py-2 rounded-xl"
               >
-                Update password
+                {savingPassword ? "Updating..." : "Update"}
               </button>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className="text-xs text-gray-600">Old password</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  type="password"
+                  placeholder="Old password"
+                  value={pw.oldPassword}
+                  onChange={(e) =>
+                    setPw((p) => ({ ...p, oldPassword: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600">New password</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  type="password"
+                  placeholder="New password"
+                  value={pw.newPassword}
+                  onChange={(e) =>
+                    setPw((p) => ({ ...p, newPassword: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600">Confirm password</label>
+                <input
+                  className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  type="password"
+                  placeholder="Repeat new password"
+                  value={pw.confirmNewPassword}
+                  onChange={(e) =>
+                    setPw((p) => ({ ...p, confirmNewPassword: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Small hint */}
+          <div className="text-xs text-gray-400">
+            Tip: Use a strong password (8+ characters with letters and numbers).
           </div>
         </div>
       </div>
