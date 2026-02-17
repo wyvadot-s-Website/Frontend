@@ -64,18 +64,21 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
     newErrors.projectScope = "Project scope description is required";
   }
 
-  // ===== COMMON FIELDS (Required for all) =====
+// ===== COMMON FIELDS (Required for MOST services) =====
+// General Contracts uses gc_region/gc_location instead
+if (serviceName !== "General Contracts") {
   if (!formData.timeline) {
     newErrors.timeline = "Project timeline is required";
   }
-  
+
   if (!formData.location) {
     newErrors.location = "Project location is required";
   }
-  
+
   if (!formData.locationAddress?.trim()) {
     newErrors.locationAddress = "Specific project address is required";
   }
+}
 
   // ===== SERVICE-SPECIFIC VALIDATIONS =====
   
