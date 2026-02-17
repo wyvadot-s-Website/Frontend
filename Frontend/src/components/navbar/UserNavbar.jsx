@@ -688,11 +688,15 @@ function UserNavbar() {
               {/* Profile */}
               <div className="relative" ref={profileRef}>
                 <button
-                  onClick={() => setOpenProfile((prev) => !prev)}
-                  className="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center font-semibold"
-                >
-                  {initials}
-                </button>
+  onClick={() => setOpenProfile((prev) => !prev)}
+  className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center font-semibold"
+>
+  {user?.avatar?.url ? (
+    <img src={user.avatar.url} alt="avatar" className="w-full h-full object-cover" />
+  ) : (
+    initials
+  )}
+</button>
 
                 {openProfile && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-lg border z-50">

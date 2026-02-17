@@ -250,26 +250,24 @@ function AdminLayout() {
           {/* User Profile Section */}
           <div className="border-t p-4">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-gray-200 text-gray-700 text-sm">
-                      {getInitials(admin?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-medium text-gray-900">
-                      {admin?.name || "Admin"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {admin?.email || "—"}
-                    </p>
-                  </div>
-
-                  <ChevronDown size={16} className="text-gray-400" />
-                </button>
-              </DropdownMenuTrigger>
+<DropdownMenuTrigger asChild>
+  <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+      {admin?.avatar?.url ? (
+        <img src={admin.avatar.url} alt="avatar" className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 text-sm flex items-center justify-center font-semibold">
+          {getInitials(admin?.name)}
+        </div>
+      )}
+    </div>
+    <div className="flex-1 text-left min-w-0">
+      <p className="text-sm font-medium text-gray-900 truncate">{admin?.name || "Admin"}</p>
+      <p className="text-xs text-gray-500 truncate">{admin?.email || "—"}</p>
+    </div>
+    <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
+  </button>
+</DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem

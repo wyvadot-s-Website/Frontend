@@ -68,6 +68,11 @@ phoneNumber: {
       default: false,
     },
 
+    // models/User.js - add to userSchema
+avatar: {
+  url: { type: String, default: "" },
+  publicId: { type: String, default: "" },
+},
     // EMAIL VERIFICATION
     emailVerificationCode: String,
     emailVerificationExpires: Date,
@@ -82,6 +87,7 @@ phoneNumber: {
   {
     timestamps: true,
   },
+  
 );
 
 export default mongoose.model("User", userSchema);

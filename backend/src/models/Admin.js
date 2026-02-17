@@ -17,6 +17,11 @@ const adminSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
 
     password: { type: String, required: true },
+    // models/Admin.js - add to adminSchema
+avatar: {
+  url: { type: String, default: "" },
+  publicId: { type: String, default: "" },
+},
 
     role: {
       type: String,

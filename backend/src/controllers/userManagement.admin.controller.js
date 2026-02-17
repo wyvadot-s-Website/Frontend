@@ -30,9 +30,8 @@ export const getUsersAdmin = async (req, res) => {
 
     const [items, total] = await Promise.all([
       User.find(q)
-        .select(
-          "firstName middleName lastName email phoneNumber country countryCode authProvider isVerified createdAt"
-        )
+        // In userManagement.admin.controller.js - update the .select() line
+.select("firstName middleName lastName email phoneNumber country countryCode authProvider isVerified avatar createdAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -72,7 +71,7 @@ export const getAdminsSuper = async (req, res) => {
 
     const [items, total] = await Promise.all([
       Admin.find(q)
-        .select("name email role isVerified createdAt") // never send password
+       .select("name email role isVerified avatar createdAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),

@@ -6,6 +6,7 @@ import {
   deleteAdminAccount,
 } from "@/services/adminUserManagementService";
 import { Button } from "@/components/ui/button";
+import UserProfileModal from "../../pages/admin/UserProfileModal";
 
 export default function UserManagement() {
   const token = localStorage.getItem("admin_token");
@@ -23,6 +24,7 @@ export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -78,9 +80,10 @@ export default function UserManagement() {
           ) : (
             users.map((u) => (
               <div
-                key={u._id}
-                className="border rounded-xl p-4 flex flex-col gap-2"
-              >
+  key={u._id}
+  onClick={() => setSelectedUser(u)}
+  className="border rounded-xl p-4 flex flex-col gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900 truncate">
@@ -130,7 +133,11 @@ export default function UserManagement() {
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u._id}>
+                  <tr
+  key={u._id}
+  onClick={() => setSelectedUser(u)}
+  className="cursor-pointer hover:bg-gray-50 transition-colors"
+>
                     <td className="py-3">
                       {u.firstName} {u.lastName}
                     </td>
@@ -229,6 +236,13 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+      {selectedUser && (
+  <UserProfileModal
+    user={selectedUser}
+    token={token}
+    onClose={() => setSelectedUser(null)}
+  />
+)}
     </div>
   );
 }

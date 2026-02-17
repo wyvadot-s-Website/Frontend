@@ -6,6 +6,8 @@ import Admin from "../models/Admin.js";
 import protectAdmin from "../middleware/authMiddleware.js";
 import { sendAdminVerificationEmail } from "../config/email.js";
 import { ADMIN_ROLES } from "../models/Admin.js";
+import {updateAdminAvatar, deleteAdminAvatar} from "../controllers/admin.controller.js";
+import multer from "multer";
 
 dotenv.config();
 
@@ -13,6 +15,16 @@ const router = express.Router();
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files allowed"));
+    }
+    cb(null, true);
+  },
+});
 // ==============================
 // ADMIN SIGNUP (role-based)
 // ==============================
@@ -141,11 +153,30 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// adminRoutes.js
+router.put("/change-password", protectAdmin, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const admin = await Admin.findById(req.admin._id);
+
+    const ok = await bcrypt.compare(oldPassword, admin.password);
+    if (!ok) return res.status(400).json({ message: "Old password is incorrect" });
+
+    admin.password = await bcrypt.hash(newPassword, 10);
+    await admin.save();
+
+    res.json({ message: "Password changed successfully" });
+  } catch (e) {
+    res.status(500).json({ message: "Password change failed" });
+  }
+});
+
 // ==============================
 // PROFILE
 // ==============================
 router.get("/profile", protectAdmin, (req, res) => {
   res.json({ message: "Admin profile accessed", admin: req.admin });
 });
-
+router.put("/avatar", protectAdmin, upload.single("avatar"), updateAdminAvatar);
+router.delete("/avatar", protectAdmin, deleteAdminAvatar);
 export default router;

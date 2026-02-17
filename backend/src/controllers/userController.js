@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { sendVerificationEmail } from "../config/email.js";
 import { OAuth2Client } from "google-auth-library";
-
+import cloudinary from "../config/cloudinary.js";
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -352,4 +352,52 @@ export const resendVerificationCode = async (req, res) => {
     res.status(500).json({ message: error.message || "Failed to resend code" });
   }
 };
+// controllers/userController.js - add this export
+export const updateUserAvatar = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ message: "No image uploaded" });
 
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Delete old avatar from Cloudinary
+    if (user.avatar?.publicId) {
+      await cloudinary.uploader.destroy(user.avatar.publicId);
+    }
+
+    const upload = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          { folder: "avatars/users", width: 300, height: 300, crop: "fill" },
+          (err, result) => (err ? reject(err) : resolve(result))
+        )
+        .end(file.buffer);
+    });
+
+    user.avatar = { url: upload.secure_url, publicId: upload.public_id };
+    await user.save();
+
+    res.json({ message: "Avatar updated", avatar: user.avatar });
+  } catch (e) {
+    res.status(500).json({ message: "Avatar upload failed" });
+  }
+};
+
+export const deleteUserAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.avatar?.publicId) {
+      await cloudinary.uploader.destroy(user.avatar.publicId);
+    }
+
+    user.avatar = { url: "", publicId: "" };
+    await user.save();
+
+    res.json({ message: "Avatar removed" });
+  } catch (e) {
+    res.status(500).json({ message: "Failed to remove avatar" });
+  }
+};

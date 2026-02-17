@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getCurrentUser } from "@/services/userService";
 import BASE_URL from "@/utils/api";
+import AvatarCropModal from "@/components/AvatarCropModal";
 
 function initialsOf(u) {
   const a = (u?.firstName || "").trim()[0] || "";
@@ -28,6 +29,9 @@ export default function UserAccount() {
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+const [rawImageSrc, setRawImageSrc] = useState(null);
 
   const avatar = useMemo(() => initialsOf(user), [user]);
 
@@ -120,6 +124,49 @@ export default function UserAccount() {
     }
   };
 
+  const handleAvatarChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Reset input so same file can be re-selected
+  e.target.value = "";
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    setRawImageSrc(reader.result);
+    setCropModalOpen(true);
+  };
+  reader.readAsDataURL(file);
+};
+
+// Add upload handler (called after crop confirm)
+const uploadCroppedAvatar = async (croppedFile) => {
+  setCropModalOpen(false);
+  setRawImageSrc(null);
+
+  const formData = new FormData();
+  formData.append("avatar", croppedFile);
+
+  try {
+    setUploadingAvatar(true);
+    const res = await fetch(`${BASE_URL}/users/avatar`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    setUser((u) => ({ ...u, avatar: data.avatar }));
+    toast.success("Profile picture updated");
+    window.dispatchEvent(new Event("wyvadot_auth_updated"));
+  } catch (e) {
+    toast.error(e.message);
+  } finally {
+    setUploadingAvatar(false);
+  }
+};
+
   const logout = () => {
     localStorage.removeItem("token");
     window.dispatchEvent(new Event("wyvadot_auth_updated"));
@@ -142,9 +189,30 @@ export default function UserAccount() {
         <div className="col-span-12 md:col-span-4 lg:col-span-3">
           <div className="border rounded-2xl bg-white p-5">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center text-lg font-semibold">
-                {avatar}
-              </div>
+              <label className="relative cursor-pointer group">
+  {user?.avatar?.url ? (
+    <img
+      src={user.avatar.url}
+      alt="avatar"
+      className="w-14 h-14 rounded-2xl object-cover"
+    />
+  ) : (
+    <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-700 flex items-center justify-center text-lg font-semibold">
+      {avatar}
+    </div>
+  )}
+  <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+    <span className="text-white text-[10px] font-medium">
+      {uploadingAvatar ? "..." : "Change"}
+    </span>
+  </div>
+  <input
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={handleAvatarChange}
+  />
+</label>
 
               <div className="min-w-0">
                 <p className="font-semibold text-gray-900 truncate">
@@ -309,6 +377,17 @@ export default function UserAccount() {
           </div>
         </div>
       </div>
+      {/* Crop Modal */}
+{cropModalOpen && rawImageSrc && (
+  <AvatarCropModal
+    imageSrc={rawImageSrc}
+    onCancel={() => {
+      setCropModalOpen(false);
+      setRawImageSrc(null);
+    }}
+    onCropComplete={uploadCroppedAvatar}
+  />
+)}
     </div>
   );
 }

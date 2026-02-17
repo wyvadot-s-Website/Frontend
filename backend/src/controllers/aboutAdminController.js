@@ -186,3 +186,34 @@ export const deletePromiseImage = async (req, res) => {
     });
   }
 };
+
+// controllers/adminController.js - add these exports
+export const updateAdminAvatar = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ message: "No image uploaded" });
+
+    const admin = await Admin.findById(req.admin._id);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    if (admin.avatar?.publicId) {
+      await cloudinary.uploader.destroy(admin.avatar.publicId);
+    }
+
+    const upload = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          { folder: "avatars/admins", width: 300, height: 300, crop: "fill" },
+          (err, result) => (err ? reject(err) : resolve(result))
+        )
+        .end(file.buffer);
+    });
+
+    admin.avatar = { url: upload.secure_url, publicId: upload.public_id };
+    await admin.save();
+
+    res.json({ message: "Avatar updated", avatar: admin.avatar });
+  } catch (e) {
+    res.status(500).json({ message: "Avatar upload failed" });
+  }
+};
