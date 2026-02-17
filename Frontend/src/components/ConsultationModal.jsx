@@ -283,7 +283,7 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+     <DialogContent className="sm:max-w-[500px] w-[95vw] max-h-[90vh] overflow-y-auto px-4">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Request Your Consultation

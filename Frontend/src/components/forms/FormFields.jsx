@@ -15,7 +15,7 @@ import {
 export function TimelineSelector({ value, onChange, error }) {
   return (
     <div className="space-y-2">
-      <Label>Project Timeline</Label>
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">Project Timeline</Label>
       <Select value={value} onValueChange={(val) => onChange('timeline', val)}>
         <SelectTrigger className={error ? 'border-red-500' : ''}>
           <SelectValue />
@@ -40,7 +40,7 @@ export function LocationSelector({ locationValue, addressValue, onChange, error 
 
   return (
     <div className="space-y-2">
-      <Label>Location of your project</Label>
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">Location of your project</Label>
       <div className="flex gap-2">
         {locations.map((loc) => (
           <Button
@@ -71,10 +71,10 @@ export function LocationSelector({ locationValue, addressValue, onChange, error 
 export function QuestionField({ id, label, placeholder, required, value, onChange, error }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm">
-        {label}
-        {required && <span className="text-orange-500 ml-1">*</span>}
-      </Label>
+      <Label htmlFor={id} className="text-sm leading-snug block w-full whitespace-normal break-words">
+  {label}
+  {required && <span className="text-orange-500 ml-1">*</span>}
+</Label>
       <Textarea
         id={id}
         name={id}
@@ -93,7 +93,7 @@ export function QuestionField({ id, label, placeholder, required, value, onChang
 export function RadioButtonGroup({ id, label, value, onChange, required, error }) {
   return (
     <div className="space-y-2">
-      <Label className="text-sm">
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">
         {label}
         {required && <span className="text-orange-500 ml-1">*</span>}
       </Label>
@@ -130,7 +130,7 @@ export function PlatformSelector({ id, label, value, onChange, required, error }
   
   return (
     <div className="space-y-2">
-      <Label className="text-sm">
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">
         {label}
         {required && <span className="text-orange-500 ml-1">*</span>}
       </Label>

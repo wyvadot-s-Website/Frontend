@@ -41,6 +41,14 @@ function VerifyEmailView({
       prevInput?.focus();
     }
   };
+  const formatCooldown = (seconds) => {
+  if (seconds >= 60) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}m ${s > 0 ? `${s}s` : ""}`;
+  }
+  return `${seconds}s`;
+};
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -77,16 +85,18 @@ function VerifyEmailView({
 
           <div className="text-center">
   <button
-    onClick={onResendCode}
-    disabled={resendCooldown > 0}
-    className={`text-sm hover:underline ${
-      resendCooldown > 0
-        ? 'text-gray-400 cursor-not-allowed'
-        : 'text-orange-500'
-    }`}
-  >
-    {resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code'}
-  </button>
+  onClick={onResendCode}
+  disabled={resendCooldown > 0}
+  className={`text-sm hover:underline ${
+    resendCooldown > 0
+      ? 'text-gray-400 cursor-not-allowed'
+      : 'text-orange-500'
+  }`}
+>
+  {resendCooldown > 0 
+    ? `Resend available in ${formatCooldown(resendCooldown)}` 
+    : 'Resend code'}
+</button>
 </div>
 
           <Button

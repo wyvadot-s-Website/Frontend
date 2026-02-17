@@ -59,9 +59,11 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   const [formData, setFormData] = useState(initialFormState);
   const [verifyResetError, setVerifyResetError] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [verifiedResetCode, setVerifiedResetCode] = useState("");
+  
 
   const startCooldown = () => {
-  setResendCooldown(60); // 60 seconds
+  setResendCooldown(600); // 60 seconds
   const timer = setInterval(() => {
     setResendCooldown((prev) => {
       if (prev <= 1) { clearInterval(timer); return 0; }
@@ -139,8 +141,9 @@ const handleSignUp = async () => {
     };
 
     await signupUser(signupData);
-    toast.success("Verification code sent to your email");
-    setView("verify");
+toast.success("Verification code sent to your email");
+startCooldown(); // ✅ ADD THIS - starts 10min timer immediately
+setView("verify");
   } catch (err) {
     toast.error(err.message);
   } finally {
@@ -216,6 +219,7 @@ const handleSignUp = async () => {
       setLoading(true);
       await forgotPassword(formData.email);
       toast.success("Reset code sent to email");
+      startCooldown(); // ✅ ADD THIS - starts 10min timer immediately
       setView("verify-reset");
     } catch (err) {
       toast.error(err.message);
@@ -224,18 +228,20 @@ const handleSignUp = async () => {
     }
   };
 
-  const handleVerifyReset = async () => {
+ const handleVerifyReset = async () => {
   try {
     setLoading(true);
-    setVerifyResetError(""); // ✅ clear previous error
+    setVerifyResetError("");
+    const codeString = verificationCode.join("");
     await verifyResetCode({
       email: formData.email,
-      code: verificationCode.join(""),
+      code: codeString,
     });
+    setVerifiedResetCode(codeString); // ✅ save it before clearing
     setVerificationCode(["", "", "", "", "", ""]);
     setView("reset");
   } catch (err) {
-    setVerifyResetError("Invalid code, please try again"); // ✅ set on failure
+    setVerifyResetError("Invalid code, please try again");
     toast.error(err.message);
   } finally {
     setLoading(false);
@@ -243,22 +249,23 @@ const handleSignUp = async () => {
 };
 
   const handleResetPassword = async () => {
-    try {
-      setLoading(true);
-      await resetPassword({
-        email: formData.email,
-        code: verificationCode.join(""),
-        newPassword: formData.newPassword,
-      });
-      toast.success("Password reset successful");
-      resetForm();
-      setView("reset-success");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await resetPassword({
+      email: formData.email,
+      code: verifiedResetCode, // ✅ use saved code instead of cleared array
+      newPassword: formData.newPassword,
+    });
+    toast.success("Password reset successful");
+    resetForm();
+    setVerifiedResetCode(""); // ✅ clear after success
+    setView("reset-success");
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
   // ✅ ADD: Resend OTP for signup verification
 const handleResendSignupCode = async () => {
   try {
