@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { fetchUserNotifications, markUserNotificationsRead } from "@/services/notificationService";
+import {
+  fetchUserNotifications,
+  markUserNotificationsRead,
+} from "@/services/notificationService";
 import { useNavigate } from "react-router-dom";
 
 function timeAgo(dateStr) {
@@ -15,21 +18,52 @@ function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
-export default function UserNotificationsPopover({ open, onClose, token, onUnreadChange }) {
+export default function UserNotificationsPopover({
+  open,
+  onClose,
+  token,
+  onUnreadChange,
+
+  // ✅ NEW: "popover" (desktop dropdown) | "sheet" (mobile full width)
+  variant = "popover",
+}) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [unread, setUnread] = useState(0);
 
   const load = async () => {
-    if (!token) return;
+    if (!token) {
+      setItems([]);
+      setUnread(0);
+      onUnreadChange?.(0);
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await fetchUserNotifications(token, 1, 20);
-      setItems(data.items || []);
-      setUnread(Number(data.unread || 0));
-      onUnreadChange?.(Number(data.unread || 0));
+
+      // ✅ Support multiple backend shapes safely
+      const list =
+        data?.items ||
+        data?.notifications ||
+        data?.data?.items ||
+        data?.data?.notifications ||
+        [];
+
+      const unreadCount = Number(
+        data?.unread ?? data?.data?.unread ?? data?.meta?.unread ?? 0
+      );
+
+      setItems(Array.isArray(list) ? list : []);
+      setUnread(unreadCount);
+      onUnreadChange?.(unreadCount);
     } catch {
+      // keep silent, but don't leave stale values
+      setItems([]);
+      setUnread(0);
+      onUnreadChange?.(0);
     } finally {
       setLoading(false);
     }
@@ -44,7 +78,11 @@ export default function UserNotificationsPopover({ open, onClose, token, onUnrea
     if (!token) return;
     try {
       await markUserNotificationsRead(token, { all: true });
-      const next = items.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() }));
+      const next = items.map((n) => ({
+        ...n,
+        isRead: true,
+        readAt: new Date().toISOString(),
+      }));
       setItems(next);
       setUnread(0);
       onUnreadChange?.(0);
@@ -52,23 +90,35 @@ export default function UserNotificationsPopover({ open, onClose, token, onUnrea
   };
 
   const openNotification = async (n) => {
-    if (!n.isRead && token) {
+    // mark as read
+    if (!n?.isRead && token) {
       try {
         await markUserNotificationsRead(token, { ids: [n._id] });
-        setItems((prev) => prev.map((x) => (x._id === n._id ? { ...x, isRead: true } : x)));
+
+        setItems((prev) =>
+          prev.map((x) => (x._id === n._id ? { ...x, isRead: true } : x))
+        );
+
+        // ✅ keep local unread correct
         setUnread((u) => Math.max(0, u - 1));
-        onUnreadChange?.((u) => Math.max(0, u - 1));
+        onUnreadChange?.((u) => Math.max(0, u - 1)); // supports function or value
       } catch {}
     }
 
-    if (n.link) navigate(n.link);
+    if (n?.link) navigate(n.link);
     onClose?.();
   };
 
   if (!open) return null;
 
+  // ✅ Layout classes based on variant
+  const containerClass =
+    variant === "sheet"
+      ? "w-full bg-white border rounded-2xl shadow-sm overflow-hidden"
+      : "absolute right-0 mt-2 w-[360px] bg-white border rounded-xl shadow-lg z-50 overflow-hidden";
+
   return (
-    <div className="absolute right-0 mt-2 w-[360px] bg-white border rounded-xl shadow-lg z-50 overflow-hidden">
+    <div className={containerClass}>
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <div>
           <p className="text-sm font-semibold">Notifications</p>
@@ -94,15 +144,18 @@ export default function UserNotificationsPopover({ open, onClose, token, onUnrea
         </div>
       </div>
 
-      <div className="max-h-[420px] overflow-auto">
+      <div className={variant === "sheet" ? "max-h-[60vh] overflow-auto" : "max-h-[420px] overflow-auto"}>
         {loading ? (
           <div className="p-4 text-sm text-gray-600">Loading…</div>
         ) : items.length === 0 ? (
           <div className="p-4 text-sm text-gray-600">
-            
-            <img src="../../public/Frame 2147224292.svg" alt="No notifications yet" className='flex place-self-center p-5' />
-            <p className='flex place-self-center p-5'>No notifications yet.</p>
-            </div>
+            <img
+              src="../../public/Frame 2147224292.svg"
+              alt="No notifications yet"
+              className="flex place-self-center p-5"
+            />
+            <p className="flex place-self-center p-5">No notifications yet.</p>
+          </div>
         ) : (
           <div className="divide-y">
             {items.map((n) => (
@@ -119,14 +172,22 @@ export default function UserNotificationsPopover({ open, onClose, token, onUnrea
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                      <p className="text-xs text-gray-500">{timeAgo(n.createdAt)}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {n.title || "Notification"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {n.createdAt ? timeAgo(n.createdAt) : ""}
+                      </p>
                     </div>
                     {n.message ? (
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">{n.message}</p>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        {n.message}
+                      </p>
                     ) : null}
                     {n.scope ? (
-                      <p className="text-[11px] text-gray-400 mt-1">Scope: {n.scope}</p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Scope: {n.scope}
+                      </p>
                     ) : null}
                   </div>
                 </div>

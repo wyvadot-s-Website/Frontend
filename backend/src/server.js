@@ -28,6 +28,8 @@ import paystackRoutes from "./routes/paystack.routes.js";
 import userWishlistRoutes from "./routes/user.wishlist.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import userManagementAdminRoutes from "./routes/userManagement.admin.routes.js";
+
 
 // Only load .env in development
 if (process.env.NODE_ENV !== 'production') {
@@ -43,6 +45,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin", adminHomeRoutes);
 app.use("/api/admin", projectAdminRoutes);
 app.use("/api/admin", adminProfileRoutes);
+app.use("/api/admin/user-management", userManagementAdminRoutes);
 app.use("/api", homeRoutes);
 app.use("/api", projectPublicRoute);
 app.use("/users", userRoutes);

@@ -1,3 +1,4 @@
+// src/Layout/AdminLayout.jsx
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import AdminNotificationsPopover from "@/components/AdminNotificationsPopover";
 import { fetchAdminNotifications } from "@/services/notificationService";
@@ -11,6 +12,7 @@ import {
   LogOut,
   Menu,
   Bell,
+  Users, // ✅ NEW (User Management tab icon)
 } from "lucide-react";
 
 import {
@@ -27,20 +29,36 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 
 // ✅ role -> permissions
 const ROLE_ACCESS = {
-  super_admin: { dashboard: true, content: true, shop: true, projects: true },
+  super_admin: {
+    dashboard: true,
+    content: true,
+    shop: true,
+    projects: true,
+    users: true, // ✅ NEW
+  },
 
   content_admin: {
     dashboard: true,
     content: true,
     shop: false,
     projects: false,
+    users: true, // ✅ NEW (can see users list)
   },
-  shop_admin: { dashboard: true, content: false, shop: true, projects: false },
+
+  shop_admin: {
+    dashboard: true,
+    content: false,
+    shop: true,
+    projects: false,
+    users: true, // ✅ NEW
+  },
+
   project_admin: {
     dashboard: true,
     content: false,
     shop: false,
     projects: true,
+    users: true, // ✅ NEW
   },
 
   content_shop_admin: {
@@ -48,18 +66,23 @@ const ROLE_ACCESS = {
     content: true,
     shop: true,
     projects: false,
+    users: true, // ✅ NEW
   },
+
   content_project_admin: {
     dashboard: true,
     content: true,
     shop: false,
     projects: true,
+    users: true, // ✅ NEW
   },
+
   shop_project_admin: {
     dashboard: true,
     content: false,
     shop: true,
     projects: true,
+    users: true, // ✅ NEW
   },
 };
 
@@ -105,7 +128,9 @@ function AdminLayout() {
         const data = await fetchAdminNotifications(token, 1, 1);
         if (!alive) return;
         setUnreadCount(Number(data.unread || 0));
-      } catch {}
+      } catch {
+        // ignore
+      }
     };
 
     pull();
@@ -152,13 +177,24 @@ function AdminLayout() {
       label: "Project Management",
       path: "/theboss/projects",
     },
+
+    // ✅ NEW TAB
+    {
+      key: "users",
+      icon: Users,
+      label: "User Management",
+      path: "/theboss/user-management",
+    },
   ];
 
   const menuItems = allMenuItems.filter((m) => access[m.key]);
 
+  // ✅ Better active label detection (works for nested routes too)
   const activeLabel =
-    menuItems.find((item) => item.path === location.pathname)?.label ||
-    "Dashboard";
+    menuItems.find((item) =>
+      location.pathname === item.path ||
+      location.pathname.startsWith(item.path + "/")
+    )?.label || "Dashboard";
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -188,20 +224,26 @@ function AdminLayout() {
                 Navigation
               </p>
 
-              {menuItems.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.path}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                    location.pathname === item.path
-                      ? "bg-gray-100 text-gray-900 font-medium"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <item.icon size={18} />
-                  {item.label}
-                </Link>
-              ))}
+              {menuItems.map((item, index) => {
+                const isActive =
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(item.path + "/");
+
+                return (
+                  <Link
+                    key={index}
+                    to={item.path}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                      isActive
+                        ? "bg-gray-100 text-gray-900 font-medium"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <item.icon size={18} />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </nav>
 
@@ -232,7 +274,7 @@ function AdminLayout() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem
                   onClick={() => {
-                    navigate("account");
+                    navigate("account"); // ✅ /theboss/account
                   }}
                 >
                   <User className="mr-2 h-4 w-4" />

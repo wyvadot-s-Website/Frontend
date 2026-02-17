@@ -31,6 +31,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsAndConditions from "./pages/TermsAndConditions.jsx";
 import UserAccount from "./pages/user/UserAccount.jsx";
 import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
+import UserManagement from "./pages/admin/UserManagement.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 
 function UserLayout({ children }) {
@@ -220,6 +221,7 @@ function App() {
             <Route path="content" element={<AdminContent />} />
             <Route path="services" element={<AdminShop />} />
             <Route path="projects" element={<AdminProjects />} />
+            <Route path="user-management" element={<UserManagement />} />
             <Route path="account" element={<AdminAccount />} />
             <Route
               path="service-requests/:id"

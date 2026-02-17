@@ -19,18 +19,17 @@ const ROLE_ACCESS = {
   shop_project_admin: { dashboard: true, content: false, shop: true, projects: true },
 };
 
-// ✅ These already exist in your project (from the code you pasted)
+// ✅ Existing services
 import { fetchAdminProducts, fetchAdminOrders } from "@/services/adminShopService";
 import { fetchServiceRequestsAdmin } from "@/services/serviceRequestService";
 
-// ✅ Content CMS fetchers you already have in your CMS pages
+// ✅ Content CMS fetchers you already have
 import { fetchProjectsAdmin } from "@/services/adminProjectService";
 import { fetchTeamAdmin } from "@/services/adminTeamService";
 import { fetchTestimonialsAdmin } from "@/services/adminTestimonialService";
 
-// If you already have these components and want to keep the same design,
-// you can swap the inline cards below to use them.
-// import { StatsCard } from "@/components/dashboard/StatsCard";
+// ✅ NEW: user management fetcher (users list)
+import { fetchAdminUsers } from "@/services/adminUserManagementService"; // <-- ensure this path matches your file name
 
 const formatMoney = (amount) =>
   Number(amount || 0).toLocaleString("en-NG", { style: "currency", currency: "NGN" });
@@ -102,12 +101,15 @@ export default function AdminDashboard() {
   // projects/services
   const [serviceRequests, setServiceRequests] = useState([]);
 
+  // ✅ users (for user management)
+  const [users, setUsers] = useState([]);
+
   // content
   const [contentCounts, setContentCounts] = useState({
     projects: 0,
     team: 0,
     testimonials: 0,
-    pages: 6, // Home, About, Projects, Team, Testimonials, Footer (your tabs)
+    pages: 6,
   });
 
   // ===== ROUTE PROTECT =====
@@ -127,24 +129,35 @@ export default function AdminDashboard() {
       try {
         const jobs = [];
 
+        // ✅ USERS (all admins)
+        jobs.push(
+          (async () => {
+            const res = await fetchAdminUsers(token, { page: 1, limit: 50, search: "" });
+            // support common API shapes
+            const items =
+              res?.items ||
+              res?.data?.items ||
+              res?.data ||
+              res?.users ||
+              [];
+            setUsers(Array.isArray(items) ? items : []);
+          })()
+        );
+
         // SHOP (only if allowed)
         if (access.shop) {
           jobs.push(
             (async () => {
               const prodRes = await fetchAdminProducts(token, { search: "" });
-              const prodItems = prodRes.items || prodRes.data?.items || prodRes.data || prodRes;
+              const prodItems =
+                prodRes.items || prodRes.data?.items || prodRes.data || prodRes;
               setProducts(Array.isArray(prodItems) ? prodItems : []);
 
               const orderRes = await fetchAdminOrders(token, { search: "" });
-
-const orderItems = orderRes.items || orderRes.data?.items || orderRes.data || orderRes;
-
-if (Array.isArray(orderItems) && orderItems.length > 0) {
-
-}
-
-setOrders(Array.isArray(orderItems) ? orderItems : []);
-            })(),
+              const orderItems =
+                orderRes.items || orderRes.data?.items || orderRes.data || orderRes;
+              setOrders(Array.isArray(orderItems) ? orderItems : []);
+            })()
           );
         }
 
@@ -155,7 +168,7 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
               const res = await fetchServiceRequestsAdmin(token);
               const items = res?.data || res || [];
               setServiceRequests(Array.isArray(items) ? items : []);
-            })(),
+            })()
           );
         }
 
@@ -169,10 +182,21 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
                 fetchTestimonialsAdmin(token),
               ]);
 
-              // projects admin service returns {success, data} in your CMS
-              const projectsArr = Array.isArray(pRes?.data) ? pRes.data : Array.isArray(pRes) ? pRes : [];
-              const teamArr = Array.isArray(tRes) ? tRes : Array.isArray(tRes?.data) ? tRes.data : [];
-              const testArr = Array.isArray(tesRes?.data) ? tesRes.data : Array.isArray(tesRes) ? tesRes : [];
+              const projectsArr = Array.isArray(pRes?.data)
+                ? pRes.data
+                : Array.isArray(pRes)
+                ? pRes
+                : [];
+              const teamArr = Array.isArray(tRes)
+                ? tRes
+                : Array.isArray(tRes?.data)
+                ? tRes.data
+                : [];
+              const testArr = Array.isArray(tesRes?.data)
+                ? tesRes.data
+                : Array.isArray(tesRes)
+                ? tesRes
+                : [];
 
               setContentCounts((prev) => ({
                 ...prev,
@@ -180,7 +204,7 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
                 team: teamArr.length,
                 testimonials: testArr.length,
               }));
-            })(),
+            })()
           );
         }
 
@@ -198,14 +222,11 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
   // ===== DERIVED =====
   const revenue = useMemo(() => {
     if (!Array.isArray(orders)) return 0;
-    return orders.reduce((sum, o) => sum + Number(o?.totals?.total || o?.total || 0), 0);
+    return orders.reduce(
+      (sum, o) => sum + Number(o?.totals?.total || o?.total || 0),
+      0
+    );
   }, [orders]);
-
-  const latestProducts = useMemo(() => {
-    const arr = Array.isArray(products) ? [...products] : [];
-    arr.sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
-    return arr.slice(0, 5);
-  }, [products]);
 
   const latestOrders = useMemo(() => {
     const arr = Array.isArray(orders) ? [...orders] : [];
@@ -219,9 +240,23 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
     return arr.slice(0, 5);
   }, [serviceRequests]);
 
+  const latestUsers = useMemo(() => {
+    const arr = Array.isArray(users) ? [...users] : [];
+    arr.sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
+    return arr.slice(0, 5);
+  }, [users]);
+
   // Build stat cards based on access (so roles only see their own parts)
   const statCards = useMemo(() => {
     const cards = [];
+
+    // ✅ REPLACE Content Items card with Users card (everyone sees)
+    cards.push({
+      icon: Users,
+      title: "Total Users",
+      value: String(users.length),
+      details: ["User management"],
+    });
 
     if (access.shop) {
       cards.push({
@@ -248,37 +283,25 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
       });
     }
 
-    if (access.content) {
-      const totalContentItems =
-        Number(contentCounts.pages || 0) +
-        Number(contentCounts.projects || 0) +
-        Number(contentCounts.team || 0) +
-        Number(contentCounts.testimonials || 0);
-
-      cards.push({
-        icon: Users,
-        title: "Content Items",
-        value: String(totalContentItems),
-        details: [
-          `Pages: ${contentCounts.pages}`,
-          `Projects: ${contentCounts.projects}`,
-          `Team: ${contentCounts.team}`,
-          `Testimonials: ${contentCounts.testimonials}`,
-        ],
-      });
-    }
-
     return cards;
-  }, [access.shop, access.projects, access.content, products.length, orders.length, revenue, serviceRequests.length, contentCounts]);
+  }, [
+    users.length,
+    access.shop,
+    access.projects,
+    products.length,
+    orders.length,
+    revenue,
+    serviceRequests.length,
+  ]);
 
   const colsClass =
     statCards.length >= 4
       ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
       : statCards.length === 3
-        ? "grid-cols-1 md:grid-cols-3"
-        : statCards.length === 2
-          ? "grid-cols-1 md:grid-cols-2"
-          : "grid-cols-1";
+      ? "grid-cols-1 md:grid-cols-3"
+      : statCards.length === 2
+      ? "grid-cols-1 md:grid-cols-2"
+      : "grid-cols-1";
 
   return (
     <div className="space-y-6">
@@ -294,374 +317,460 @@ setOrders(Array.isArray(orderItems) ? orderItems : []);
 
       {/* Overview sections */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-        {/* PROJECT TABLE */}
-{access.projects ? (
-  <div className="bg-white rounded-xl border p-5">
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-sm font-semibold text-gray-900">Project</h2>
-      <button
-        onClick={() => navigate("/theboss/projects")}
-        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
-      >
-        View all
-      </button>
-    </div>
 
-    {/* Desktop Table */}
-    <div className="hidden sm:block overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-gray-400 text-xs border-b">
-            <th className="pb-3 font-medium">Name</th>
-            <th className="pb-3 font-medium">Email</th>
-            <th className="pb-3 font-medium">Tel</th>
-            <th className="pb-3 font-medium">Country</th>
-            <th className="pb-3 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {latestRequests.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="py-6 text-sm text-gray-500">
-                No service requests yet.
-              </td>
-            </tr>
-          ) : (
-            latestRequests.map((r) => {
-              const status = r.stage || "Pending";
-              const statusMap = {
-                Completed: "bg-green-100 text-green-600",
-                Pending: "bg-green-100 text-green-600",
-                Active: "bg-green-100 text-green-600",
-                Execution: "bg-blue-100 text-blue-600",
-                Rejected: "bg-red-100 text-red-600",
-                "Site Visit": "bg-purple-100 text-purple-600",
-                Review: "bg-yellow-100 text-yellow-700",
-                Documentation: "bg-orange-100 text-orange-600",
-              };
-              const statusCls = statusMap[status] || "bg-green-100 text-green-600";
+        {/* ✅ RECENT USERS */}
+        <div className="bg-white rounded-xl border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-900">Recent Users</h2>
 
-              return (
-                <tr key={r._id} className="text-sm">
-                  <td className="py-3 text-gray-800">{r.contact?.name || "—"}</td>
-                  <td className="py-3 text-gray-500">{r.contact?.email || "—"}</td>
-                  <td className="py-3 text-gray-500">{r.contact?.countryCode || "—"}</td>
-                  <td className="py-3 text-gray-500">{r.contact?.tel || "—"}</td>
+            <button
+              onClick={() => navigate("/theboss/user-management")} 
+              // 👆 change this if your actual route differs
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+            >
+              View all
+            </button>
+          </div>
 
-                  <td className="py-3">
-                    <span className={`px-3 py-1 text-xs rounded-full ${statusCls}`}>
-                      {status}
-                    </span>
-                  </td>
+          {/* Desktop Table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-400 text-xs border-b">
+                  <th className="pb-3 font-medium">Name</th>
+                  <th className="pb-3 font-medium">Email</th>
+                  <th className="pb-3 font-medium">Joined</th>
                 </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+              </thead>
 
-    {/* Mobile Cards */}
-    <div className="sm:hidden space-y-3">
-      {latestRequests.length === 0 ? (
-        <p className="text-sm text-gray-500">No service requests yet.</p>
-      ) : (
-        latestRequests.map((r) => {
-          const status = r.stage || "Pending";
-          const statusMap = {
-            Completed: "bg-green-100 text-green-600",
-            Pending: "bg-green-100 text-green-600",
-            Active: "bg-green-100 text-green-600",
-            Execution: "bg-blue-100 text-blue-600",
-            Rejected: "bg-red-100 text-red-600",
-            "Site Visit": "bg-purple-100 text-purple-600",
-            Review: "bg-yellow-100 text-yellow-700",
-            Documentation: "bg-orange-100 text-orange-600",
-          };
-          const statusCls = statusMap[status] || "bg-green-100 text-green-600";
+              <tbody className="divide-y">
+                {latestUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="py-6 text-sm text-gray-500">
+                      No users yet.
+                    </td>
+                  </tr>
+                ) : (
+                  latestUsers.map((u) => {
+                    const name = [u?.firstName, u?.middleName, u?.lastName].filter(Boolean).join(" ");
+                    const joined = u?.createdAt
+                      ? new Date(u.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "—";
 
-          return (
-            <div key={r._id} className="border rounded-lg p-3">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {r.contact?.name || "—"}
-                </p>
-                <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${statusCls}`}>
-                  {status}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1 truncate">{r.contact?.email || "—"}</p>
-              <p className="text-xs text-gray-500">{r.contact?.phone || "—"} • {r.contact?.country || "—"}</p>
-            </div>
-          );
-        })
-      )}
-    </div>
-  </div>
-) : null}
-
-{/* ORDERS TABLE */}
-{access.shop ? (
-  <div className="bg-white rounded-xl border p-5">
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-sm font-semibold text-gray-900">Orders</h2>
-      <button
-        onClick={() => navigate("/theboss/services")}
-        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
-      >
-        View all
-      </button>
-    </div>
-
-    {/* Desktop Table */}
-    <div className="hidden sm:block overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-gray-400 text-xs border-b">
-            <th className="pb-3 font-medium">Name</th>
-            <th className="pb-3 font-medium">Date</th>
-            <th className="pb-3 font-medium">Product</th>
-            <th className="pb-3 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {latestOrders.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="py-6 text-sm text-gray-500">
-                No orders yet.
-              </td>
-            </tr>
-          ) : (
-            latestOrders.map((o) => {
-              const status = o.status || "processing";
-              const statusMap = {
-                processing: "bg-orange-100 text-orange-600",
-                pending: "bg-orange-100 text-orange-600",
-                pending_payment: "bg-orange-100 text-orange-600",
-                shipped: "bg-blue-100 text-blue-600",
-                delivered: "bg-green-100 text-green-600",
-                cancelled: "bg-red-100 text-red-600",
-                "still in cart": "bg-gray-100 text-gray-600",
-                "still_in_cart": "bg-gray-100 text-gray-600",
-              };
-              const statusCls = statusMap[status] || "bg-gray-100 text-gray-600";
-
-              // Format status for display: replace underscores, capitalize words
-              const displayStatus = status
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, (c) => c.toUpperCase());
-
-              const productName = o?.items?.[0]?.name || "—";
-              const createdAt = o.createdAt
-                ? new Date(o.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
+                    return (
+                      <tr key={u._id} className="text-sm">
+                        <td className="py-3 text-gray-800">{name || "—"}</td>
+                        <td className="py-3 text-gray-500">{u?.email || "—"}</td>
+                        <td className="py-3 text-gray-500">{joined}</td>
+                      </tr>
+                    );
                   })
-                : "—";
+                )}
+              </tbody>
+            </table>
+          </div>
 
-              return (
-                <tr key={o._id} className="text-sm">
-                  <td className="py-3 text-gray-800">{o?.customer?.fullName || "—"}</td>
-                  <td className="py-3 text-gray-500">{createdAt}</td>
-                  <td className="py-3 text-gray-500">{productName}</td>
-                  <td className="py-3">
-                    <span className={`px-3 py-1 text-xs rounded-full ${statusCls}`}>
-                      {displayStatus}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+          {/* Mobile Cards */}
+          <div className="sm:hidden space-y-3">
+            {latestUsers.length === 0 ? (
+              <p className="text-sm text-gray-500">No users yet.</p>
+            ) : (
+              latestUsers.map((u) => {
+                const name = [u?.firstName, u?.middleName, u?.lastName].filter(Boolean).join(" ");
+                const joined = u?.createdAt
+                  ? new Date(u.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "—";
 
-    {/* Mobile Cards */}
-    <div className="sm:hidden space-y-3">
-      {latestOrders.length === 0 ? (
-        <p className="text-sm text-gray-500">No orders yet.</p>
-      ) : (
-        latestOrders.map((o) => {
-          const status = o.status || "processing";
-          const statusMap = {
-            processing: "bg-orange-100 text-orange-600",
-            pending: "bg-orange-100 text-orange-600",
-            pending_payment: "bg-orange-100 text-orange-600",
-            shipped: "bg-blue-100 text-blue-600",
-            delivered: "bg-green-100 text-green-600",
-            cancelled: "bg-red-100 text-red-600",
-            "still in cart": "bg-gray-100 text-gray-600",
-            "still_in_cart": "bg-gray-100 text-gray-600",
-          };
-          const statusCls = statusMap[status] || "bg-gray-100 text-gray-600";
-          const displayStatus = status
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-
-          const productName = o?.items?.[0]?.name || "—";
-          const createdAt = o.createdAt
-            ? new Date(o.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
+                return (
+                  <div key={u._id} className="border rounded-lg p-3">
+                    <p className="text-sm font-medium text-gray-900 truncate">{name || "—"}</p>
+                    <p className="text-xs text-gray-500 truncate mt-1">{u?.email || "—"}</p>
+                    <p className="text-xs text-gray-500 mt-1">Joined: {joined}</p>
+                  </div>
+                );
               })
-            : "—";
+            )}
+          </div>
+        </div>
 
-          return (
-            <div key={o._id} className="border rounded-lg p-3">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium text-gray-900 truncate">
-  {o?.customer?.fullName || "—"}
-</p>
-                <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${statusCls}`}>
-                  {displayStatus}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">{productName}</p>
-              <p className="text-xs text-gray-500">{createdAt}</p>
+        {/* PROJECT TABLE */}
+        {access.projects ? (
+          <div className="bg-white rounded-xl border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">Project</h2>
+              <button
+                onClick={() => navigate("/theboss/projects")}
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+              >
+                View all
+              </button>
             </div>
-          );
-        })
-      )}
-    </div>
-  </div>
-) : null}
+
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-400 text-xs border-b">
+                    <th className="pb-3 font-medium">Name</th>
+                    <th className="pb-3 font-medium">Email</th>
+                    <th className="pb-3 font-medium">Tel</th>
+                    <th className="pb-3 font-medium">Country</th>
+                    <th className="pb-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {latestRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-sm text-gray-500">
+                        No service requests yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    latestRequests.map((r) => {
+                      const status = r.stage || "Pending";
+                      const statusMap = {
+                        Completed: "bg-green-100 text-green-600",
+                        Pending: "bg-green-100 text-green-600",
+                        Active: "bg-green-100 text-green-600",
+                        Execution: "bg-blue-100 text-blue-600",
+                        Rejected: "bg-red-100 text-red-600",
+                        "Site Visit": "bg-purple-100 text-purple-600",
+                        Review: "bg-yellow-100 text-yellow-700",
+                        Documentation: "bg-orange-100 text-orange-600",
+                      };
+                      const statusCls = statusMap[status] || "bg-green-100 text-green-600";
+
+                      return (
+                        <tr key={r._id} className="text-sm">
+                          <td className="py-3 text-gray-800">{r.contact?.name || "—"}</td>
+                          <td className="py-3 text-gray-500">{r.contact?.email || "—"}</td>
+                          <td className="py-3 text-gray-500">{r.contact?.countryCode || "—"}</td>
+                          <td className="py-3 text-gray-500">{r.contact?.tel || "—"}</td>
+
+                          <td className="py-3">
+                            <span className={`px-3 py-1 text-xs rounded-full ${statusCls}`}>
+                              {status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-3">
+              {latestRequests.length === 0 ? (
+                <p className="text-sm text-gray-500">No service requests yet.</p>
+              ) : (
+                latestRequests.map((r) => {
+                  const status = r.stage || "Pending";
+                  const statusMap = {
+                    Completed: "bg-green-100 text-green-600",
+                    Pending: "bg-green-100 text-green-600",
+                    Active: "bg-green-100 text-green-600",
+                    Execution: "bg-blue-100 text-blue-600",
+                    Rejected: "bg-red-100 text-red-600",
+                    "Site Visit": "bg-purple-100 text-purple-600",
+                    Review: "bg-yellow-100 text-yellow-700",
+                    Documentation: "bg-orange-100 text-orange-600",
+                  };
+                  const statusCls = statusMap[status] || "bg-green-100 text-green-600";
+
+                  return (
+                    <div key={r._id} className="border rounded-lg p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {r.contact?.name || "—"}
+                        </p>
+                        <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${statusCls}`}>
+                          {status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 truncate">{r.contact?.email || "—"}</p>
+                      <p className="text-xs text-gray-500">
+                        {r.contact?.phone || "—"} • {r.contact?.country || "—"}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {/* ORDERS TABLE */}
+        {access.shop ? (
+          <div className="bg-white rounded-xl border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">Orders</h2>
+              <button
+                onClick={() => navigate("/theboss/services")}
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+              >
+                View all
+              </button>
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-400 text-xs border-b">
+                    <th className="pb-3 font-medium">Name</th>
+                    <th className="pb-3 font-medium">Date</th>
+                    <th className="pb-3 font-medium">Product</th>
+                    <th className="pb-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {latestOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-6 text-sm text-gray-500">
+                        No orders yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    latestOrders.map((o) => {
+                      const status = o.status || "processing";
+                      const statusMap = {
+                        processing: "bg-orange-100 text-orange-600",
+                        pending: "bg-orange-100 text-orange-600",
+                        pending_payment: "bg-orange-100 text-orange-600",
+                        shipped: "bg-blue-100 text-blue-600",
+                        delivered: "bg-green-100 text-green-600",
+                        cancelled: "bg-red-100 text-red-600",
+                        "still in cart": "bg-gray-100 text-gray-600",
+                        still_in_cart: "bg-gray-100 text-gray-600",
+                      };
+                      const statusCls = statusMap[status] || "bg-gray-100 text-gray-600";
+
+                      const displayStatus = String(status)
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+                      const productName = o?.items?.[0]?.name || "—";
+                      const createdAt = o.createdAt
+                        ? new Date(o.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "—";
+
+                      return (
+                        <tr key={o._id} className="text-sm">
+                          <td className="py-3 text-gray-800">{o?.customer?.fullName || "—"}</td>
+                          <td className="py-3 text-gray-500">{createdAt}</td>
+                          <td className="py-3 text-gray-500">{productName}</td>
+                          <td className="py-3">
+                            <span className={`px-3 py-1 text-xs rounded-full ${statusCls}`}>
+                              {displayStatus}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-3">
+              {latestOrders.length === 0 ? (
+                <p className="text-sm text-gray-500">No orders yet.</p>
+              ) : (
+                latestOrders.map((o) => {
+                  const status = o.status || "processing";
+                  const statusMap = {
+                    processing: "bg-orange-100 text-orange-600",
+                    pending: "bg-orange-100 text-orange-600",
+                    pending_payment: "bg-orange-100 text-orange-600",
+                    shipped: "bg-blue-100 text-blue-600",
+                    delivered: "bg-green-100 text-green-600",
+                    cancelled: "bg-red-100 text-red-600",
+                    "still in cart": "bg-gray-100 text-gray-600",
+                    still_in_cart: "bg-gray-100 text-gray-600",
+                  };
+                  const statusCls = statusMap[status] || "bg-gray-100 text-gray-600";
+
+                  const displayStatus = String(status)
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+                  const productName = o?.items?.[0]?.name || "—";
+                  const createdAt = o.createdAt
+                    ? new Date(o.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—";
+
+                  return (
+                    <div key={o._id} className="border rounded-lg p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {o?.customer?.fullName || "—"}
+                        </p>
+                        <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${statusCls}`}>
+                          {displayStatus}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{productName}</p>
+                      <p className="text-xs text-gray-500">{createdAt}</p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        ) : null}
 
         {/* PROJECT/SERVICE OVERVIEW */}
-{access.projects ? (
-  <div className="bg-white rounded-xl border p-5">
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-sm font-semibold text-gray-900">Forms</h2>
-      <button
-        onClick={() => navigate("/theboss/projects")}
-        className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
-      >
-        View all
-      </button>
-    </div>
-
-    {/* Desktop Table */}
-    <div className="hidden sm:block overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-gray-400 text-xs border-b">
-            <th className="pb-3 font-medium">Forms</th>
-            <th className="pb-3 font-medium">Email</th>
-            <th className="pb-3 font-medium">Form Type</th>
-            <th className="pb-3 font-medium">Submitted</th>
-            <th className="pb-3 font-medium">Action</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {latestRequests.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="py-6 text-sm text-gray-500">
-                No service requests yet.
-              </td>
-            </tr>
-          ) : (
-            latestRequests.map((r) => {
-              const submittedDate = r.createdAt
-                ? new Date(r.createdAt).toLocaleDateString("en-US", {
-                    month: "2-digit",
-                    day: "2-digit",
-                    year: "numeric",
-                  })
-                : "—";
-              
-              const submittedTime = r.createdAt
-                ? new Date(r.createdAt).toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
-                : "";
-
-              return (
-                <tr key={r._id} className="text-sm">
-                  <td className="py-3 text-gray-800">{r.projectId || "—"}</td>
-                  <td className="py-3 text-gray-500">{r.contact?.email || "—"}</td>
-                  <td className="py-3">
-                    <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700">
-                      Contact Info
-                    </span>
-                  </td>
-                  <td className="py-3 text-gray-500">
-                    {submittedDate} {submittedTime}
-                  </td>
-                  <td className="py-3">
-                    <Button
-  onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
-  className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
->
-  Details
-</Button>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
-
-    {/* Mobile Cards */}
-    <div className="sm:hidden space-y-3">
-      {latestRequests.length === 0 ? (
-        <p className="text-sm text-gray-500">No service requests yet.</p>
-      ) : (
-        latestRequests.map((r) => {
-          const submittedDate = r.createdAt
-            ? new Date(r.createdAt).toLocaleDateString("en-US", {
-                month: "2-digit",
-                day: "2-digit",
-                year: "numeric",
-              })
-            : "—";
-          
-          const submittedTime = r.createdAt
-            ? new Date(r.createdAt).toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })
-            : "";
-
-          return (
-            <div key={r._id} className="border rounded-lg p-3">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {r.projectId || "—"}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">
-                    {r.contact?.email || "—"}
-                  </p>
-                </div>
-                <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700 flex-shrink-0">
-                  Contact Info
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mb-2">
-                {submittedDate} {submittedTime}
-              </p>
-              <Button
-  onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
-  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
->
-  Details
-</Button>
+        {access.projects ? (
+          <div className="bg-white rounded-xl border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">Forms</h2>
+              <button
+                onClick={() => navigate("/theboss/projects")}
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+              >
+                View all
+              </button>
             </div>
-          );
-        })
-      )}
-    </div>
-  </div>
-) : null}
 
-        {/* CONTENT OVERVIEW */}
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-400 text-xs border-b">
+                    <th className="pb-3 font-medium">Forms</th>
+                    <th className="pb-3 font-medium">Email</th>
+                    <th className="pb-3 font-medium">Form Type</th>
+                    <th className="pb-3 font-medium">Submitted</th>
+                    <th className="pb-3 font-medium">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {latestRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-sm text-gray-500">
+                        No service requests yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    latestRequests.map((r) => {
+                      const submittedDate = r.createdAt
+                        ? new Date(r.createdAt).toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          })
+                        : "—";
+
+                      const submittedTime = r.createdAt
+                        ? new Date(r.createdAt).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                        : "";
+
+                      return (
+                        <tr key={r._id} className="text-sm">
+                          <td className="py-3 text-gray-800">{r.projectId || "—"}</td>
+                          <td className="py-3 text-gray-500">{r.contact?.email || "—"}</td>
+                          <td className="py-3">
+                            <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700">
+                              Contact Info
+                            </span>
+                          </td>
+                          <td className="py-3 text-gray-500">
+                            {submittedDate} {submittedTime}
+                          </td>
+                          <td className="py-3">
+                            <Button
+                              onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
+                              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+                            >
+                              Details
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-3">
+              {latestRequests.length === 0 ? (
+                <p className="text-sm text-gray-500">No service requests yet.</p>
+              ) : (
+                latestRequests.map((r) => {
+                  const submittedDate = r.createdAt
+                    ? new Date(r.createdAt).toLocaleDateString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
+                    : "—";
+
+                  const submittedTime = r.createdAt
+                    ? new Date(r.createdAt).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "";
+
+                  return (
+                    <div key={r._id} className="border rounded-lg p-3">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {r.projectId || "—"}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate mt-0.5">
+                            {r.contact?.email || "—"}
+                          </p>
+                        </div>
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700 flex-shrink-0">
+                          Contact Info
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">
+                        {submittedDate} {submittedTime}
+                      </p>
+                      <Button
+                        onClick={() => navigate(`/theboss/service-requests/${r._id}`)}
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg"
+                      >
+                        Details
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {/* ✅ KEEP Content Overview section as-is */}
         {access.content ? (
           <SectionCard
             title="Content Overview"

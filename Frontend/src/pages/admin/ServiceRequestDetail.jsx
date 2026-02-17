@@ -3,11 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-
-import {
-  fetchServiceRequestByIdAdmin,
-} from "@/services/serviceRequestService";
-
+import { fetchServiceRequestByIdAdmin } from "@/services/serviceRequestService";
 import UpdateServiceRequestModal from "@/components/admin/UpdateServiceRequestModal";
 
 function StagePill({ stage }) {
@@ -20,14 +16,66 @@ function StagePill({ stage }) {
     "Site Visit": "bg-purple-100 text-purple-700",
     Review: "bg-yellow-100 text-yellow-700",
   };
-
   const cls = map[stage] || "bg-gray-100 text-gray-700";
-
   return (
     <span className={`px-2 py-1 rounded text-xs font-medium ${cls}`}>
       {stage}
     </span>
   );
+}
+
+/** Optional nicer labels (add more anytime) */
+const LABELS = {
+  project_management_resourcing: {
+    pm_service: "Project management service needed",
+    pm_budget: "Estimated budget range",
+    pm_resourcing: "Key roles needed",
+    pm_financing: "Financing/permits secured?",
+  },
+  core_engineering_construction: {
+    ce_description: "Project description",
+    ce_design: "Design details / plan",
+    ce_cost: "Estimated cost/budget",
+    ce_materials: "Materials preference / availability",
+  },
+};
+
+function humanizeKey(key, serviceType) {
+  const map = LABELS[serviceType];
+  if (map?.[key]) return map[key];
+
+  // remove prefix like "pm_" or "ce_"
+  const parts = String(key || "").split("_");
+  const text = parts.length > 1 ? parts.slice(1).join(" ") : parts.join(" ");
+  return text
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function isPlainObject(v) {
+  return v && typeof v === "object" && !Array.isArray(v);
+}
+
+function renderValue(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (typeof v === "number") return String(v);
+  if (typeof v === "string") return v;
+
+  if (Array.isArray(v)) {
+    if (v.length === 0) return "—";
+    const primitives = v.every(
+      (x) => ["string", "number", "boolean"].includes(typeof x) || x == null
+    );
+    if (primitives) return v.map((x) => renderValue(x)).join(", ");
+    return JSON.stringify(v, null, 2);
+  }
+
+  if (isPlainObject(v)) return JSON.stringify(v, null, 2);
+
+  return String(v);
 }
 
 export default function ServiceRequestDetail() {
@@ -37,7 +85,6 @@ export default function ServiceRequestDetail() {
 
   const [reqData, setReqData] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [updateOpen, setUpdateOpen] = useState(false);
 
   const load = async () => {
@@ -47,9 +94,14 @@ export default function ServiceRequestDetail() {
     setLoading(true);
     try {
       const result = await fetchServiceRequestByIdAdmin(id, token);
-      setReqData(result?.data || null);
+
+      // ✅ IMPORTANT: your service returns JSON already (wrapper)
+      // Most likely: { success: true, data: doc }
+      const doc = result?.data || result?.serviceRequest || result;
+
+      setReqData(doc || null);
     } catch (err) {
-      toast.error(err.message || "Failed to load service request");
+      toast.error(err?.message || "Failed to load service request");
     } finally {
       setLoading(false);
     }
@@ -73,8 +125,27 @@ export default function ServiceRequestDetail() {
     );
   }
 
-  const details = reqData.details || {};
   const contact = reqData.contact || {};
+  const serviceType = reqData.serviceType || "unknown";
+
+  // ✅ details might be object OR string (defensive)
+  const detailsRaw = reqData.details;
+  const details =
+    typeof detailsRaw === "string"
+      ? (() => {
+          try {
+            return JSON.parse(detailsRaw);
+          } catch {
+            return {};
+          }
+        })()
+      : (detailsRaw || {});
+
+  const detailEntries =
+  details && typeof details === "object"
+    ? Object.entries(details).filter(([k]) => k !== "__v")
+    : [];
+
 
   return (
     <div className="p-6">
@@ -134,19 +205,29 @@ export default function ServiceRequestDetail() {
       <div className="border rounded-lg p-4 mb-6">
         <h2 className="font-semibold mb-3">Contact Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div><span className="text-gray-500">Name:</span> {contact.name}</div>
-          <div><span className="text-gray-500">Email:</span> {contact.email}</div>
-          <div><span className="text-gray-500">Tel:</span> {contact.tel}</div>
+          <div>
+            <span className="text-gray-500">Name:</span> {contact.name}
+          </div>
+          <div>
+            <span className="text-gray-500">Email:</span> {contact.email}
+          </div>
+          <div>
+            <span className="text-gray-500">Tel:</span> {contact.tel}
+          </div>
           <div>
             <span className="text-gray-500">Company:</span>{" "}
             {contact.companyName || "—"}
           </div>
-          <div><span className="text-gray-500">Location:</span> {reqData.location}</div>
+          <div>
+            <span className="text-gray-500">Location:</span> {reqData.location}
+          </div>
           <div>
             <span className="text-gray-500">Address:</span>{" "}
             {reqData.locationAddress || "—"}
           </div>
-          <div><span className="text-gray-500">Timeline:</span> {reqData.timeline}</div>
+          <div>
+            <span className="text-gray-500">Timeline:</span> {reqData.timeline}
+          </div>
         </div>
       </div>
 
@@ -158,40 +239,40 @@ export default function ServiceRequestDetail() {
         </p>
       </div>
 
-      {/* Service-Specific Answers (PMR for now) */}
-      {reqData.serviceType === "project_management_resourcing" && (
-        <div className="border rounded-lg p-4 mb-6">
-          <h2 className="font-semibold mb-3">Project Management & Resourcing</h2>
-
-          <div className="space-y-3 text-sm text-gray-800">
-            <div>
-              <p className="text-gray-500">
-                What specific project management services are you currently seeking?
-              </p>
-              <p className="mt-1">{details.pm_service || "—"}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">Estimated budget range?</p>
-              <p className="mt-1">{details.pm_budget || "—"}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">
-                If seeking Human Resource/Resourcing/Consultation, what key roles?
-              </p>
-              <p className="mt-1">{details.pm_resourcing || "—"}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">
-                Have you secured financing or necessary permits?
-              </p>
-              <p className="mt-1">{details.pm_financing || "—"}</p>
-            </div>
-          </div>
+      {/* ✅ Service Answers (GENERIC for all service types) */}
+      <div className="border rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold">Service Answers</h2>
+          <span className="text-xs text-gray-500">{serviceType}</span>
         </div>
-      )}
+
+        {detailEntries.length === 0 ? (
+          <p className="text-sm text-gray-600">No service-specific answers.</p>
+        ) : (
+          <div className="space-y-3 text-sm text-gray-800">
+            {detailEntries.map(([key, value]) => {
+              const label = humanizeKey(key, serviceType);
+              const isJson =
+                isPlainObject(value) ||
+                (Array.isArray(value) &&
+                  value.some((x) => typeof x === "object" && x !== null));
+
+              return (
+                <div key={key}>
+                  <p className="text-gray-500">{label}</p>
+                  {isJson ? (
+                    <pre className="mt-1 whitespace-pre-wrap bg-gray-50 border rounded p-2 text-xs text-gray-800">
+                      {renderValue(value)}
+                    </pre>
+                  ) : (
+                    <p className="mt-1">{renderValue(value)}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Admin Notes */}
       <div className="border rounded-lg p-4">
@@ -208,9 +289,9 @@ export default function ServiceRequestDetail() {
         token={token}
         request={reqData}
         onUpdated={(updated) => {
-          // updated may come wrapped; normalize:
-          const next = updated?.data ? updated.data : updated;
-          setReqData(next);
+          // ✅ updated likely comes back as wrapper too
+          const doc = updated?.data || updated?.serviceRequest || updated;
+          setReqData(doc);
         }}
       />
     </div>
