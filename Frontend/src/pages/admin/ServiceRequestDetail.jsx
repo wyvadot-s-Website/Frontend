@@ -44,7 +44,6 @@ function humanizeKey(key, serviceType) {
   const map = LABELS[serviceType];
   if (map?.[key]) return map[key];
 
-  // remove prefix like "pm_" or "ce_"
   const parts = String(key || "").split("_");
   const text = parts.length > 1 ? parts.slice(1).join(" ") : parts.join(" ");
   return text
@@ -94,11 +93,7 @@ export default function ServiceRequestDetail() {
     setLoading(true);
     try {
       const result = await fetchServiceRequestByIdAdmin(id, token);
-
-      // ✅ IMPORTANT: your service returns JSON already (wrapper)
-      // Most likely: { success: true, data: doc }
       const doc = result?.data || result?.serviceRequest || result;
-
       setReqData(doc || null);
     } catch (err) {
       toast.error(err?.message || "Failed to load service request");
@@ -114,7 +109,7 @@ export default function ServiceRequestDetail() {
 
   if (loading || !reqData) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="text-sm text-gray-600">
           {loading ? "Loading..." : "No data found."}
         </div>
@@ -128,7 +123,6 @@ export default function ServiceRequestDetail() {
   const contact = reqData.contact || {};
   const serviceType = reqData.serviceType || "unknown";
 
-  // ✅ details might be object OR string (defensive)
   const detailsRaw = reqData.details;
   const details =
     typeof detailsRaw === "string"
@@ -139,36 +133,47 @@ export default function ServiceRequestDetail() {
             return {};
           }
         })()
-      : (detailsRaw || {});
+      : detailsRaw || {};
 
   const detailEntries =
-  details && typeof details === "object"
-    ? Object.entries(details).filter(([k]) => k !== "__v")
-    : [];
+    details && typeof details === "object"
+      ? Object.entries(details).filter(([k]) => k !== "__v")
+      : [];
 
+  const progressPercent = Math.max(0, Math.min(100, Number(reqData.progress ?? 0)));
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs text-gray-500">Service Request</p>
-          <h1 className="text-2xl font-semibold">{reqData.title}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold break-words">
+            {reqData.title}
+          </h1>
 
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-sm text-gray-700">{reqData.projectId}</span>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span className="text-sm text-gray-700 break-all">
+              {reqData.projectId}
+            </span>
             <StagePill stage={reqData.stage} />
           </div>
 
-          <p className="text-sm text-gray-600 mt-2">{reqData.serviceName}</p>
+          <p className="text-sm text-gray-600 mt-2 break-words">
+            {reqData.serviceName}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate(-1)}>
+        <div className="flex w-full sm:w-auto items-center gap-2">
+          <Button
+            variant="outline"
+            className="flex-1 sm:flex-none"
+            onClick={() => navigate(-1)}
+          >
             Back
           </Button>
           <Button
-            className="bg-[#FF8D28] hover:bg-orange-600 text-white"
+            className="flex-1 sm:flex-none bg-[#FF8D28] hover:bg-orange-600 text-white"
             onClick={() => setUpdateOpen(true)}
           >
             Update
@@ -177,24 +182,25 @@ export default function ServiceRequestDetail() {
       </div>
 
       {/* Progress block */}
-      <div className="border rounded-lg p-4 mb-6">
+      <div className="border rounded-xl p-4 mb-6">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium">Progress</p>
-          <p className="text-sm">{reqData.progress || 0}%</p>
+          <p className="text-sm">{progressPercent}%</p>
         </div>
+
         <div className="h-2 bg-gray-200 rounded mt-2">
           <div
             className="h-2 bg-black rounded"
-            style={{ width: `${reqData.progress || 0}%` }}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
 
-        <div className="flex items-center gap-3 mt-3 text-sm text-gray-700">
-          <div>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
+          <div className="break-words">
             <span className="text-gray-500">Project Stage:</span>{" "}
-            {reqData.projectStage}
+            {reqData.projectStage || "—"}
           </div>
-          <div>
+          <div className="break-words">
             <span className="text-gray-500">Manager:</span>{" "}
             {reqData?.assignedAdmin?.name || "Unassigned"}
           </div>
@@ -202,54 +208,60 @@ export default function ServiceRequestDetail() {
       </div>
 
       {/* Contact Details */}
-      <div className="border rounded-lg p-4 mb-6">
+      <div className="border rounded-xl p-4 mb-6">
         <h2 className="font-semibold mb-3">Contact Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div>
-            <span className="text-gray-500">Name:</span> {contact.name}
+
+        {/* Mobile-first: single column. Sm+: 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="break-words">
+            <span className="text-gray-500">Name:</span> {contact.name || "—"}
           </div>
-          <div>
-            <span className="text-gray-500">Email:</span> {contact.email}
+          <div className="break-words">
+            <span className="text-gray-500">Email:</span> {contact.email || "—"}
           </div>
-          <div>
-            <span className="text-gray-500">Tel:</span> {contact.tel}
+          <div className="break-words">
+            <span className="text-gray-500">Tel:</span> {contact.tel || "—"}
           </div>
-          <div>
+          <div className="break-words">
             <span className="text-gray-500">Company:</span>{" "}
             {contact.companyName || "—"}
           </div>
-          <div>
-            <span className="text-gray-500">Location:</span> {reqData.location}
+          <div className="break-words">
+            <span className="text-gray-500">Location:</span>{" "}
+            {reqData.location || "—"}
           </div>
-          <div>
+          <div className="break-words">
             <span className="text-gray-500">Address:</span>{" "}
             {reqData.locationAddress || "—"}
           </div>
-          <div>
-            <span className="text-gray-500">Timeline:</span> {reqData.timeline}
+
+          {/* Let Timeline span full width on small screens for cleaner layout */}
+          <div className="sm:col-span-2 break-words">
+            <span className="text-gray-500">Timeline:</span>{" "}
+            {reqData.timeline || "—"}
           </div>
         </div>
       </div>
 
       {/* Project Scope */}
-      <div className="border rounded-lg p-4 mb-6">
+      <div className="border rounded-xl p-4 mb-6">
         <h2 className="font-semibold mb-3">Project Scope</h2>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">
-          {reqData.projectScope}
+        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+          {reqData.projectScope || "—"}
         </p>
       </div>
 
-      {/* ✅ Service Answers (GENERIC for all service types) */}
-      <div className="border rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
+      {/* Service Answers */}
+      <div className="border rounded-xl p-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
           <h2 className="font-semibold">Service Answers</h2>
-          <span className="text-xs text-gray-500">{serviceType}</span>
+          <span className="text-xs text-gray-500 break-all">{serviceType}</span>
         </div>
 
         {detailEntries.length === 0 ? (
           <p className="text-sm text-gray-600">No service-specific answers.</p>
         ) : (
-          <div className="space-y-3 text-sm text-gray-800">
+          <div className="space-y-4 text-sm text-gray-800">
             {detailEntries.map(([key, value]) => {
               const label = humanizeKey(key, serviceType);
               const isJson =
@@ -258,14 +270,18 @@ export default function ServiceRequestDetail() {
                   value.some((x) => typeof x === "object" && x !== null));
 
               return (
-                <div key={key}>
-                  <p className="text-gray-500">{label}</p>
+                <div
+                  key={key}
+                  className="rounded-lg border bg-white p-3"
+                >
+                  <p className="text-gray-500 text-xs sm:text-sm">{label}</p>
+
                   {isJson ? (
-                    <pre className="mt-1 whitespace-pre-wrap bg-gray-50 border rounded p-2 text-xs text-gray-800">
+                    <pre className="mt-2 whitespace-pre-wrap break-words bg-gray-50 border rounded p-2 text-xs text-gray-800 overflow-x-auto">
                       {renderValue(value)}
                     </pre>
                   ) : (
-                    <p className="mt-1">{renderValue(value)}</p>
+                    <p className="mt-2 break-words">{renderValue(value)}</p>
                   )}
                 </div>
               );
@@ -275,9 +291,9 @@ export default function ServiceRequestDetail() {
       </div>
 
       {/* Admin Notes */}
-      <div className="border rounded-lg p-4">
+      <div className="border rounded-xl p-4">
         <h2 className="font-semibold mb-3">Update Note</h2>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
           {reqData.adminNotes || "—"}
         </p>
       </div>
@@ -289,7 +305,6 @@ export default function ServiceRequestDetail() {
         token={token}
         request={reqData}
         onUpdated={(updated) => {
-          // ✅ updated likely comes back as wrapper too
           const doc = updated?.data || updated?.serviceRequest || updated;
           setReqData(doc);
         }}
