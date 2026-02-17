@@ -7,6 +7,7 @@ import {
   forgotPassword,
   verifyResetCode,
   resetPassword,
+  resendVerificationCode,  // ✅ ADD THIS
 } from "../controllers/userController.js";
 import {
   updateProfile,
@@ -27,6 +28,8 @@ router.post("/verify-reset-code", verifyResetCode);
 router.post("/reset-password", resetPassword);
 router.put("/profile", userAuthMiddleware, updateProfile);
 router.put("/change-password", userAuthMiddleware, changePassword);
+// userRoutes.js - ADD
+router.post("/resend-verification", resendVerificationCode);
 
 // protected route
 router.get("/me", userAuthMiddleware, (req, res) => {

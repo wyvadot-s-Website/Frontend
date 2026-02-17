@@ -17,6 +17,9 @@ function VerifyResetView({
   handleVerificationChange,
   handleVerify,
   backToForgot,
+  onResendCode,
+  verifyError,
+  resendCooldown =0,
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -52,12 +55,20 @@ function VerifyResetView({
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-red-500 mb-2">
-              Invalid code, retry again
-            </p>
-            <button className="text-sm text-orange-500 hover:underline">
-              Resend code
-            </button>
+            {verifyError && (
+  <p className="text-sm text-red-500 mb-2">{verifyError}</p>
+)}
+<button
+  onClick={onResendCode}
+  disabled={resendCooldown > 0}  // ✅ disable during cooldown
+  className={`text-sm hover:underline ${
+    resendCooldown > 0 
+      ? 'text-gray-400 cursor-not-allowed' 
+      : 'text-orange-500'
+  }`}
+>
+  {resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code'}
+</button>
           </div>
 
           <Button

@@ -17,6 +17,8 @@ function VerifyEmailView({
   handleVerificationChange,
   handleVerify,
   backToSignup,
+  onResendCode,
+  resendCooldown =0,
 }) {
   const handleChange = (e, index) => {
     const value = e.target.value;
@@ -74,10 +76,18 @@ function VerifyEmailView({
           </div>
 
           <div className="text-center">
-            <button className="text-sm text-orange-500 hover:underline">
-              Resend code
-            </button>
-          </div>
+  <button
+    onClick={onResendCode}
+    disabled={resendCooldown > 0}
+    className={`text-sm hover:underline ${
+      resendCooldown > 0
+        ? 'text-gray-400 cursor-not-allowed'
+        : 'text-orange-500'
+    }`}
+  >
+    {resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code'}
+  </button>
+</div>
 
           <Button
             onClick={handleVerify}

@@ -11,6 +11,7 @@ import ForgotPasswordView from "../components/auth/ForgotPasswordView.jsx";
 import VerifyResetView from "../components/auth/VerifyResetView.jsx";
 import ResetSuccessView from "../components/auth/ResetSuccessView.jsx";
 
+
 import {
   signupUser,
   verifyUserEmail,
@@ -19,6 +20,7 @@ import {
   forgotPassword,
   verifyResetCode,
   resetPassword,
+  resendVerificationCode,
 } from "@/services/userService";
 
 // In initialFormState in AuthModal.jsx
@@ -55,6 +57,18 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   ]);
 
   const [formData, setFormData] = useState(initialFormState);
+  const [verifyResetError, setVerifyResetError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  const startCooldown = () => {
+  setResendCooldown(60); // 60 seconds
+  const timer = setInterval(() => {
+    setResendCooldown((prev) => {
+      if (prev <= 1) { clearInterval(timer); return 0; }
+      return prev - 1;
+    });
+  }, 1000);
+};
 
   // ===============================
   // RESET FORM
@@ -211,20 +225,22 @@ const handleSignUp = async () => {
   };
 
   const handleVerifyReset = async () => {
-    try {
-      setLoading(true);
-      await verifyResetCode({
-        email: formData.email,
-        code: verificationCode.join(""),
-      });
-      setVerificationCode(["", "", "", "", "", ""]);
-      setView("reset");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setVerifyResetError(""); // ✅ clear previous error
+    await verifyResetCode({
+      email: formData.email,
+      code: verificationCode.join(""),
+    });
+    setVerificationCode(["", "", "", "", "", ""]);
+    setView("reset");
+  } catch (err) {
+    setVerifyResetError("Invalid code, please try again"); // ✅ set on failure
+    toast.error(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleResetPassword = async () => {
     try {
@@ -243,7 +259,33 @@ const handleSignUp = async () => {
       setLoading(false);
     }
   };
+  // ✅ ADD: Resend OTP for signup verification
+const handleResendSignupCode = async () => {
+  try {
+    setLoading(true);
+    await resendVerificationCode(formData.email); // ✅ use dedicated endpoint
+    toast.success("Verification code resent to your email");
+    startCooldown();
+  } catch (err) {
+    toast.error(err.message || "Failed to resend code");
+  } finally {
+    setLoading(false);
+  }
+};
 
+// ✅ ADD: Resend OTP for password reset
+const handleResendResetCode = async () => {
+  try {
+    setLoading(true);
+    await forgotPassword(formData.email);
+    toast.success("Reset code resent to your email");
+    startCooldown();
+  } catch (err) {
+    toast.error(err.message || "Failed to resend code");
+  } finally {
+    setLoading(false);
+  }
+};
   // ===============================
   // VIEW RENDERING
   // ===============================
@@ -279,6 +321,8 @@ const handleSignUp = async () => {
         verificationCode={verificationCode}
         handleVerificationChange={handleVerificationChange}
         handleVerify={handleVerifySignup}
+        onResendCode={handleResendSignupCode}
+        resendCooldown={resendCooldown}
       />
     );
 
@@ -319,8 +363,26 @@ const handleSignUp = async () => {
         verificationCode={verificationCode}
         handleVerificationChange={handleVerificationChange}
         handleVerify={handleVerifyReset}
+        formData={formData}         
+      onResendCode={handleResendResetCode}  
+      verifyError={verifyResetError}
+      resendCooldown={resendCooldown}
       />
     );
+
+    if (view === "reset")
+  return (
+    <ForgotPasswordView
+      isOpen={isOpen}
+      onClose={onClose}
+      formData={formData}
+      handleChange={handleChange}
+      handleContinue={handleResetPassword}  // ✅ calls reset, not forgot
+      backToLogin={() => setView("login")}
+      isReset={true}
+      
+    />
+  );
 
   if (view === "reset-success")
     return (
@@ -331,6 +393,8 @@ const handleSignUp = async () => {
         continueToLogin={() => setView("login")}
       />
     );
+    // ✅ ADD THIS - it's completely missing
+
 
   return null;
 }

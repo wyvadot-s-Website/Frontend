@@ -323,3 +323,33 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ message: "Password change failed" });
   }
 };
+
+// userController.js - ADD this
+export const resendVerificationCode = async (req, res) => {
+  try {``
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.isVerified) return res.status(400).json({ message: "Already verified" });
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    user.emailVerificationCode = code;
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000;
+    await user.save();
+    
+    console.log(`📤 Resending verification code to: ${email}`); // ✅ debug log
+    await sendVerificationEmail(email, code);
+    
+    res.json({ message: "Verification code resent" });
+  } catch (error) {
+    console.error("❌ Resend verification error:", error); // ✅ now you'll see the actual error
+    res.status(500).json({ message: error.message || "Failed to resend code" });
+  }
+};
+

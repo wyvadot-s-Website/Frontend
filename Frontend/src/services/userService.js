@@ -138,3 +138,15 @@ export const getCurrentUser = async (token) => {
   }
   return data;
 };
+
+// userService.js - ADD
+export const resendVerificationCode = async (email) => {
+  const res = await fetch(`${BASE_URL}/users/resend-verification`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to resend code");
+  return data;
+};
