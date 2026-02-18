@@ -207,12 +207,13 @@ useEffect(() => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setOpenProfile(false);
-    setShowLogoutConfirm(false);
-    navigate("/");
-  };
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.dispatchEvent(new Event("wyvadot_auth_updated")); // ✅ ADD THIS
+  setOpenProfile(false);
+  setShowLogoutConfirm(false);
+  navigate("/");
+};
 
   
 

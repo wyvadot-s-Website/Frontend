@@ -9,15 +9,20 @@ function Navbar() {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
 
-    // Listen for login/logout changes
-    const handleStorageChange = () => {
+    // ✅ Listen for login/logout changes
+    const handleAuthChange = () => {
       setIsLoggedIn(!!localStorage.getItem("token"));
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    // ✅ This fires when token changes in SAME tab (logout, login)
+    window.addEventListener("wyvadot_auth_updated", handleAuthChange);
+
+    // ✅ This fires when token changes in ANOTHER tab
+    window.addEventListener("storage", handleAuthChange);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("wyvadot_auth_updated", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
     };
   }, []);
 
