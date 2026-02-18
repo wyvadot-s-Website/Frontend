@@ -91,6 +91,29 @@ export const getAdminsSuper = async (req, res) => {
   }
 };
 
+// ✅ GET ONE USER BY ID (all admins can access)
+export const getUserByIdAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(String(id))) {
+      return res.status(400).json({ success: false, message: "Invalid user id" });
+    }
+
+    const user = await User.findById(id).select(
+      "firstName middleName lastName email phoneNumber country countryCode authProvider isVerified avatar createdAt updatedAt"
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.json({ success: true, user });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // ✅ DELETE ADMIN (super_admin only) with protections
 export const deleteAdminSuper = async (req, res) => {
   try {

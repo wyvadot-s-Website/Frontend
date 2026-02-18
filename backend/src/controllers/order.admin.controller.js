@@ -1,12 +1,21 @@
 import Order from "../models/Order.js";
 import { notifyUser } from "../utils/notify.js";
+import mongoose from "mongoose";
 
-// Admin list
+// ✅ ADMIN: GET ORDERS 
 export const getAdminOrders = async (req, res) => {
-  const { search, status, page = 1, limit = 20 } = req.query;
+  const { search, status, userId, page = 1, limit = 20 } = req.query;
 
   const q = {};
   if (status) q.status = status;
+
+  // ✅ filter by userId (important for your modal)
+  if (userId) {
+    if (!mongoose.Types.ObjectId.isValid(String(userId))) {
+      return res.status(400).json({ success: false, message: "Invalid userId" });
+    }
+    q.userId = userId;
+  }
 
   if (search) {
     const s = String(search).trim();
@@ -17,20 +26,22 @@ export const getAdminOrders = async (req, res) => {
     ];
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const safeLimit = Math.min(100, Math.max(1, Number(limit)));
+  const safePage = Math.max(1, Number(page));
+  const skip = (safePage - 1) * safeLimit;
 
   const [items, total] = await Promise.all([
-    Order.find(q).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+    Order.find(q).sort({ createdAt: -1 }).skip(skip).limit(safeLimit),
     Order.countDocuments(q),
   ]);
 
   res.json({
     success: true,
     items,
-    page: Number(page),
-    limit: Number(limit),
+    page: safePage,
+    limit: safeLimit,
     total,
-    totalPages: Math.ceil(total / Number(limit)),
+    totalPages: Math.ceil(total / safeLimit),
   });
 };
 

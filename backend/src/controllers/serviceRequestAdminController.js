@@ -1,24 +1,58 @@
 // controllers/serviceRequestAdminController.js
 import ServiceRequest, { STAGE, PROJECT_STAGE } from "../models/ServiceRequest.js";
 import { notifyUser } from "../utils/notify.js";
+import mongoose from "mongoose"; // ✅ add if missing
 
 const userPopulate = { path: "user", select: "firstName lastName email" };
 const adminPopulate = { path: "assignedAdmin", select: "name email role" };
 
+
 export const getAllServiceRequestsAdmin = async (req, res) => {
   try {
-    const docs = await ServiceRequest.find()
-      .sort({ createdAt: -1 })
-      .populate(userPopulate)
-      .populate(adminPopulate);
+    const { userId, page = 1, limit = 50 } = req.query;
 
-    return res.json({ data: docs });
+    const q = {};
+
+    // ✅ filter by userId (important for your modal)
+    if (userId) {
+      if (!mongoose.Types.ObjectId.isValid(String(userId))) {
+        return res.status(400).json({ message: "Invalid userId" });
+      }
+      q.user = userId;
+    }
+
+    const safeLimit = Math.min(100, Math.max(1, Number(limit)));
+    const safePage = Math.max(1, Number(page));
+    const skip = (safePage - 1) * safeLimit;
+
+    const [items, total] = await Promise.all([
+      ServiceRequest.find(q)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(safeLimit)
+        .populate(userPopulate)
+        .populate(adminPopulate),
+      ServiceRequest.countDocuments(q),
+    ]);
+
+    // ✅ Return BOTH "data" and "items" so older UI doesn't break
+    return res.json({
+      success: true,
+      items,
+      data: items,
+      page: safePage,
+      limit: safeLimit,
+      total,
+      totalPages: Math.ceil(total / safeLimit),
+    });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "Failed to load service requests", error: err.message });
+    return res.status(500).json({
+      message: "Failed to load service requests",
+      error: err.message,
+    });
   }
 };
+
 
 export const getServiceRequestByIdAdmin = async (req, res) => {
   try {

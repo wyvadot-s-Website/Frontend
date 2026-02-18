@@ -72,7 +72,7 @@ export const createOrder = async (req, res) => {
     // Build server-trusted items + totals
     // -----------------------------
     let subtotal = 0;
-    let shipping = 0; // order-level rule: max shippingFee among items
+    let shipping = 0; // ✅ NEW RULE: sum(shippingFee * qty)
     let vat = 0; // per-product VAT sum
 
     const normalizedItems = await Promise.all(
@@ -82,29 +82,24 @@ export const createOrder = async (req, res) => {
         const canLookup =
           rawProductId && mongoose.Types.ObjectId.isValid(String(rawProductId));
         if (!canLookup) {
-          // ✅ CHG #2: treat as client error
           throw new Error("BAD_REQUEST: Invalid productId in items");
         }
 
         const qty = Number(it?.quantity || 1);
         if (qty < 1) {
-          // ✅ CHG #2
           throw new Error("BAD_REQUEST: Invalid quantity in items");
         }
 
-        // ✅ CHG #3: also fetch oldPrice + saleEndsAt so we can compute effectivePrice
         const p = await Product.findById(rawProductId).select(
-          "name category price oldPrice saleEndsAt status stockQuantity shippingFee vatRate"
+          "name category price oldPrice saleEndsAt status stockQuantity shippingFee vatRate",
         );
 
         if (!p) {
-          // ✅ CHG #2
           throw new Error(`BAD_REQUEST: Product not found: ${rawProductId}`);
         }
 
         const stockQty = Number(p.stockQuantity ?? 0);
 
-        // Block ordering inactive products
         const blocked =
           p.status === "archived" ||
           p.status === "draft" ||
@@ -112,54 +107,54 @@ export const createOrder = async (req, res) => {
           stockQty <= 0;
 
         if (blocked) {
-          // ✅ CHG #2
           throw new Error(`BAD_REQUEST: ${p.name} is out of stock`);
         }
 
-        // Ensure enough stock
         if (stockQty && qty > stockQty) {
-          // ✅ CHG #2
           throw new Error(`BAD_REQUEST: Only ${stockQty} left for ${p.name}`);
         }
 
-        // ✅ CHG #1: compute sale-aware effective price
         const pricing = buildPricing(p);
         const unitPrice = Number(pricing.effectivePrice || 0);
 
         const shippingFee = Number(p.shippingFee || 0);
 
+        // ✅ NEW: per-line shipping
+        const itemShipping = shippingFee * qty;
+
         // Per-product VAT rate (percentage)
-        const vatRate = Number(p.vatRate || 0); // e.g. 7.5 means 7.5%
+        const vatRate = Number(p.vatRate || 0);
         const itemNet = unitPrice * qty;
         const itemVat = itemNet * (vatRate / 100);
 
         // Totals accumulation
         subtotal += itemNet;
-        shipping = Math.max(shipping, shippingFee);
+
+        // ✅ NEW RULE
+        shipping += itemShipping;
+
         vat += itemVat;
 
         return {
           productId: p._id,
 
-          // snapshot fields
           name: it?.name || p.name,
           category: p.category || "Uncategorized",
           image: it?.image || "",
 
-          // ✅ store effective unit price used for payment
           price: unitPrice,
           quantity: qty,
 
-          // optional snapshot fields (useful for invoice/admin)
+          // snapshot
           shippingFee,
+          itemShipping: round2(itemShipping), // ✅ optional but helpful
           vatRate,
           vat: round2(itemVat),
 
-          // optional: keep sale info for receipt display
           isOnSale: pricing.isOnSale,
           originalPrice: pricing.originalPrice,
         };
-      })
+      }),
     );
 
     subtotal = round2(subtotal);
@@ -171,7 +166,7 @@ export const createOrder = async (req, res) => {
     const totals = {
       subtotal,
       shipping,
-      vat, // ✅ amount (sum of per-product VAT)
+      vat,
       total,
       currency: "NGN",
     };

@@ -100,24 +100,22 @@ function CartRouter() {
     [cart],
   );
 
-  // ✅ per-product shipping: sum of each item's shippingFee
-  const shipping = useMemo(
-    () =>
-      cart.reduce(
-        (max, item) => Math.max(max, Number(item.shippingFee || 0)),
-        0,
-      ),
-    [cart],
-  );
+  // ✅ per-product shipping: sum(shippingFee * qty)
+  const shipping = useMemo(() => {
+    return cart.reduce((sum, item) => {
+      const fee = Number(item?.shippingFee || 0);
+      const qty = Number(item?.quantity || 0);
+      return sum + fee * qty;
+    }, 0);
+  }, [cart]);
 
   const vat = useMemo(() => {
-  return cart.reduce((sum, item) => {
-    const rate = Number(item?.vatRate || 0); // percent
-    const line = Number(item.price || 0) * Number(item.quantity || 0);
-    return sum + (line * rate) / 100;
-  }, 0);
-}, [cart]);
-
+    return cart.reduce((sum, item) => {
+      const rate = Number(item?.vatRate || 0); // percent
+      const line = Number(item.price || 0) * Number(item.quantity || 0);
+      return sum + (line * rate) / 100;
+    }, 0);
+  }, [cart]);
 
   const total = subtotal + shipping + vat;
 

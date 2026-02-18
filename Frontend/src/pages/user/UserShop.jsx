@@ -33,6 +33,7 @@ const normalizeCartItem = (p, qty = 1) => {
     name: p?.name || "",
     price: Number(p?.price || 0),
     shippingFee: Number(p?.shippingFee || 0),
+    vatRate: Number(p?.vatRate || 0),
     stockQuantity: getStockQty(p),
     status: p?.status || "active",
     image: imageUrl,
