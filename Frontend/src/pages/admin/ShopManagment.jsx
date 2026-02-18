@@ -132,17 +132,39 @@ const ShopManagment = () => {
       setCreating(true);
 
       const fd = new FormData();
-      fd.append("name", form.name);
-      fd.append("description", form.description);
-      fd.append("price", form.price);
-      if (form.oldPrice) fd.append("oldPrice", form.oldPrice);
-      if (form.saleEndsAt)
-        fd.append("saleEndsAt", new Date(form.saleEndsAt).toISOString());
-      fd.append("category", form.category || "Uncategorized");
-      fd.append("shippingFee", form.shippingFee || 0);
 
-      fd.append("stockQuantity", form.stockQuantity || 0);
-      fd.append("status", form.status);
+      fd.append("name", String(form.name || "").trim());
+      fd.append("description", String(form.description || "").trim());
+
+      // ✅ always send numbers as strings (safe for FormData)
+      fd.append("price", String(Number(form.price || 0)));
+
+      // optional fields
+      if (
+        form.oldPrice !== "" &&
+        form.oldPrice !== null &&
+        form.oldPrice !== undefined
+      ) {
+        fd.append("oldPrice", String(Number(form.oldPrice)));
+      } else {
+        // if your backend expects null, you can omit instead of sending
+        // (most create endpoints are fine with omission)
+      }
+
+      if (form.saleEndsAt) {
+        fd.append("saleEndsAt", new Date(form.saleEndsAt).toISOString());
+      }
+
+      fd.append("category", String(form.category || "Uncategorized"));
+
+      // ✅ Shipping fee (always)
+      fd.append("shippingFee", String(Number(form.shippingFee || 0)));
+
+      // ✅ VAT RATE (THIS IS THE MISSING PART)
+      fd.append("vatRate", String(Number(form.vatRate || 0)));
+
+      fd.append("stockQuantity", String(Number(form.stockQuantity || 0)));
+      fd.append("status", String(form.status || "active"));
 
       images.forEach((file) => fd.append("images", file));
 
@@ -196,10 +218,14 @@ const ShopManagment = () => {
           updates.oldPrice === "" || updates.oldPrice === null
             ? null
             : Number(updates.oldPrice),
-            shippingFee:
-  updates.shippingFee === "" || updates.shippingFee === null
-    ? 0
-    : Number(updates.shippingFee),
+        shippingFee:
+          updates.shippingFee === "" || updates.shippingFee === null
+            ? 0
+            : Number(updates.shippingFee),
+        vatRate:
+          updates.vatRate === "" || updates.vatRate === null
+            ? 0
+            : Number(updates.vatRate),
 
         stockQuantity:
           updates.stockQuantity === "" || updates.stockQuantity === null
