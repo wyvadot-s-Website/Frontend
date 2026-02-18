@@ -140,7 +140,7 @@ function UserDashboard() {
         ) : myRequests.length === 0 ? (
           <tr>
             <td className="py-6 text-sm text-gray-500" colSpan={9}>
-              <img src="../../../public/Frame 2147224307.svg" alt="" srcset="" className='flex place-self-center p-5'/>
+              <img src="/Frame 2147224307.svg" alt="" srcset="" className='flex place-self-center p-5'/>
             </td>
           </tr>
         ) : (
@@ -213,7 +213,7 @@ function UserDashboard() {
       <p className="py-6 text-sm text-gray-500 text-center">Loading...</p>
     ) : myRequests.length === 0 ? (
       <p className="py-6 text-sm text-gray-500 text-center">
-        <img src="../../../public/Frame 2147224306.svg" alt="" srcset="" />
+        <img src="/Frame 2147224306.svg" alt="" srcset="" />
         No service requests yet.
 
       </p>
@@ -329,7 +329,7 @@ function UserDashboard() {
         ) : myOrders.length === 0 ? (
           <tr>
             <td className="py-6 text-sm text-gray-500" colSpan={7}>
-              <img src="../../../public/Frame 2147224306.svg" alt="" srcset="" className='flex place-self-center p-5' />
+              <img src="/Frame 2147224306.svg" alt="" srcset="" className='flex place-self-center p-5' />
               
             </td>
           </tr>
@@ -388,7 +388,7 @@ function UserDashboard() {
       <p className="py-6 text-sm text-gray-500 text-center">Loading orders...</p>
     ) : myOrders.length === 0 ? (
       <p className="py-6 text-sm text-gray-500 text-center">
-        <img src="../../../public/Frame 2147224306.svg" alt="" srcset="" />
+        <img src="/Frame 2147224306.svg" alt="" srcset="" />
         No orders yet.</p>
     ) : (
       myOrders.map((o) => {

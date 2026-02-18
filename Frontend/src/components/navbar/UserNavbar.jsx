@@ -16,6 +16,8 @@ import { fetchMyServiceRequests } from "@/services/userServiceRequestService";
 import UserOrderDetailModal from "@/components/user/UserOrderDetailModal";
 import ServiceRequestDetailModal from "@/components/user/ServiceRequestDetailModal";
 
+const safeLower = (v) => String(v || "").toLowerCase();
+
 function UserNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -58,19 +60,19 @@ function UserNavbar() {
   const notifRef = useRef(null);
 
   // keep token in sync
-  useEffect(() => {
-    const sync = () => setToken(localStorage.getItem("token"));
+ // ✅ FIXED - named handler so cleanup works
+useEffect(() => {
+  const sync = () => setToken(localStorage.getItem("token"));
+  const onStorage = (e) => { if (e.key === "token") sync(); };
 
-    window.addEventListener("wyvadot_auth_updated", sync);
-    window.addEventListener("storage", (e) => {
-      if (e.key === "token") sync();
-    });
+  window.addEventListener("wyvadot_auth_updated", sync);
+  window.addEventListener("storage", onStorage);
 
-    return () => {
-      window.removeEventListener("wyvadot_auth_updated", sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
+  return () => {
+    window.removeEventListener("wyvadot_auth_updated", sync);
+    window.removeEventListener("storage", onStorage);
+  };
+}, []);
 
   // close desktop notification popover on outside click
   useEffect(() => {
@@ -149,9 +151,11 @@ function UserNavbar() {
     return full || "User";
   }, [user]);
 
-  // cart count from localStorage
-  useEffect(() => {
-    const compute = () => {
+  // UserNavbar.js - cart count effect, defer the compute
+useEffect(() => {
+  const compute = () => {
+    // ✅ Wrap in setTimeout to avoid setState-during-render
+    setTimeout(() => {
       try {
         const saved = localStorage.getItem("wyvadot_cart");
         const parsed = saved ? JSON.parse(saved) : [];
@@ -162,23 +166,22 @@ function UserNavbar() {
       } catch {
         setCartCount(0);
       }
-    };
+    }, 0);
+  };
 
-    compute();
+  compute(); // initial read is fine without setTimeout
 
-    const onUpdated = () => compute();
-    window.addEventListener("wyvadot_cart_updated", onUpdated);
+  const onUpdated = () => compute();
+  const onStorage = (e) => { if (e.key === "wyvadot_cart") compute(); };
 
-    const onStorage = (e) => {
-      if (e.key === "wyvadot_cart") compute();
-    };
-    window.addEventListener("storage", onStorage);
+  window.addEventListener("wyvadot_cart_updated", onUpdated);
+  window.addEventListener("storage", onStorage);
 
-    return () => {
-      window.removeEventListener("wyvadot_cart_updated", onUpdated);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
+  return () => {
+    window.removeEventListener("wyvadot_cart_updated", onUpdated);
+    window.removeEventListener("storage", onStorage);
+  };
+}, []);;
 
   // close profile dropdown on outside click
   useEffect(() => {
@@ -211,7 +214,7 @@ function UserNavbar() {
     navigate("/");
   };
 
-  const safeLower = (v) => String(v || "").toLowerCase();
+  
 
   // ✅ Debounced global search
   useEffect(() => {
@@ -394,18 +397,23 @@ function UserNavbar() {
 
             {/* Mobile Right Section */}
             <div className="flex lg:hidden items-center gap-3">
-              {/* Mobile Cart Icon */}
-              <button
-                onClick={() => navigate("/cart")}
-                className="relative text-white p-1"
-              >
-                <ShoppingCart size={22} color="black" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+
+<button
+  onClick={() => navigate("/cart")}
+  className="relative p-1"
+>
+  <ShoppingCart
+    size={22}
+    color={isActive("/cart") ? "#f97316" : "black"}
+  />
+  {cartCount > 0 && (
+    <span className={`absolute -top-1 -right-1 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center ${
+      isActive("/cart") ? "bg-orange-500" : "bg-orange-500"
+    }`}>
+      {cartCount}
+    </span>
+  )}
+</button>
 
               {/* Hamburger Menu Button */}
               <button
@@ -635,47 +643,55 @@ function UserNavbar() {
               </div>
 
               {/* Wishlist */}
-              <button
-                onClick={() => navigate("/wishlist")}
-                className="relative text-gray-600 hover:text-orange-500"
-                title="Wishlist"
-              >
-                <Heart size={20} />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
-                    {wishlistCount}
-                  </span>
-                )}
-              </button>
+<button
+  onClick={() => navigate("/wishlist")}
+  className={`relative transition-colors ${
+    isActive("/wishlist") ? "text-orange-500" : "text-gray-600 hover:text-orange-500"
+  }`}
+  title="Wishlist"
+>
+  <Heart size={20} className={isActive("/wishlist") ? "fill-orange-500" : ""} />
+  {wishlistCount > 0 && (
+    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+      {wishlistCount}
+    </span>
+  )}
+</button>
 
-              {/* Cart */}
-              <button
-                onClick={() => navigate("/cart")}
-                className="relative text-gray-600 hover:text-orange-500"
-                title="Cart"
-              >
-                <ShoppingCart size={20} />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+{/* Cart */}
+<button
+  onClick={() => navigate("/cart")}
+  className={`relative transition-colors ${
+    isActive("/cart") ? "text-orange-500" : "text-gray-600 hover:text-orange-500"
+  }`}
+  title="Cart"
+>
+  <ShoppingCart size={20} />
+  {cartCount > 0 && (
+    <span className={`absolute -top-1 -right-1 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center ${
+      isActive("/cart") ? "bg-orange-500" : "bg-black"
+    }`}>
+      {cartCount}
+    </span>
+  )}
+</button>
 
-              {/* Notification (desktop popover) */}
-              <div className="relative" ref={notifRef}>
-                <button
-                  onClick={openNotifications}
-                  className="relative text-gray-600 hover:text-orange-500"
-                  title="Notifications"
-                >
-                  <Bell size={20} />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                  )}
-                </button>
+{/* Notification bell - active when open */}
+<div className="relative" ref={notifRef}>
+  <button
+    onClick={openNotifications}
+    className={`relative transition-colors ${
+      desktopNotifOpen ? "text-orange-500" : "text-gray-600 hover:text-orange-500"
+    }`}
+    title="Notifications"
+  >
+    <Bell size={20} className={desktopNotifOpen ? "fill-orange-100" : ""} />
+    {unreadCount > 0 && (
+      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+        {unreadCount > 99 ? "99+" : unreadCount}
+      </span>
+    )}
+  </button>
 
                 <UserNotificationsPopover
                   open={desktopNotifOpen}
@@ -686,17 +702,19 @@ function UserNavbar() {
               </div>
 
               {/* Profile */}
-              <div className="relative" ref={profileRef}>
-                <button
-  onClick={() => setOpenProfile((prev) => !prev)}
-  className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center font-semibold"
->
-  {user?.avatar?.url ? (
-    <img src={user.avatar.url} alt="avatar" className="w-full h-full object-cover" />
-  ) : (
-    initials
-  )}
-</button>
+             <div className="relative" ref={profileRef}>
+  <button
+    onClick={() => setOpenProfile((prev) => !prev)}
+    className={`w-9 h-9 rounded-full overflow-hidden text-white flex items-center justify-center font-semibold ring-2 transition-all ${
+      openProfile ? "ring-orange-500 bg-orange-600" : "ring-transparent bg-orange-500"
+    }`}
+  >
+    {user?.avatar?.url ? (
+      <img src={user.avatar.url} alt="avatar" className="w-full h-full object-cover" />
+    ) : (
+      initials
+    )}
+  </button>
 
                 {openProfile && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-lg border z-50">
@@ -978,69 +996,63 @@ function UserNavbar() {
                 </Link>
               </div>
 
-              {/* Mobile Actions */}
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/wishlist");
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-                >
-                  <Heart size={18} />
-                  <span className="text-sm">Wishlist</span>
-                  {wishlistCount > 0 && (
-                    <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </button>
+              {/* Mobile Actions grid */}
+<div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-700">
+  <button
+    onClick={() => { setMobileMenuOpen(false); navigate("/wishlist"); }}
+    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white transition-colors ${
+      isActive("/wishlist") ? "bg-orange-500" : "bg-gray-800 hover:bg-gray-700"
+    }`}
+  >
+    <Heart size={18} className={isActive("/wishlist") ? "fill-white" : ""} />
+    <span className="text-sm">Wishlist</span>
+    {wishlistCount > 0 && (
+      <span className="bg-white text-orange-500 text-xs px-1.5 rounded-full font-semibold">
+        {wishlistCount}
+      </span>
+    )}
+  </button>
 
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/cart");
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-                >
-                  <ShoppingCart size={18} />
-                  <span className="text-sm">Cart</span>
-                  {cartCount > 0 && (
-                    <span className="bg-orange-500 text-white text-xs px-1.5 rounded-full">
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
+  <button
+    onClick={() => { setMobileMenuOpen(false); navigate("/cart"); }}
+    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white transition-colors ${
+      isActive("/cart") ? "bg-orange-500" : "bg-gray-800 hover:bg-gray-700"
+    }`}
+  >
+    <ShoppingCart size={18} />
+    <span className="text-sm">Cart</span>
+    {cartCount > 0 && (
+      <span className="bg-white text-orange-500 text-xs px-1.5 rounded-full font-semibold">
+        {cartCount}
+      </span>
+    )}
+  </button>
 
-                {/* ✅ Mobile Notifications opens SAME component UI (desktop popover) but inside a sheet */}
-                <button
-                  onClick={() => {
-                    setMobileNotifOpen(true);
-                    // keep menu open or close it (your choice)
-                    // setMobileMenuOpen(false);
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-                >
-                  <Bell size={18} />
-                  <span className="text-sm">Notifications</span>
-                  {unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-1.5 rounded-full">
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                  )}
-                </button>
+  <button
+    onClick={() => { setMobileNotifOpen(true); }}
+    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white transition-colors ${
+      mobileNotifOpen ? "bg-orange-500" : "bg-gray-800 hover:bg-gray-700"
+    }`}
+  >
+    <Bell size={18} />
+    <span className="text-sm">Notifications</span>
+    {unreadCount > 0 && (
+      <span className="bg-white text-red-500 text-xs px-1.5 rounded-full font-semibold">
+        {unreadCount > 99 ? "99+" : unreadCount}
+      </span>
+    )}
+  </button>
 
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/account");
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
-                >
-                  <User size={18} />
-                  <span className="text-sm">Account</span>
-                </button>
-              </div>
+  <button
+    onClick={() => { setMobileMenuOpen(false); navigate("/account"); }}
+    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white transition-colors ${
+      isActive("/account") ? "bg-orange-500" : "bg-gray-800 hover:bg-gray-700"
+    }`}
+  >
+    <User size={18} />
+    <span className="text-sm">Account</span>
+  </button>
+</div>
 
               {/* Logout */}
               <button

@@ -150,7 +150,7 @@ export default function UserNotificationsPopover({
         ) : items.length === 0 ? (
           <div className="p-4 text-sm text-gray-600">
             <img
-              src="../../public/Frame 2147224292.svg"
+              src="/Frame 2147224292.svg"
               alt="No notifications yet"
               className="flex place-self-center p-5"
             />

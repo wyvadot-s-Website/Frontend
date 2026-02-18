@@ -1,18 +1,12 @@
 // src/pages/user/UserShop.jsx
-// ✅ FIXED: Properly handles loading state when navigating to product detail
-
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 
 import ShopListing from "../ShopListing";
 import ProductDetail from "../ProductDetail";
-
 import { fetchProducts, fetchProductById } from "../../services/shopService";
 
-/** =========================
- * Helpers
- * ========================= */
 const getId = (p) => p?._id || p?.id;
 const getStockQty = (p) => Number(p?.stockQuantity ?? 0);
 
@@ -46,14 +40,13 @@ function UserShop({ isProductDetailRoute }) {
   const params = useParams();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  
+
   const [quantity, setQuantity] = useState(1);
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [loadingProduct, setLoadingProduct] = useState(false); // ✅ NEW: Track product loading
+  const [loadingProduct, setLoadingProduct] = useState(false);
 
-  // ✅ server-driven filters + pagination
   const [filters, setFilters] = useState({
     category: "All",
     search: "",
@@ -72,13 +65,41 @@ function UserShop({ isProductDetailRoute }) {
     limit: 12,
   });
 
+  // ✅ READ from localStorage ONCE on mount only
+  useEffect(() => {
+    const saved = localStorage.getItem("wyvadot_cart");
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      setCart(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      localStorage.removeItem("wyvadot_cart");
+    }
+  }, []);
+
+  // UserShop.jsx - update persistCart
+const persistCart = useCallback((updater) => {
+  setCart((prev) => {
+    const next = typeof updater === "function" ? updater(prev) : updater;
+    localStorage.setItem("wyvadot_cart", JSON.stringify(next));
+    // ✅ Defer event so it fires AFTER render, not during
+    setTimeout(() => {
+      window.dispatchEvent(new Event("wyvadot_cart_updated"));
+    }, 0);
+    return next;
+  });
+}, []);
+
+  const cartCount = useMemo(
+    () => cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+    [cart]
+  );
+
   const loadProducts = useCallback(async () => {
     try {
       const result = await fetchProducts(filters);
-
       const items = result?.items || [];
       setProducts(Array.isArray(items) ? items : []);
-
       setMeta({
         page: Number(result?.page || filters.page || 1),
         totalPages: Number(result?.totalPages || 1),
@@ -92,14 +113,10 @@ function UserShop({ isProductDetailRoute }) {
     }
   }, [filters]);
 
-  // ✅ Load products for listing page
   useEffect(() => {
-    if (!isProductDetailRoute) {
-      loadProducts();
-    }
+    if (!isProductDetailRoute) loadProducts();
   }, [isProductDetailRoute, loadProducts]);
 
-  // ✅ FIXED: Load product detail when on product route
   useEffect(() => {
     if (!isProductDetailRoute) {
       setSelectedProduct(null);
@@ -116,195 +133,122 @@ function UserShop({ isProductDetailRoute }) {
 
     const loadProduct = async () => {
       try {
-        setLoadingProduct(true); // ✅ Set loading to true
+        setLoadingProduct(true);
         const result = await fetchProductById(productId);
-        
-        // Support both formats: { item: product } or product directly
         const product = result?.item || result;
-        
         setSelectedProduct(product);
         setQuantity(1);
       } catch (err) {
         toast.error(err.message || "Failed to load product");
         setSelectedProduct(null);
-        // Don't navigate away - let ProductDetail show error
       } finally {
-        setLoadingProduct(false); // ✅ Set loading to false
+        setLoadingProduct(false);
       }
     };
 
     loadProduct();
   }, [isProductDetailRoute, params.id]);
 
-  /** ✅ Handle navbar search - open product directly */
   useEffect(() => {
     const openId = location?.state?.openProductId;
     if (!openId) return;
-
     navigate(`/product/${openId}`, { replace: true, state: {} });
   }, [location?.state, navigate]);
 
-  /** ✅ Sync "search" filter with URL query param */
   useEffect(() => {
     const q = (searchParams.get("search") || "").trim();
-
     setFilters((f) => {
       if ((f.search || "") === q) return f;
       return { ...f, search: q, page: 1 };
     });
   }, [searchParams]);
 
-  /** =========================
-   * Cart persistence
-   * ========================= */
-  useEffect(() => {
-    const saved = localStorage.getItem("wyvadot_cart");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setCart(Array.isArray(parsed) ? parsed : []);
-      } catch {
-        localStorage.removeItem("wyvadot_cart");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("wyvadot_cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("wyvadot_cart_updated"));
-  }, [cart]);
-
-  const cartCount = useMemo(
-    () => cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
-    [cart],
-  );
-
-  /** =========================
-   * Add to cart from Listing
-   * ========================= */
-  const addToCartFromListing = (product) => {
-    const id = getId(product);
+  // ✅ Add to cart from listing - uses persistCart
+  const addToCartFromListing = useCallback((product) => {
+    const id = String(getId(product) || "");
     if (!id) return;
 
     const qty = getStockQty(product);
+    if (isProductOut(product)) return toast.error("This product is out of stock");
 
-    if (isProductOut(product))
-      return toast.error("This product is out of stock");
-
-    const existingItem = cart.find(
-      (item) => (getId(item) || item.__cartId) === id,
-    );
-
-    if (existingItem) {
-      const nextQty = Number(existingItem.quantity || 0) + 1;
-      if (qty && nextQty > qty) return toast.error(`Only ${qty} left in stock`);
-
-      setCart(
-        cart.map((item) => {
-          const itemId = getId(item) || item.__cartId;
-          if (itemId !== id) return item;
-
-          return {
-            ...item,
-            stockQuantity: qty,
-            status: product?.status || item.status,
-            quantity: nextQty,
-          };
-        }),
+    persistCart((prev) => {
+      const existing = prev.find(
+        (item) => String(getId(item) || item.__cartId) === id
       );
-    } else {
-      setCart([...cart, normalizeCartItem(product, 1)]);
-    }
+
+      if (existing) {
+        const nextQty = Number(existing.quantity || 0) + 1;
+        if (qty && nextQty > qty) {
+          toast.error(`Only ${qty} left in stock`);
+          return prev;
+        }
+        return prev.map((item) =>
+          String(getId(item) || item.__cartId) === id
+            ? { ...item, stockQuantity: qty, status: product?.status || item.status, quantity: nextQty }
+            : item
+        );
+      } else {
+        return [...prev, normalizeCartItem(product, 1)];
+      }
+    });
 
     toast.success("Added to cart");
-  };
+  }, [persistCart]);
 
-  /** =========================
-   * Navigate to product detail
-   * ========================= */
-  const onProductClick = (productId) => {
-    navigate(`/product/${productId}`);
-  };
+  // ✅ Add to cart from product detail - uses persistCart
+  const addToCart = useCallback(() => {
+    if (!selectedProduct) return;
+    const id = String(getId(selectedProduct) || "");
+    if (!id) return;
+
+    const qty = getStockQty(selectedProduct);
+    if (isProductOut(selectedProduct)) return toast.error("This product is out of stock");
+
+    persistCart((prev) => {
+      const existing = prev.find(
+        (item) => String(getId(item) || item.__cartId) === id
+      );
+
+      if (existing) {
+        const nextQty = Number(existing.quantity || 0) + Number(quantity || 1);
+        if (qty && nextQty > qty) {
+          toast.error(`Only ${qty} left in stock`);
+          return prev;
+        }
+        return prev.map((item) =>
+          String(getId(item) || item.__cartId) === id
+            ? { ...item, stockQuantity: qty, quantity: nextQty }
+            : item
+        );
+      } else {
+        if (qty && Number(quantity || 1) > qty) {
+          toast.error(`Only ${qty} left in stock`);
+          return prev;
+        }
+        return [...prev, normalizeCartItem(selectedProduct, quantity)];
+      }
+    });
+
+    toast.success("Added to cart");
+    navigate("/cart");
+  }, [selectedProduct, quantity, persistCart, navigate]);
+
+  const onProductClick = (productId) => navigate(`/product/${productId}`);
 
   const relatedProducts = useMemo(() => {
     if (!selectedProduct?._id) return [];
     return products.filter((p) => p._id !== selectedProduct._id).slice(0, 4);
   }, [products, selectedProduct]);
 
-  /** =========================
-   * Add to cart from ProductDetail
-   * ========================= */
-  const addToCart = () => {
-    if (!selectedProduct) return;
-
-    const id = getId(selectedProduct);
-    if (!id) return;
-
-    const qty = getStockQty(selectedProduct);
-
-    if (isProductOut(selectedProduct))
-      return toast.error("This product is out of stock");
-
-    const existingItem = cart.find(
-      (item) => (getId(item) || item.__cartId) === id,
-    );
-
-    if (existingItem) {
-      const nextQty =
-        Number(existingItem.quantity || 0) + Number(quantity || 1);
-      if (qty && nextQty > qty) return toast.error(`Only ${qty} left in stock`);
-
-      setCart(
-        cart.map((item) => {
-          const itemId = getId(item) || item.__cartId;
-          if (itemId !== id) return item;
-
-          return {
-            ...item,
-            stockQuantity: qty,
-            status: selectedProduct?.status || item.status,
-            quantity: nextQty,
-          };
-        }),
-      );
-    } else {
-      if (qty && Number(quantity || 1) > qty)
-        return toast.error(`Only ${qty} left in stock`);
-      setCart([...cart, normalizeCartItem(selectedProduct, quantity)]);
-    }
-
-    toast.success("Added to cart");
-    navigate("/cart");
-  };
-
-  /** =========================
-   * Controlled filter handlers
-   * ========================= */
-  const setCategory = (category) =>
-    setFilters((f) => ({ ...f, category, page: 1 }));
-
+  const setCategory = (category) => setFilters((f) => ({ ...f, category, page: 1 }));
   const setSearch = (search) => setFilters((f) => ({ ...f, search, page: 1 }));
-
   const setPriceRange = ({ minPrice, maxPrice }) =>
-    setFilters((f) => ({
-      ...f,
-      minPrice: minPrice ?? "",
-      maxPrice: maxPrice ?? "",
-      page: 1,
-    }));
-
-  const setInStock = (inStock) =>
-    setFilters((f) => ({ ...f, inStock, page: 1 }));
-
+    setFilters((f) => ({ ...f, minPrice: minPrice ?? "", maxPrice: maxPrice ?? "", page: 1 }));
+  const setInStock = (inStock) => setFilters((f) => ({ ...f, inStock, page: 1 }));
   const setSort = (sort) => setFilters((f) => ({ ...f, sort, page: 1 }));
-
   const setPage = (page) => setFilters((f) => ({ ...f, page }));
 
-  /** =========================
-   * Render correct view based on route
-   * ========================= */
   if (isProductDetailRoute) {
-    // ✅ FIXED: Show loading state while fetching product
     if (loadingProduct) {
       return (
         <div className="min-h-screen bg-white">
@@ -315,7 +259,6 @@ function UserShop({ isProductDetailRoute }) {
       );
     }
 
-    // ✅ FIXED: Only render ProductDetail when we have the product
     return (
       <ProductDetail
         product={selectedProduct}
@@ -327,7 +270,6 @@ function UserShop({ isProductDetailRoute }) {
     );
   }
 
-  // Default: Shop Listing
   return (
     <ShopListing
       products={products}

@@ -1,13 +1,8 @@
 import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 function VerifyResetView({
   isOpen,
@@ -19,17 +14,26 @@ function VerifyResetView({
   backToForgot,
   onResendCode,
   verifyError,
-  resendCooldown =0,
+  resendCooldown = 0,
 }) {
-
   const formatCooldown = (seconds) => {
-  if (seconds >= 60) {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}m ${s > 0 ? `${s}s` : ""}`;
-  }
-  return `${seconds}s`;
-};
+    if (seconds >= 60) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}m ${s > 0 ? `${s}s` : ""}`;
+    }
+    return `${seconds}s`;
+  };
+
+  const handleOTPChange = (value) => {
+    const arr = value.split("");
+    while (arr.length < verificationCode.length) arr.push("");
+    arr.slice(0, verificationCode.length).forEach((digit, i) => {
+      handleVerificationChange(i, digit);
+    });
+  };
+
+  const otpValue = verificationCode.join("");
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -48,39 +52,39 @@ function VerifyResetView({
             </p>
           </div>
 
-          <div className="flex gap-2 justify-center">
-            {verificationCode.map((digit, index) => (
-              <Input
-                key={index}
-                id={`code-${index}`}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) =>
-                  handleVerificationChange(index, e.target.value)
-                }
-                className="w-12 h-12 text-center text-lg font-semibold border-gray-300"
-              />
-            ))}
+          <div className="flex justify-center">
+            <InputOTP
+              maxLength={verificationCode.length}
+              value={otpValue}
+              onChange={handleOTPChange}
+            >
+              <InputOTPGroup>
+                {verificationCode.map((_, i) => (
+                  <InputOTPSlot
+                    key={i}
+                    index={i}
+                    className="w-12 h-12 text-lg font-semibold border-gray-300"
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
           </div>
 
           <div className="text-center">
             {verifyError && (
-  <p className="text-sm text-red-500 mb-2">{verifyError}</p>
-)}
-<button
-  onClick={onResendCode}
-  disabled={resendCooldown > 0}
-  className={`text-sm hover:underline ${
-    resendCooldown > 0
-      ? 'text-gray-400 cursor-not-allowed'
-      : 'text-orange-500'
-  }`}
->
-  {resendCooldown > 0 
-    ? `Resend available in ${formatCooldown(resendCooldown)}` 
-    : 'Resend code'}
-</button>
+              <p className="text-sm text-red-500 mb-2">{verifyError}</p>
+            )}
+            <button
+              onClick={onResendCode}
+              disabled={resendCooldown > 0}
+              className={`text-sm hover:underline ${
+                resendCooldown > 0 ? "text-gray-400 cursor-not-allowed" : "text-orange-500"
+              }`}
+            >
+              {resendCooldown > 0
+                ? `Resend available in ${formatCooldown(resendCooldown)}`
+                : "Resend code"}
+            </button>
           </div>
 
           <Button
