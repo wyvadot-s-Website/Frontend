@@ -45,44 +45,40 @@ function ConsultationModal({ isOpen, onClose, serviceName }) {
     }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+const validateForm = () => {
+  const newErrors = {};
 
-    // ===== CONTACT DETAILS (Required for all) =====
-    if (!formData.name?.trim()) {
-      newErrors.name = "Full name is required";
-    }
-
-// ===== COMMON FIELDS (Required for MOST services) =====
-// General Contracts uses gc_region/gc_location instead
-if (serviceName !== "General Contracts") {
-  if (!formData.timeline) {
-    newErrors.timeline = "Project timeline is required";
+  // ===== CONTACT DETAILS (Required for all) =====
+  if (!formData.name?.trim()) {
+    newErrors.name = "Full name is required";
   }
 
-  if (!formData.location) {
-    newErrors.location = "Project location is required";
+  if (!formData.email?.trim()) {
+    newErrors.email = "Email address is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    newErrors.email = "Please enter a valid email address";
   }
 
-  if (!formData.locationAddress?.trim()) {
-    newErrors.locationAddress = "Specific project address is required";
+  if (!formData.tel?.trim()) {
+    newErrors.tel = "Phone number is required";
   }
-}
-    if (!formData.email?.trim()) {
-      newErrors.email = "Email address is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
 
-    if (!formData.tel?.trim()) {
-      newErrors.tel = "Phone number is required";
-    }
+  if (!formData.projectScope?.trim()) {
+    newErrors.projectScope = "Project scope description is required";
+  }
 
-    if (!formData.projectScope?.trim()) {
-      newErrors.projectScope = "Project scope description is required";
+  // ===== COMMON FIELDS =====
+  // General Contracts uses gc_region/gc_location instead of timeline/location
+  if (serviceName === "General Contracts") {
+    // General Contracts specific location fields
+    if (!formData.gc_region?.trim()) {
+      newErrors.gc_region = "Region/market information is required";
     }
-
-    // ===== COMMON FIELDS (Required for all) =====
+    if (!formData.gc_location?.trim()) {
+      newErrors.gc_location = "Project location is required";
+    }
+  } else {
+    // All other services use timeline/location/locationAddress
     if (!formData.timeline) {
       newErrors.timeline = "Project timeline is required";
     }
@@ -94,88 +90,75 @@ if (serviceName !== "General Contracts") {
     if (!formData.locationAddress?.trim()) {
       newErrors.locationAddress = "Specific project address is required";
     }
+  }
 
-    // ===== SERVICE-SPECIFIC VALIDATIONS =====
+  // ===== SERVICE-SPECIFIC VALIDATIONS =====
 
-    // Project Management & Resourcing
-    if (serviceName === "Project Management & Resourcing") {
-      if (!formData.pm_service?.trim()) {
-        newErrors.pm_service =
-          "Please specify the project management service you need";
-      }
-      if (!formData.pm_budget?.trim()) {
-        newErrors.pm_budget =
-          "Budget estimate is required for planning purposes";
-      }
-      if (!formData.pm_financing) {
-        newErrors.pm_financing = "Please indicate if financing is secured";
-      }
+  // Project Management & Resourcing
+  if (serviceName === "Project Management & Resourcing") {
+    if (!formData.pm_service?.trim()) {
+      newErrors.pm_service = "Please specify the project management service you need";
     }
-
-    // Core Engineering & Construction
-    if (serviceName === "Core Engineering & Construction") {
-      if (!formData.ce_description?.trim()) {
-        newErrors.ce_description = "Core discipline description is required";
-      }
-      if (!formData.ce_design?.trim()) {
-        newErrors.ce_design = "Design status information is required";
-      }
-      if (!formData.ce_cost?.trim()) {
-        newErrors.ce_cost = "Construction cost state is required";
-      }
-      if (!formData.ce_materials?.trim()) {
-        newErrors.ce_materials = "Material standards/preferences are required";
-      }
+    if (!formData.pm_budget?.trim()) {
+      newErrors.pm_budget = "Budget estimate is required for planning purposes";
     }
-
-    // Facilities Management & Maintenance
-    if (serviceName === "Facilities Management & Maintenance") {
-      if (!formData.fm_services?.trim()) {
-        newErrors.fm_services =
-          "Please specify if this is one-time or long-term service";
-      }
-      if (!formData.fm_coverage?.trim()) {
-        newErrors.fm_coverage = "Facility size/square footage is required";
-      }
-      if (!formData.fm_maintenance?.trim()) {
-        newErrors.fm_maintenance =
-          "Please list your top 3 critical maintenance needs";
-      }
+    if (!formData.pm_financing) {
+      newErrors.pm_financing = "Please indicate if financing is secured";
     }
+  }
 
-    // Energy & Process Services
-    if (serviceName === "Energy & Process Services") {
-      if (!formData.ep_inquiry?.trim()) {
-        newErrors.ep_inquiry =
-          "Please specify the type of energy service you need";
-      }
-      if (!formData.ep_facility?.trim()) {
-        newErrors.ep_facility = "Facility/process type is required";
-      }
+  // Core Engineering & Construction
+  if (serviceName === "Core Engineering & Construction") {
+    if (!formData.ce_description?.trim()) {
+      newErrors.ce_description = "Core discipline description is required";
     }
-
-    // Technology & E-commerce
-    if (serviceName === "Technology & E-commerce") {
-      if (!formData.tech_software?.trim()) {
-        newErrors.tech_software =
-          "Please specify software development or technology implementation needs";
-      }
-      if (!formData.tech_platform) {
-        newErrors.tech_platform = "Platform selection is required";
-      }
+    if (!formData.ce_design?.trim()) {
+      newErrors.ce_design = "Design status information is required";
     }
-
-    // General Contracts
-    if (serviceName === "General Contracts") {
-      if (!formData.gc_region?.trim())
-        newErrors.gc_region = "Region/market information is required";
-      if (!formData.gc_location?.trim())
-        newErrors.gc_location = "Project location is required";
+    if (!formData.ce_cost?.trim()) {
+      newErrors.ce_cost = "Construction cost state is required";
     }
+    if (!formData.ce_materials?.trim()) {
+      newErrors.ce_materials = "Material standards/preferences are required";
+    }
+  }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // Facilities Management & Maintenance
+  if (serviceName === "Facilities Management & Maintenance") {
+    if (!formData.fm_services?.trim()) {
+      newErrors.fm_services = "Please specify if this is one-time or long-term service";
+    }
+    if (!formData.fm_coverage?.trim()) {
+      newErrors.fm_coverage = "Facility size/square footage is required";
+    }
+    if (!formData.fm_maintenance?.trim()) {
+      newErrors.fm_maintenance = "Please list your top 3 critical maintenance needs";
+    }
+  }
+
+  // Energy & Process Services
+  if (serviceName === "Energy & Process Services") {
+    if (!formData.ep_inquiry?.trim()) {
+      newErrors.ep_inquiry = "Please specify the type of energy service you need";
+    }
+    if (!formData.ep_facility?.trim()) {
+      newErrors.ep_facility = "Facility/process type is required";
+    }
+  }
+
+  // Technology & E-commerce
+  if (serviceName === "Technology & E-commerce") {
+    if (!formData.tech_software?.trim()) {
+      newErrors.tech_software = "Please specify software development or technology implementation needs";
+    }
+    if (!formData.tech_platform) {
+      newErrors.tech_platform = "Platform selection is required";
+    }
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
 
   const handleSubmit = async () => {
     setErrors({});

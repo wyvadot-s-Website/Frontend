@@ -9,7 +9,7 @@ function VerifyEmailView({
   onClose,
   email,
   verificationCode,
-  handleVerificationChange,
+  onVerificationChange, // ✅ renamed from handleVerificationChange
   handleVerify,
   backToSignup,
   onResendCode,
@@ -24,18 +24,6 @@ function VerifyEmailView({
     return `${seconds}s`;
   };
 
-  // input-otp gives us the full string value
-  const handleOTPChange = (value) => {
-    // Convert string "123456" back to array ["1","2","3","4","5","6"]
-    const arr = value.split("");
-    while (arr.length < verificationCode.length) arr.push("");
-    arr.slice(0, verificationCode.length).forEach((digit, i) => {
-      handleVerificationChange(i, digit);
-    });
-  };
-
-  const otpValue = verificationCode.join("");
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -44,22 +32,21 @@ function VerifyEmailView({
             Verify your email
           </DialogTitle>
         </DialogHeader>
-
         <div className="space-y-6 py-4">
           <div className="space-y-2 text-center">
             <Label className="text-sm">Enter the code sent to</Label>
             <p className="text-sm font-medium">{email || "wyvaman@gmail.com"}</p>
           </div>
 
-          {/* ✅ input-otp - handles paste, auto-advance, backspace */}
+          {/* ✅ InputOTP now works with string directly */}
           <div className="flex justify-center">
             <InputOTP
-              maxLength={verificationCode.length}
-              value={otpValue}
-              onChange={handleOTPChange}
+              maxLength={6}
+              value={verificationCode}
+              onChange={onVerificationChange} // ✅ directly sets string
             >
               <InputOTPGroup>
-                {verificationCode.map((_, i) => (
+                {[0, 1, 2, 3, 4, 5].map((i) => (
                   <InputOTPSlot
                     key={i}
                     index={i}
@@ -102,5 +89,4 @@ function VerifyEmailView({
     </Dialog>
   );
 }
-
 export default VerifyEmailView;

@@ -47,14 +47,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [verificationCode, setVerificationCode] = useState([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
+const [verificationCode, setVerificationCode] = useState("");
 
   const [formData, setFormData] = useState(initialFormState);
   const [verifyResetError, setVerifyResetError] = useState("");
@@ -76,11 +69,11 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   // RESET FORM
   // ===============================
   const resetForm = () => {
-    setFormData(initialFormState);
-    setVerificationCode(["", "", "", "", "", ""]);
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-  };
+  setFormData(initialFormState);
+  setVerificationCode(""); // ✅ empty string instead of array
+  setShowPassword(false);
+  setShowConfirmPassword(false);
+};
 
   useEffect(() => {
     if (isOpen) {
@@ -92,13 +85,7 @@ function AuthModal({ isOpen, onClose, initialView = "signup" }) {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleVerificationChange = (index, value) => {
-    if (/^\d?$/.test(value)) {
-      const code = [...verificationCode];
-      code[index] = value;
-      setVerificationCode(code);
-    }
-  };
+
 
   // ===============================
 // SIGN UP
@@ -151,27 +138,25 @@ setView("verify");
   }
 };
 
-  const handleVerifySignup = async () => {
-    try {
-      setLoading(true);
-      await verifyUserEmail({
-        email: formData.email,
-        code: verificationCode.join(""),
-      });
+const handleVerifySignup = async () => {
+  try {
+    setLoading(true);
+    await verifyUserEmail({
+      email: formData.email,
+      code: verificationCode, // ✅ already a string, no .join()
+    });
 
-      toast.success("Email verified successfully");
+    toast.success("Email verified successfully");
+    localStorage.setItem("justSignedUp", "true");
 
-      // 🔑 mark as newly signed up
-      localStorage.setItem("justSignedUp", "true");
-
-      resetForm();
-      setView("success");
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    resetForm();
+    setView("success");
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ===============================
   // LOGIN
@@ -228,17 +213,16 @@ setView("verify");
     }
   };
 
- const handleVerifyReset = async () => {
+const handleVerifyReset = async () => {
   try {
     setLoading(true);
     setVerifyResetError("");
-    const codeString = verificationCode.join("");
     await verifyResetCode({
       email: formData.email,
-      code: codeString,
+      code: verificationCode, // ✅ already a string, no .join()
     });
-    setVerifiedResetCode(codeString); // ✅ save it before clearing
-    setVerificationCode(["", "", "", "", "", ""]);
+    setVerifiedResetCode(verificationCode); // ✅ save string
+    setVerificationCode(""); // ✅ clear as empty string
     setView("reset");
   } catch (err) {
     setVerifyResetError("Invalid code, please try again");
@@ -317,21 +301,6 @@ const handleResendResetCode = async () => {
       />
     );
 
-  if (view === "verify")
-    return (
-      <VerifyEmailView
-        isOpen={isOpen}
-        onClose={onClose}
-        email={formData.email}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}
-        verificationCode={verificationCode}
-        handleVerificationChange={handleVerificationChange}
-        handleVerify={handleVerifySignup}
-        onResendCode={handleResendSignupCode}
-        resendCooldown={resendCooldown}
-      />
-    );
 
   if (view === "login")
   return (
@@ -362,20 +331,34 @@ const handleResendResetCode = async () => {
       />
     );
 
-  if (view === "verify-reset")
-    return (
-      <VerifyResetView
-        isOpen={isOpen}
-        onClose={onClose}
-        verificationCode={verificationCode}
-        handleVerificationChange={handleVerificationChange}
-        handleVerify={handleVerifyReset}
-        formData={formData}         
-      onResendCode={handleResendResetCode}  
+if (view === "verify")
+  return (
+    <VerifyEmailView
+      isOpen={isOpen}
+      onClose={onClose}
+      email={formData.email}
+      verificationCode={verificationCode}
+      onVerificationChange={setVerificationCode} // ✅ pass setter directly
+      handleVerify={handleVerifySignup}
+      onResendCode={handleResendSignupCode}
+      resendCooldown={resendCooldown}
+    />
+  );
+
+if (view === "verify-reset")
+  return (
+    <VerifyResetView
+      isOpen={isOpen}
+      onClose={onClose}
+      verificationCode={verificationCode}
+      onVerificationChange={setVerificationCode} // ✅ pass setter directly
+      handleVerify={handleVerifyReset}
+      formData={formData}
+      onResendCode={handleResendResetCode}
       verifyError={verifyResetError}
       resendCooldown={resendCooldown}
-      />
-    );
+    />
+  );
 
     if (view === "reset")
   return (

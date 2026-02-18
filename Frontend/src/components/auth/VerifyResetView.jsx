@@ -9,7 +9,7 @@ function VerifyResetView({
   onClose,
   formData,
   verificationCode,
-  handleVerificationChange,
+  onVerificationChange, // ✅ renamed
   handleVerify,
   backToForgot,
   onResendCode,
@@ -25,16 +25,6 @@ function VerifyResetView({
     return `${seconds}s`;
   };
 
-  const handleOTPChange = (value) => {
-    const arr = value.split("");
-    while (arr.length < verificationCode.length) arr.push("");
-    arr.slice(0, verificationCode.length).forEach((digit, i) => {
-      handleVerificationChange(i, digit);
-    });
-  };
-
-  const otpValue = verificationCode.join("");
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -43,7 +33,6 @@ function VerifyResetView({
             Verify your email
           </DialogTitle>
         </DialogHeader>
-
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label className="text-sm">Enter the code sent to</Label>
@@ -54,12 +43,12 @@ function VerifyResetView({
 
           <div className="flex justify-center">
             <InputOTP
-              maxLength={verificationCode.length}
-              value={otpValue}
-              onChange={handleOTPChange}
+              maxLength={6}
+              value={verificationCode}
+              onChange={onVerificationChange} // ✅ directly sets string
             >
               <InputOTPGroup>
-                {verificationCode.map((_, i) => (
+                {[0, 1, 2, 3, 4, 5].map((i) => (
                   <InputOTPSlot
                     key={i}
                     index={i}
@@ -105,5 +94,4 @@ function VerifyResetView({
     </Dialog>
   );
 }
-
 export default VerifyResetView;
