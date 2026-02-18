@@ -12,69 +12,19 @@ import {
 } from '@/components/ui/select'
 
 // Timeline selector component
-export function TimelineSelector({ value, onChange, error }) {
-  return (
-    <div className="space-y-2">
-      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">Project Timeline</Label>
-      <Select value={value} onValueChange={(val) => onChange('timeline', val)}>
-        <SelectTrigger className={error ? 'border-red-500' : ''}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="Immediately (Emergency)">Immediately (Emergency)</SelectItem>
-          <SelectItem value="Within 1 Month">Within 1 Month</SelectItem>
-          <SelectItem value="1-3 Months">1-3 Months</SelectItem>
-          <SelectItem value="Just Researching / Future Project">
-            Just Researching / Future Project
-          </SelectItem>
-        </SelectContent>
-      </Select>
-      {error && <p className="text-sm text-red-500">{error}</p>}
-    </div>
-  )
-}
 
-// Location selector component
-export function LocationSelector({ locationValue, addressValue, onChange, error }) {
-  const locations = ['Nigeria', 'US', 'UK', 'Canada']
-
-  return (
-    <div className="space-y-2">
-      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">Location of your project</Label>
-      <div className="flex gap-2">
-        {locations.map((loc) => (
-          <Button
-            key={loc}
-            type="button"
-            variant={locationValue === loc ? 'default' : 'outline'}
-            className={`flex-1 ${
-              locationValue === loc ? 'bg-[#FF8D28] hover:bg-orange-600' : ''
-            } ${error ? 'border-red-500' : ''}`}
-            onClick={() => onChange('location', loc)}
-          >
-            {loc}
-          </Button>
-        ))}
-      </div>
-      <Input
-        placeholder="Enter location of your project"
-        value={addressValue}
-        onChange={(e) => onChange('locationAddress', e.target.value)}
-        className={`mt-2 ${error ? 'border-red-500' : ''}`}
-      />
-      {error && <p className="text-sm text-red-500">{error}</p>}
-    </div>
-  )
-}
-
+// Generic question field
 // Generic question field
 export function QuestionField({ id, label, placeholder, required, value, onChange, error }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm leading-snug block w-full whitespace-normal break-words">
-  {label}
-  {required && <span className="text-orange-500 ml-1">*</span>}
-</Label>
+      <Label 
+        htmlFor={id} 
+        className="text-sm leading-snug block w-full whitespace-normal break-words overflow-visible"
+      >
+        {label}
+        {required && <span className="text-orange-500 ml-1">*</span>}
+      </Label>
       <Textarea
         id={id}
         name={id}
@@ -90,10 +40,11 @@ export function QuestionField({ id, label, placeholder, required, value, onChang
 }
 
 // Radio button group for Yes/No questions
+// Radio button group for Yes/No questions
 export function RadioButtonGroup({ id, label, value, onChange, required, error }) {
   return (
     <div className="space-y-2">
-      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words overflow-visible">
         {label}
         {required && <span className="text-orange-500 ml-1">*</span>}
       </Label>
@@ -130,7 +81,7 @@ export function PlatformSelector({ id, label, value, onChange, required, error }
   
   return (
     <div className="space-y-2">
-      <Label className="text-sm leading-snug block w-full whitespace-normal break-words">
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words overflow-visible">
         {label}
         {required && <span className="text-orange-500 ml-1">*</span>}
       </Label>
@@ -149,6 +100,66 @@ export function PlatformSelector({ id, label, value, onChange, required, error }
           </Button>
         ))}
       </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </div>
+  )
+}
+
+// Timeline selector component
+export function TimelineSelector({ value, onChange, error }) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words overflow-visible">
+        Project Timeline
+      </Label>
+      <Select value={value} onValueChange={(val) => onChange('timeline', val)}>
+        <SelectTrigger className={error ? 'border-red-500' : ''}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="Immediately (Emergency)">Immediately (Emergency)</SelectItem>
+          <SelectItem value="Within 1 Month">Within 1 Month</SelectItem>
+          <SelectItem value="1-3 Months">1-3 Months</SelectItem>
+          <SelectItem value="Just Researching / Future Project">
+            Just Researching / Future Project
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </div>
+  )
+}
+
+// Location selector component
+export function LocationSelector({ locationValue, addressValue, onChange, error }) {
+  const locations = ['Nigeria', 'US', 'UK', 'Canada']
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm leading-snug block w-full whitespace-normal break-words overflow-visible">
+        Location of your project
+      </Label>
+      <div className="flex gap-2">
+        {locations.map((loc) => (
+          <Button
+            key={loc}
+            type="button"
+            variant={locationValue === loc ? 'default' : 'outline'}
+            className={`flex-1 ${
+              locationValue === loc ? 'bg-[#FF8D28] hover:bg-orange-600' : ''
+            } ${error ? 'border-red-500' : ''}`}
+            onClick={() => onChange('location', loc)}
+          >
+            {loc}
+          </Button>
+        ))}
+      </div>
+      <Input
+        placeholder="Enter location of your project"
+        value={addressValue}
+        onChange={(e) => onChange('locationAddress', e.target.value)}
+        className={`mt-2 ${error ? 'border-red-500' : ''}`}
+      />
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
