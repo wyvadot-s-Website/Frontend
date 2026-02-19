@@ -1,7 +1,9 @@
 // admin AddProductModal.jsx
 // ✅ Changes: rename deliveryFee -> shippingFee so it matches backend + cart
+// ✅ Added: client-side image validation with descriptive sonner toast errors
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -18,6 +20,11 @@ const CATEGORIES = [
   "Uncategorized",
 ];
 
+const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const MAX_IMAGE_COUNT = 6;
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
 const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
   const [form, setForm] = useState({
     name: "",
@@ -29,7 +36,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
     stockQuantity: "",
     status: "active",
     shippingFee: "",
-    vatRate: "", // ✅ VAT rate (%)
+    vatRate: "",
   });
 
   const [images, setImages] = useState([]);
@@ -44,7 +51,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
       category: "Uncategorized",
       stockQuantity: "",
       status: "active",
-      shippingFee: "", // ✅
+      shippingFee: "",
       vatRate: "",
     });
     setImages([]);
@@ -55,8 +62,81 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
     onClose?.();
   };
 
+  // ── Image validation ──────────────────────────────────────────────────────
+  const handleImageChange = (e) => {
+    const selected = Array.from(e.target.files || []);
+
+    if (selected.length === 0) return;
+
+    // 1. Too many files
+    if (selected.length > MAX_IMAGE_COUNT) {
+      toast.error(`Too many images selected`, {
+        description: `You can upload a maximum of ${MAX_IMAGE_COUNT} images, but you selected ${selected.length}. Please reduce your selection.`,
+      });
+      e.target.value = "";
+      return;
+    }
+
+    const oversized = [];
+    const invalidType = [];
+
+    for (const file of selected) {
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        invalidType.push(file.name);
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        oversized.push(`${file.name} (${sizeMB} MB)`);
+      }
+    }
+
+    if (invalidType.length > 0) {
+      toast.error(`Unsupported file type${invalidType.length > 1 ? "s" : ""}`, {
+        description: `${invalidType.join(", ")} — Please upload JPG, PNG, WEBP, or GIF images only.`,
+      });
+      e.target.value = "";
+      return;
+    }
+
+    if (oversized.length > 0) {
+      toast.error(
+        `${oversized.length > 1 ? "Files exceed" : "File exceeds"} the ${MAX_FILE_SIZE_MB} MB limit`,
+        {
+          description: `${oversized.join(", ")} — Please compress or resize before uploading.`,
+        }
+      );
+      e.target.value = "";
+      return;
+    }
+
+    // ✅ All good
+    setImages(selected);
+    toast.success(`${selected.length} image${selected.length > 1 ? "s" : ""} ready to upload`);
+  };
+
+  // ── Submit validation ─────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!form.name.trim()) {
+      toast.error("Product name is required");
+      return;
+    }
+
+    if (!form.price || isNaN(form.price) || Number(form.price) <= 0) {
+      toast.error("Invalid price", {
+        description: "Please enter a valid price greater than ₦0.",
+      });
+      return;
+    }
+
+    if (images.length === 0) {
+      toast.error("No images selected", {
+        description: "Please upload at least one product image before submitting.",
+      });
+      return;
+    }
+
     await onSubmit?.({ form, images, reset, close: handleClose });
   };
 
@@ -88,9 +168,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
             <label className="text-xs font-semibold">PRODUCT DESCRIPTION</label>
             <Input
               value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Product Description"
             />
           </div>
@@ -106,9 +184,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">
-              OLD PRICE (optional)
-            </label>
+            <label className="text-xs font-semibold">OLD PRICE (optional)</label>
             <Input
               value={form.oldPrice}
               onChange={(e) => setForm({ ...form, oldPrice: e.target.value })}
@@ -118,9 +194,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">
-              SALE ENDS AT (optional)
-            </label>
+            <label className="text-xs font-semibold">SALE ENDS AT (optional)</label>
             <Input
               value={form.saleEndsAt}
               onChange={(e) => setForm({ ...form, saleEndsAt: e.target.value })}
@@ -147,9 +221,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
             <label className="text-xs font-semibold">STOCK</label>
             <Input
               value={form.stockQuantity}
-              onChange={(e) =>
-                setForm({ ...form, stockQuantity: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })}
               placeholder="Enter quantity"
               type="number"
             />
@@ -159,9 +231,7 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
             <label className="text-xs font-semibold">SHIPPING FEE</label>
             <Input
               value={form.shippingFee}
-              onChange={(e) =>
-                setForm({ ...form, shippingFee: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, shippingFee: e.target.value })}
               placeholder="Enter Amount"
               type="number"
             />
@@ -181,16 +251,16 @@ const AddProductModal = ({ open, onClose, onSubmit, loading }) => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold">
-              UPLOAD PRODUCT IMAGES *
-            </label>
+            <label className="text-xs font-semibold">UPLOAD PRODUCT IMAGES *</label>
             <Input
               type="file"
               multiple
               accept="image/*"
-              onChange={(e) => setImages(Array.from(e.target.files || []))}
+              onChange={handleImageChange}
             />
-            <p className="text-xs text-gray-500 mt-2">Upload 1–6 images.</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Upload 1–{MAX_IMAGE_COUNT} images. Max {MAX_FILE_SIZE_MB} MB each. JPG, PNG, WEBP, or GIF.
+            </p>
           </div>
 
           <div className="flex justify-between pt-4">
