@@ -104,9 +104,18 @@ export default function UserManagement() {
                 </div>
 
                 <div className="text-xs text-gray-500">
-                  <span className="text-gray-400">Created:</span>{" "}
-                  {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
-                </div>
+  <span className="text-gray-400">Created:</span>{" "}
+  {u.createdAt 
+    ? new Date(u.createdAt).toLocaleString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "—"}
+</div>
               </div>
             ))
           )}
@@ -144,8 +153,17 @@ export default function UserManagement() {
                     <td className="py-3 text-gray-500">{u.email}</td>
                     <td className="py-3">{u.isVerified ? "Yes" : "No"}</td>
                     <td className="py-3 text-gray-500">
-                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
-                    </td>
+  {u.createdAt 
+    ? new Date(u.createdAt).toLocaleString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "—"}
+</td>
                   </tr>
                 ))
               )}

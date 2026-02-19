@@ -91,89 +91,94 @@ export default function UpdateServiceRequestModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
+      {/* ✅ Fixed: Added max height and flex layout */}
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Update Project Progress</DialogTitle>
           <p className="text-xs text-gray-600 mt-1">
             {request?.projectId} — {request?.title}
           </p>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Progress */}
-          <div className="space-y-2">
-            <Label>Progress (%)</Label>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={progress}
-              onChange={(e) => setProgress(e.target.value)}
-            />
-            <div className="h-2 bg-gray-200 rounded">
-              <div
-                className="h-2 bg-black rounded"
-                style={{ width: `${Math.max(0, Math.min(100, Number(progress) || 0))}%` }}
+        {/* ✅ Scrollable content area */}
+        <div className="overflow-y-auto flex-1 pr-2">
+          <div className="space-y-4 py-4">
+            {/* Progress */}
+            <div className="space-y-2">
+              <Label>Progress (%)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={progress}
+                onChange={(e) => setProgress(e.target.value)}
+              />
+              <div className="h-2 bg-gray-200 rounded">
+                <div
+                  className="h-2 bg-black rounded"
+                  style={{ width: `${Math.max(0, Math.min(100, Number(progress) || 0))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Current Stage */}
+            <div className="space-y-2">
+              <Label>Current Stage</Label>
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+              >
+                {STAGES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Project Stage */}
+            <div className="space-y-2">
+              <Label>Project Stage</Label>
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                value={projectStage}
+                onChange={(e) => setProjectStage(e.target.value)}
+              >
+                {PROJECT_STAGES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Update Note */}
+            <div className="space-y-2">
+              <Label>Update Note</Label>
+              <Textarea
+                placeholder="Describe what has been done"
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                rows={6}
+                className="resize-none"
               />
             </div>
           </div>
+        </div>
 
-          {/* Current Stage */}
-          <div className="space-y-2">
-            <Label>Current Stage</Label>
-            <select
-              className="w-full border rounded-md px-3 py-2 text-sm"
-              value={stage}
-              onChange={(e) => setStage(e.target.value)}
-            >
-              {STAGES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* ✅ Fixed footer - stays at bottom */}
+        <div className="flex items-center justify-between pt-4 border-t flex-shrink-0">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
 
-          {/* Project Stage */}
-          <div className="space-y-2">
-            <Label>Project Stage</Label>
-            <select
-              className="w-full border rounded-md px-3 py-2 text-sm"
-              value={projectStage}
-              onChange={(e) => setProjectStage(e.target.value)}
-            >
-              {PROJECT_STAGES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Update Note */}
-          <div className="space-y-2">
-            <Label>Update Note</Label>
-            <Textarea
-              placeholder="Describe what has been done"
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              rows={4}
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-
-            <Button
-              onClick={handleSave}
-              className="bg-[#FF8D28] hover:bg-orange-600 text-white"
-            >
-              Save Update
-            </Button>
-          </div>
+          <Button
+            onClick={handleSave}
+            className="bg-[#FF8D28] hover:bg-orange-600 text-white"
+          >
+            Save Update
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

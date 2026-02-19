@@ -194,16 +194,12 @@ function ProductDetail({
 
   console.log("✅ Rendering product:", product);
 
-  // Rest of your component rendering code...
-  const images = product?.images?.length ? product.images : [];
-  const mainImage = images[activeImg]?.url || images[0]?.url;
-  const wished = isWished(product?._id);
-
-  const isOut = product?.status === "out_of_stock" || stockQty <= 0;
-
-
-  const stockQty = Number(product?.stockQuantity || 0);
-
+// ✅ CORRECT ORDER
+const images = product?.images?.length ? product.images : [];
+const mainImage = images[activeImg]?.url || images[0]?.url;
+const wished = isWished(product?._id);
+const stockQty = Number(product?.stockQuantity || 0);  // ✅ Define FIRST
+const isOut = product?.status === "out_of_stock" || stockQty <= 0;  // ✅ Use AFTER
   const handleMinus = () => setQuantity(Math.max(1, Number(quantity || 1) - 1));
   const handlePlus = () => {
     const q = Number(quantity || 1);
