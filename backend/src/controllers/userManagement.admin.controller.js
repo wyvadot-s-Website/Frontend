@@ -157,3 +157,24 @@ export const deleteAdminSuper = async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// ✅ DELETE USER (all admins)
+export const deleteUserAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(String(id))) {
+      return res.status(400).json({ success: false, message: "Invalid user id" });
+    }
+
+    const user = await User.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.json({ success: true, message: "User deleted successfully" });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};

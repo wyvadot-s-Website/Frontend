@@ -9,6 +9,7 @@ import {
   getUserByIdAdmin, // ✅ add
   getAdminsSuper,
   deleteAdminSuper,
+  deleteUserAdmin,
 } from "../controllers/userManagement.admin.controller.js";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.get("/users/:id", protectAdmin, getUserByIdAdmin);
 // Only super admin can see admins + delete admins
 router.get("/admins", protectAdmin, requireSuperAdmin, getAdminsSuper);
 router.delete("/admins/:id", protectAdmin, requireSuperAdmin, deleteAdminSuper);
+router.delete("/users/:id", protectAdmin, deleteUserAdmin);
 
 export default router;

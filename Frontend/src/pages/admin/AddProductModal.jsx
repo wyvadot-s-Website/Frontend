@@ -1,6 +1,3 @@
-// admin AddProductModal.jsx
-// ✅ Changes: rename deliveryFee -> shippingFee so it matches backend + cart
-// ✅ Added: client-side image validation with descriptive sonner toast errors
 
 import React, { useState } from "react";
 import { toast } from "sonner";

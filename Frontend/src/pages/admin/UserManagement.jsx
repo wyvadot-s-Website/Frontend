@@ -4,6 +4,7 @@ import {
   fetchAdminUsers,
   fetchAdminAdmins,
   deleteAdminAccount,
+  deleteUserAccount,
 } from "@/services/adminUserManagementService";
 import { Button } from "@/components/ui/button";
 import UserProfileModal from "../../pages/admin/UserProfileModal";
@@ -59,6 +60,17 @@ export default function UserManagement() {
       toast.error(err.message);
     }
   };
+
+  const handleDeleteUser = async (id) => {
+  if (!window.confirm("Delete this user?")) return;
+  try {
+    await deleteUserAccount(token, id);
+    toast.success("User deleted");
+    load();
+  } catch (err) {
+    toast.error(err.message);
+  }
+};
 
   return (
     <div className="space-y-6">
@@ -116,6 +128,12 @@ export default function UserManagement() {
       })
     : "—"}
 </div>
+<Button
+  className="bg-red-600 hover:bg-red-700 text-white text-xs w-full"
+  onClick={(e) => { e.stopPropagation(); handleDeleteUser(u._id); }}
+>
+  Delete
+</Button>
               </div>
             ))
           )}
@@ -130,6 +148,7 @@ export default function UserManagement() {
                 <th className="pb-3">Email</th>
                 <th className="pb-3">Verified</th>
                 <th className="pb-3">Created</th>
+                <th className="pb-3">Action</th>
               </tr>
             </thead>
 
@@ -163,6 +182,14 @@ export default function UserManagement() {
         hour12: true,
       })
     : "—"}
+</td>
+<td className="py-3">
+  <Button
+    className="bg-red-600 hover:bg-red-700 text-white text-xs"
+    onClick={(e) => { e.stopPropagation(); handleDeleteUser(u._id); }}
+  >
+    Delete
+  </Button>
 </td>
                   </tr>
                 ))

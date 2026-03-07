@@ -40,3 +40,17 @@ export const deleteAdminAccount = async (token, adminId) => {
   if (!res.ok) throw new Error(data.message || "Failed to delete admin");
   return data;
 };
+
+// DELETE USER (all admins)
+export const deleteUserAccount = async (token, userId) => {
+  const res = await fetch(
+    `${BASE_URL}/api/admin/user-management/users/${userId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to delete user");
+  return data;
+};
