@@ -1,9 +1,10 @@
 import BASE_URL from "../utils/api";
 
-/**
- * GET ABOUT CONTENT (PUBLIC)
- */
+const cache = {};
 export const fetchAboutContent = async () => {
+  if (cache.about) return cache.about;
   const res = await fetch(`${BASE_URL}/api/about`);
-  return res.json();
+  const data = await res.json();
+  cache.about = data;
+  return data;
 };

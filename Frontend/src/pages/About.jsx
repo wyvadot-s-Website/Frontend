@@ -18,7 +18,20 @@ function About() {
     loadAbout();
   }, []);
 
-  if (!about) return null;
+  if (!about) return (
+  <div className="bg-white font-SF animate-pulse">
+    <div className="mx-auto max-w-5xl pt-10 px-5 lg:px-0">
+      <div className="w-full h-64 bg-gray-200 rounded-xl" />
+    </div>
+    <div className="max-w-7xl mx-auto px-4 py-16 space-y-4">
+      <div className="h-6 bg-gray-200 rounded w-1/3" />
+      <div className="h-4 bg-gray-200 rounded w-full" />
+      <div className="h-4 bg-gray-200 rounded w-5/6" />
+      <div className="h-4 bg-gray-200 rounded w-4/6" />
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+    </div>
+  </div>
+);
 
   return (
     <div className="bg-white font-SF">

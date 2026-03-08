@@ -51,15 +51,32 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    const loadAbout = async () => {
-      const data = await fetchAboutContent();
-      setAbout(data.data);
-    };
-    loadAbout();
-  }, []);
+  fetchAboutContent()
+    .then((data) => setAbout(data.data))
+    .catch(console.error);
+}, []);
 
-  if (!about) return null;
-  if (loading) return null; // or spinner
+  // useEffect(() => {
+  //   const loadAbout = async () => {
+  //     const data = await fetchAboutContent();
+  //     setAbout(data.data);
+  //   };
+  //   loadAbout();
+  // }, []);
+
+  // if (!about) return null;
+  if (loading) return (
+  <div className="bg-white pt-16 px-4 animate-pulse">
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="w-full h-[90vh] rounded-2xl bg-gray-200" />
+      <div className="flex justify-center gap-8 py-6">
+        {[1,2,3].map(i => (
+          <div key={i} className="h-10 w-32 bg-gray-200 rounded" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
   const handleClick = () => {
     navigate("/shop");
@@ -196,10 +213,12 @@ function Home() {
         </div>
       </div>
 
-      <SecondHero
-        promiseText={about.promiseText}
-        promiseImages={about.promiseImages}
-      />
+     {about && (
+  <SecondHero
+    promiseText={about.promiseText}
+    promiseImages={about.promiseImages}
+  />
+)}
       <ServiceComponent />
 
 
