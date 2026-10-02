@@ -1,16 +1,19 @@
-# robots.txt for https://wyvadotpr.vercel.app/
+# robots.txt for https://wyvadotpr.com/
 
 User-agent: *
 Allow: /
 
+# Transactional and authenticated routes carry a noindex robots meta tag and are
+# kept out of the sitemap. Blocking them here too saves crawl budget.
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment/
+Disallow: /order-complete
+Disallow: /home
+Disallow: /wishlist
+Disallow: /account
+Disallow: /theboss
+
 # Sitemap location
-Sitemap: https://wyvadotpr.vercel.app/sitemap.xml
-
-# Crawl-delay (optional, uncomment if needed)
-# Crawl-delay: 10
-
-# Disallow specific paths (add as needed)
-# Disallow: /private/
-# Disallow: /admin/
- Disallow: /api/
- Disallow: /contact/
+Sitemap: https://wyvadotpr.com/sitemap.xml

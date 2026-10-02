@@ -14,12 +14,13 @@
     <meta name="language" content="English" />
     <meta name="revisit-after" content="7 days" />
     
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph / Facebook. Runtime values are maintained by <Seo /> in src/components/Seo.jsx;
+         these are the build-time defaults for crawlers that do not execute JS. -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://wyvadotpr.vercel.app/" />
+    <meta property="og:url" content="https://wyvadotpr.com/" />
     <meta property="og:title" content="Wyvadot PR - Project Management, Engineering & Construction Services" />
     <meta property="og:description" content="Wyvadot Projects & Resources Ltd offers professional project management, construction, facilities management, engineering, and general contracting services. What we build, we build with purpose." />
-    <meta property="og:image" content="https://wyvadotpr.vercel.app/og-image.png" />
+    <meta property="og:image" content="https://wyvadotpr.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="Wyvadot Projects & Resources Ltd" />
@@ -27,10 +28,10 @@
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://wyvadotpr.vercel.app/" />
+    <meta name="twitter:url" content="https://wyvadotpr.com/" />
     <meta name="twitter:title" content="Wyvadot PR - Project Management, Engineering & Construction Services" />
     <meta name="twitter:description" content="Wyvadot Projects & Resources Ltd offers professional project management, construction, facilities management, engineering, and general contracting services. What we build, we build with purpose." />
-    <meta name="twitter:image" content="https://wyvadotpr.vercel.app/twitter-image.png" />
+    <meta name="twitter:image" content="https://wyvadotpr.com/twitter-image.png" />
     <meta name="twitter:creator" content="@wyvadotpr" />
     
     <!-- Favicon -->
@@ -40,7 +41,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://wyvadotpr.vercel.app/" />
+    <link rel="canonical" href="https://wyvadotpr.com/" />
     
     <!-- Sitemap -->
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
@@ -59,15 +60,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Structured Data (JSON-LD) -->
-    <script type="application/ld+json">
+    <!-- Structured Data (JSON-LD). Kept in sync with src/config/seo.js so crawlers
+         that do not execute JS still see the Organization entity on first paint. -->
+    <script type="application/ld+json" id="seo-organization-jsonld">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Wyvadot Projects & Resources Ltd",
       "alternateName": "Wyvadot PR",
-      "url": "https://wyvadotpr.vercel.app/",
-      "logo": "https://wyvadotpr.vercel.app/logo.png",
+      "url": "https://wyvadotpr.com/",
+      "logo": "https://wyvadotpr.com/logo.png",
       "description": "Professional project management, construction, facilities management, engineering, and general contracting services. What we build, we build with purpose.",
       "foundingDate": "2020",
       "address": {
@@ -140,6 +142,9 @@
       ]
     }
     </script>
+    
+    <!-- Page-level JSON-LD placeholder, populated by <Seo /> for dynamic routes. -->
+    <script type="application/ld+json" id="seo-page-jsonld"></script>
     
     <!-- Stylesheet -->
     <link rel="stylesheet" href="./src/index.css" />

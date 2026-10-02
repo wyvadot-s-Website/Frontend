@@ -8,6 +8,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductReviews from "@/components/ProductReviews";
 import { fetchProductById } from "@/services/shopService";
+import Seo from "@/components/Seo";
+import { absoluteUrl } from "@/config/seo";
 
 const formatMoney = (amount) =>
   Number(amount || 0).toLocaleString("en-NG", {
@@ -246,8 +248,54 @@ const isOut = product?.status === "out_of_stock" || stockQty <= 0;  // ✅ Use A
     );
   };
 
+  // ✅ Per-product SEO: title/description/OG from the loaded product plus a
+  // Product JSON-LD block. Falls back to the route defaults while loading.
+  const productSeo = useMemo(() => {
+    if (!product?._id) return {};
+
+    const name = product.name || "Product";
+    const rawDescription = String(product.description || "").replace(/<[^>]*>/g, "");
+    const description =
+      rawDescription.slice(0, 300) ||
+      `Buy ${name} from Wyvadot Projects & Resources Ltd. Professional project management, engineering and construction supplies in Nigeria.`;
+    const image = product.images?.[0]?.url
+      ? absoluteUrl(product.images[0].url)
+      : undefined;
+
+    return {
+      title: `${name} | Wyvadot PR`,
+      description,
+      image,
+      type: "product",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name,
+        description,
+        image: image ? [image] : undefined,
+        url: absoluteUrl(`/product/${product._id}`),
+        brand: {
+          "@type": "Brand",
+          name: "Wyvadot PR",
+        },
+        offers: {
+          "@type": "Offer",
+          price: Number(product.effectivePrice ?? product.price ?? 0),
+          priceCurrency: "NGN",
+          availability:
+            Number(product.stockQuantity || 0) > 0
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+          url: absoluteUrl(`/product/${product._id}`),
+        },
+      },
+    };
+  }, [product]);
+
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <Seo {...productSeo} />
+      <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-6 py-4">
         <button
@@ -410,7 +458,8 @@ const isOut = product?.status === "out_of_stock" || stockQty <= 0;  // ✅ Use A
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

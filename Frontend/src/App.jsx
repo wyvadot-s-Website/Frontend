@@ -33,6 +33,7 @@ import UserAccount from "./pages/user/UserAccount.jsx";
 import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
 import UserManagement from "./pages/admin/UserManagement.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import Seo from "./components/Seo.jsx";
 
 function UserLayout({ children }) {
   return (
@@ -52,6 +53,9 @@ function App() {
 
       <Router>
         <ScrollToTop />
+        {/* Keeps title/description/canonical/OG in sync with the active route,
+            and noindexes transactional, authenticated and admin pages. */}
+        <Seo />
         <Routes>
           <Route
             path="/"
