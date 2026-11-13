@@ -46,7 +46,7 @@ const Services = () => {
 
   return (
     <div className="py-10 bg-white mx-auto">
-      <div className="max-w-5xl mx-auto rounded-4xl relative opacity-90 px-5 lg:px-0">
+      <div className="max-w-5xl mx-auto relative px-5 lg:px-0">
         <img src={heroImage} alt="Services" className="w-full h-full" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
           <h1 className="text-white text-4xl md:text-5xl font-bold z-10">
@@ -59,28 +59,6 @@ const Services = () => {
       </div>
 
       <ServiceComponent services={services} intro={content?.intro} />
-
-      {services.some((service) => service.description || service.highlights?.length) && (
-        <section className="mx-auto max-w-6xl px-4 pb-16">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Explore Our Services</h2>
-            <p className="mt-3 text-gray-600">Learn more about the expertise we bring to every engagement.</p>
-          </div>
-          <div className="grid gap-5 md:grid-cols-2">
-            {services.map((service) => (
-              <article key={service.serviceKey || service.title} className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-                <h3 className="text-xl font-semibold text-gray-900">{service.title}</h3>
-                {service.description && <p className="mt-3 text-sm leading-6 text-gray-600">{service.description}</p>}
-                {!!service.highlights?.length && (
-                  <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-gray-600">
-                    {service.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
-                  </ul>
-                )}
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="mx-auto max-w-4xl px-4 pb-16">
         <div className="rounded-2xl bg-[#FF8D28] px-6 py-12 text-center text-white">
