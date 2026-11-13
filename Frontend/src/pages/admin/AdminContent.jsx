@@ -13,6 +13,7 @@ import ProjectCMS from "./ContentManagement/ProjectCMS.jsx";
 import TeamCMS from "./ContentManagement/TeamCMS.jsx";
 import TestimonialCMS from "./ContentManagement/TestimonialCMS.jsx";
 import FooterCMS from "./ContentManagement/FooterCMS.jsx";
+import ServicesCMS from "./ContentManagement/ServicesCMS.jsx";
 import { fetchProjectsAdmin } from "@/services/adminProjectService";
 import { fetchTeamAdmin } from "@/services/adminTeamService";
 import { fetchTestimonialsAdmin } from "@/services/adminTestimonialService";
@@ -40,7 +41,7 @@ export default function AdminContent() {
   const token = localStorage.getItem("admin_token");
 
   const [stats, setStats] = useState({
-    pages: 6, // Home, About, Projects, Team, Testimonials, Footer
+    pages: 7, // Home, About, Projects, Services, Team, Testimonials, Footer
     projects: 0,
     team: 0,
     testimonials: 0,
@@ -125,6 +126,7 @@ export default function AdminContent() {
       { value: "home", label: "Home" },
       { value: "about", label: "About Us" },
       { value: "project", label: "Projects" },
+      { value: "services", label: "Services" },
       { value: "team", label: "Team" },
       { value: "testimonials", label: "Testimonials" },
       { value: "footer", label: "Contact Us" },
@@ -158,6 +160,10 @@ export default function AdminContent() {
             <TabsContent value="project" className="space-y-6">
               {/* Projects */}
               <ProjectCMS />
+            </TabsContent>
+
+            <TabsContent value="services" className="space-y-6">
+              <ServicesCMS />
             </TabsContent>
 
             <TabsContent value="team" className="space-y-6">
