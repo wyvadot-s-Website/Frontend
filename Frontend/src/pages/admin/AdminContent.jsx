@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import HomeCMS from "./ContentManagement/HomeCMS.jsx";
 import AboutCMS from "./ContentManagement/AboutCMS.jsx";
 import ProjectCMS from "./ContentManagement/ProjectCMS.jsx";
@@ -14,6 +15,7 @@ import TeamCMS from "./ContentManagement/TeamCMS.jsx";
 import TestimonialCMS from "./ContentManagement/TestimonialCMS.jsx";
 import FooterCMS from "./ContentManagement/FooterCMS.jsx";
 import ServicesCMS from "./ContentManagement/ServicesCMS.jsx";
+import ShopCMS from "./ContentManagement/ShopCMS.jsx";
 import { fetchProjectsAdmin } from "@/services/adminProjectService";
 import { fetchTeamAdmin } from "@/services/adminTeamService";
 import { fetchTestimonialsAdmin } from "@/services/adminTestimonialService";
@@ -41,7 +43,7 @@ export default function AdminContent() {
   const token = localStorage.getItem("admin_token");
 
   const [stats, setStats] = useState({
-    pages: 7, // Home, About, Projects, Services, Team, Testimonials, Footer
+    pages: 8, // Home, About, Projects, Services, Team, Testimonials, Footer, Shop
     projects: 0,
     team: 0,
     testimonials: 0,
@@ -130,7 +132,7 @@ export default function AdminContent() {
       { value: "team", label: "Team" },
       { value: "testimonials", label: "Testimonials" },
       { value: "footer", label: "Contact Us" },
-      // { value: "shop", label: "Shop" },
+      { value: "shop", label: "Shop" },
     ].map((tab) => (
       <TabsTrigger
         key={tab.value}
@@ -179,6 +181,10 @@ export default function AdminContent() {
             <TabsContent value="footer">
               {/* Footer */}
               <FooterCMS />
+            </TabsContent>
+
+            <TabsContent value="shop" className="space-y-6">
+              <ShopCMS />
             </TabsContent>
           </Tabs>
         </CardContent>

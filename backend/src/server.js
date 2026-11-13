@@ -31,6 +31,8 @@ import reviewRoutes from "./routes/review.routes.js";
 import userManagementAdminRoutes from "./routes/userManagement.admin.routes.js";
 import servicesAdminRoutes from "./routes/servicesAdminRoutes.js";
 import servicesPublicRoutes from "./routes/servicesPublicRoutes.js";
+import shopContentAdminRoutes from "./routes/shopContentAdminRoutes.js";
+import shopContentPublicRoutes from "./routes/shopContentPublicRoutes.js";
 
 
 // Only load .env in development
@@ -73,6 +75,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api", reviewRoutes);
 app.use("/api/admin", servicesAdminRoutes);
 app.use("/api", servicesPublicRoutes);
+app.use("/api/admin/shop-content", shopContentAdminRoutes);
+app.use("/api/shop-content", shopContentPublicRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
